@@ -4,16 +4,41 @@ public class UserProfile {
     public String uid;
     public String displayName;
     public String email;
+    public String phone;
+    public String dateOfBirth;
+    public String gender;
+    public float heightCm;
+    public float weightKg;
     public String avatarUrl;
     public String primaryGoal;
+    public long createdAt;
+    public long updatedAt;
 
     public UserProfile() {}
 
-    public UserProfile(String uid, String displayName, String email, String avatarUrl, String primaryGoal) {
+    public UserProfile(String uid,
+                       String displayName,
+                       String email,
+                       String phone,
+                       String dateOfBirth,
+                       String gender,
+                       float heightCm,
+                       float weightKg,
+                       String avatarUrl,
+                       String primaryGoal,
+                       long createdAt,
+                       long updatedAt) {
         this.uid = uid;
         this.displayName = displayName;
         this.email = email;
+        this.phone = phone;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.heightCm = heightCm;
+        this.weightKg = weightKg;
         this.avatarUrl = avatarUrl;
         this.primaryGoal = primaryGoal;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }

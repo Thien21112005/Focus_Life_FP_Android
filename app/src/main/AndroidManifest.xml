@@ -71,5 +71,4 @@
             android:foregroundServiceType="health" />
 
     </application>
-
 </manifest>

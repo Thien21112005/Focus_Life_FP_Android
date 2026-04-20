@@ -14,9 +14,16 @@ public class UserRemoteDataSource {
         Map<String, Object> data = new HashMap<>();
         data.put("displayName", profile.displayName);
         data.put("email", profile.email);
+        data.put("phone", profile.phone);
+        data.put("dateOfBirth", profile.dateOfBirth);
+        data.put("gender", profile.gender);
+        data.put("heightCm", profile.heightCm);
+        data.put("weightKg", profile.weightKg);
         data.put("avatarUrl", profile.avatarUrl);
         data.put("primaryGoal", profile.primaryGoal);
-        data.put("updatedAt", System.currentTimeMillis());
+        data.put("createdAt", profile.createdAt);
+        data.put("updatedAt", profile.updatedAt);
+
         firestore.collection(Constants.FIRESTORE_USERS)
                 .document(profile.uid)
                 .set(data);

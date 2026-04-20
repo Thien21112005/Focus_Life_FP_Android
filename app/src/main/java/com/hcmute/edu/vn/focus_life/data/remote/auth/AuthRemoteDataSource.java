@@ -26,10 +26,12 @@ public class AuthRemoteDataSource {
 
     public AuthRemoteDataSource(Activity activity) {
         firebaseAuth = FirebaseAuth.getInstance();
+
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(activity.getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
+
         googleSignInClient = GoogleSignIn.getClient(activity, options);
     }
 
@@ -53,10 +55,24 @@ public class AuthRemoteDataSource {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+            if (account == null) {
+                callback.onError(new IllegalStateException("Google account đang null"));
+                return;
+            }
+
+            String idToken = account.getIdToken();
+            if (idToken == null || idToken.trim().isEmpty()) {
+                callback.onError(new IllegalStateException(
+                        "Google ID token đang null. Hãy kiểm tra lại google-services.json, SHA-1/SHA-256 và Google Sign-In trong Firebase."
+                ));
+                return;
+            }
+
+            AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
             firebaseAuth.signInWithCredential(credential)
                     .addOnSuccessListener(callback::onSuccess)
                     .addOnFailureListener(callback::onError);
+
         } catch (Exception e) {
             callback.onError(e);
         }

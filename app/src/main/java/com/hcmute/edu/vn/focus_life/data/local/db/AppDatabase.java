@@ -11,6 +11,7 @@ import com.hcmute.edu.vn.focus_life.data.local.dao.DailySummaryDao;
 import com.hcmute.edu.vn.focus_life.data.local.dao.HabitDao;
 import com.hcmute.edu.vn.focus_life.data.local.dao.NutritionDao;
 import com.hcmute.edu.vn.focus_life.data.local.dao.PomodoroDao;
+import com.hcmute.edu.vn.focus_life.data.local.dao.ProfileDao;
 import com.hcmute.edu.vn.focus_life.data.local.dao.StepDao;
 import com.hcmute.edu.vn.focus_life.data.local.dao.WaterDao;
 import com.hcmute.edu.vn.focus_life.data.local.entity.DailySummaryEntity;
@@ -18,6 +19,7 @@ import com.hcmute.edu.vn.focus_life.data.local.entity.HabitCheckinEntity;
 import com.hcmute.edu.vn.focus_life.data.local.entity.HabitEntity;
 import com.hcmute.edu.vn.focus_life.data.local.entity.NutritionEntryEntity;
 import com.hcmute.edu.vn.focus_life.data.local.entity.PomodoroSessionEntity;
+import com.hcmute.edu.vn.focus_life.data.local.entity.ProfileEntity;
 import com.hcmute.edu.vn.focus_life.data.local.entity.StepRecordEntity;
 import com.hcmute.edu.vn.focus_life.data.local.entity.WaterEntryEntity;
 
@@ -29,9 +31,10 @@ import com.hcmute.edu.vn.focus_life.data.local.entity.WaterEntryEntity;
                 HabitCheckinEntity.class,
                 NutritionEntryEntity.class,
                 WaterEntryEntity.class,
-                DailySummaryEntity.class
+                DailySummaryEntity.class,
+                ProfileEntity.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -43,6 +46,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract NutritionDao nutritionDao();
     public abstract WaterDao waterDao();
     public abstract DailySummaryDao dailySummaryDao();
+    public abstract ProfileDao profileDao();
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {

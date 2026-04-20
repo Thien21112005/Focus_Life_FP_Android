@@ -15,6 +15,7 @@ import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.session.AuthStatePreferences;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.ui.profile.ProfileSettingsActivity;
+import com.hcmute.edu.vn.focus_life.ui.running.RunningMapActivity;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -51,5 +52,9 @@ public class MainActivity extends AppCompatActivity {
                 && (authStatePreferences.getEmail() == null || authStatePreferences.getEmail().isEmpty())) {
             Toast.makeText(this, "Phiên đăng nhập chưa tồn tại", Toast.LENGTH_SHORT).show();
         }
+        TextView tvNavMap = findViewById(R.id.tvNavMap);
+
+        tvNavMap.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RunningMapActivity.class)));
     }
 }

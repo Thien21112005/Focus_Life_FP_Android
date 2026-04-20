@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_focus_mode"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvMuteStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/bg_status_chip_dark"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="🔕  Thông báo đã tắt"
+        android:textColor="@color/white_70"
+        android:textSize="11sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="24:52" android:textColor="@android:color/white" android:textSize="96sp" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:letterSpacing="0.12" android:text="Phác thảo giao diện cho Linh" android:textAllCaps="true" android:textColor="#99FFFFFF" android:textSize="20sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="28dp"
+        android:orientation="vertical">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="4dp" android:background="#1AFFFFFF">
+            <View android:layout_width="220dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill_primary"/>
+        </FrameLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Kết thúc sớm" android:textColor="#66FFFFFF" android:textSize="12sp"/>
+            <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_status_chip_dark" android:gravity="center" android:text="❚❚" android:textColor="@android:color/white" android:textSize="20sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

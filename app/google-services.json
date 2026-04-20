@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "997531936411",
+    "project_id": "focuslife-eed56",
+    "storage_bucket": "focuslife-eed56.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997531936411:android:2a6d72d81f5e697e44483e",
+        "android_client_info": {
+          "package_name": "com.hcmute.edu.vn.focus_life"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "997531936411-2esacj4m4tqvin5j5tji95a98olo6atf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hcmute.edu.vn.focus_life",
+            "certificate_hash": "6747cd07b0fd2095abf9e77f891ee4fbda8f6f20"
+          }
+        },
+        {
+          "client_id": "997531936411-3qohal553jq71go40k39itlq2h2v9lc9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDREGRJa6Bxi5w9A1MJh3iEA-s5bUp5bkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "997531936411-3qohal553jq71go40k39itlq2h2v9lc9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

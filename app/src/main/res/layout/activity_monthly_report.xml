@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:background="#CCFFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <TextView android:layout_width="40dp" android:layout_height="40dp" android:gravity="center" android:text="←" android:textColor="@color/primary" android:textSize="20sp"/>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Báo cáo tháng 3" android:textColor="@color/on_surface" android:textSize="18sp" android:textStyle="bold"/>
+        </LinearLayout>
+        <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_circle_primary_soft" android:gravity="center" android:text="M" android:textColor="@color/primary" android:textStyle="bold"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="90dp"
+        android:background="@drawable/bg_bottom_nav"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Home" android:textColor="@color/on_surface_variant"/>
+        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:background="@drawable/bg_selected_nav_item" android:gravity="center" android:text="Reports" android:textColor="@color/primary" android:textStyle="bold"/>
+        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Focus" android:textColor="@color/on_surface_variant"/>
+        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Sanctuary" android:textColor="@color/on_surface_variant"/>
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="24dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:background="@drawable/bg_card_surface_low" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="‹ Tháng trước" android:textColor="@color/on_surface_variant" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tháng 3, 2026" android:textColor="@color/on_surface" android:textStyle="bold"/>
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="end" android:text="Tháng sau ›" android:textColor="@color/on_surface_variant" android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😊" android:textSize="42sp"/>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Một tháng tuyệt vời, Minh!" android:textColor="@color/on_surface" android:textSize="30sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Bạn đang đi đúng hướng với các mục tiêu sức khỏe và tập trung." android:textColor="@color/on_surface_variant"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <GridLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:columnCount="2">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_columnSpan="2" android:layout_marginBottom="12dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="20dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FOCUS HOURS" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="42 giờ" android:textColor="@color/primary" android:textSize="38sp" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mục tiêu: 40h" android:textColor="@color/on_surface_variant"/>
+                        </LinearLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="28dp" android:background="@drawable/bg_chip_secondary" android:gravity="center" android:paddingStart="10dp" android:paddingEnd="10dp" android:text="🏆 Vượt mục tiêu" android:textColor="@color/on_secondary_container" android:textSize="10sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Outdoor Distance" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="87 km" android:textColor="@color/on_surface" android:textSize="28sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mục tiêu: 100 km" android:textColor="@color/on_surface_variant" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="24dp" android:layout_marginTop="10dp" android:background="@drawable/bg_card_error_soft" android:gravity="center" android:paddingStart="10dp" android:paddingEnd="10dp" android:text="⚠ Còn thiếu 13 km" android:textColor="@color/error" android:textSize="10sp" android:textStyle="bold"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:layout_marginStart="6dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Habit Completion" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="23/30 ngày" android:textColor="@color/on_surface" android:textSize="28sp" android:textStyle="bold"/>
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center_vertical" android:orientation="horizontal">
+                        <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_secondary_soft" android:gravity="center" android:text="77%" android:textColor="@color/secondary" android:textSize="11sp" android:textStyle="bold"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:text="Khá tốt" android:textColor="@color/on_surface_variant"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </GridLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="SO VỚI THÁNG TRƯỚC" android:textColor="@color/on_surface_variant" android:textSize="10sp" android:textStyle="bold"/>
+            <GridLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:columnCount="2">
+                <LinearLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_columnWeight="1" android:layout_marginEnd="6dp" android:layout_marginBottom="12dp" android:background="@drawable/bg_card_surface_low" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp"><TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Tập trung" android:textColor="@color/on_surface" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+8% ↑" android:textColor="@color/secondary" android:textStyle="bold"/></LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_columnWeight="1" android:layout_marginStart="6dp" android:layout_marginBottom="12dp" android:background="@drawable/bg_card_surface_low" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp"><TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Bước chân" android:textColor="@color/on_surface" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-2% ↓" android:textColor="@color/tertiary" android:textStyle="bold"/></LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_columnWeight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_card_surface_low" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp"><TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Uống nước" android:textColor="@color/on_surface" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+15% ↑" android:textColor="@color/secondary" android:textStyle="bold"/></LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_columnWeight="1" android:layout_marginStart="6dp" android:background="@drawable/bg_card_surface_low" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp"><TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Thói quen" android:textColor="@color/on_surface" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0%" android:textColor="@color/on_surface_variant" android:textStyle="bold"/></LinearLayout>
+            </GridLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✖" android:textColor="@color/error" android:textSize="16sp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:text="Chưa đạt yêu cầu tháng này" android:textColor="@color/on_surface" android:textSize="16sp" android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_card_error_soft" android:orientation="vertical" android:padding="18dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Uống đủ 2L nước" android:textColor="@color/on_surface" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="18/30 ngày" android:textColor="@color/error" android:textStyle="bold"/>
+                </LinearLayout>
+                <FrameLayout android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="12dp" android:background="@drawable/bg_progress_track"><View android:layout_width="190dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill_tertiary"/></FrameLayout>
+                <TextView android:layout_width="match_parent" android:layout_height="42dp" android:layout_marginTop="14dp" android:background="@drawable/bg_surface_outline_round" android:gravity="center" android:text="Đặt lại mục tiêu" android:textColor="@color/error" android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_card_error_soft" android:gravity="center_vertical" android:orientation="horizontal" android:padding="18dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đọc sách 15 phút" android:textColor="@color/on_surface" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hoàn thành 10/30 ngày" android:textColor="@color/on_surface_variant"/>
+                </LinearLayout>
+                <TextView android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="✎" android:textColor="@color/error"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nhật ký hoạt động" android:textColor="@color/on_surface" android:textSize="16sp" android:textStyle="bold"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="■ ■ □ ■ ■ ■ ■" android:textColor="@color/secondary" android:textSize="18sp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="■ ■ ■ ■ ■ ■ □" android:textColor="@color/secondary" android:textSize="18sp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="■ ■ ■ ■ ■ ■ ■" android:textColor="@color/secondary" android:textSize="18sp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="■ ■ ■ ■ ■ ■ ■" android:textColor="@color/secondary" android:textSize="18sp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="■ ■ □ □ □ □ □" android:textColor="@color/outline_variant" android:textSize="18sp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="■ Hoàn thành   ■ 50-99%   ■ &lt;50%   ■ Không hoạt động" android:textColor="@color/on_surface_variant" android:textSize="10sp" android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="26dp" android:background="@drawable/bg_card_primary_container" android:orientation="vertical" android:padding="18dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:layout_width="32dp" android:layout_height="32dp" android:background="#33FFFFFF" android:gravity="center" android:text="🤖" android:textColor="@color/on_primary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:text="AI Focus Coach" android:textColor="#CCFFFFFF" android:textSize="10sp" android:textStyle="bold"/>
+                </LinearLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="“Minh ơi, bạn thường xuyên bỏ lỡ việc đọc sách vào các tối Thứ 3. Hãy thử chuyển sang buổi sáng lúc uống cà phê xem sao nhé?”" android:textColor="@color/on_primary" android:textSize="14sp"/>
+            </LinearLayout>
+
+            <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="26dp" android:background="@drawable/bg_gradient_primary" android:gravity="center" android:text="Chia sẻ báo cáo" android:textColor="@color/on_primary" android:textSize="16sp" android:textStyle="bold"/>
+            <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="12dp" android:layout_marginBottom="18dp" android:background="@drawable/bg_surface_outline_round" android:gravity="center" android:text="Đặt mục tiêu tháng mới" android:textColor="@color/primary" android:textSize="16sp" android:textStyle="bold"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screen_padding">24dp</dimen>
+    <dimen name="screen_padding_large">32dp</dimen>
+    <dimen name="card_radius">24dp</dimen>
+    <dimen name="chip_radius">999dp</dimen>
+</resources>

@@ -8,6 +8,7 @@ public final class Constants {
     public static final String FIRESTORE_DAILY_SUMMARIES = "daily_summaries";
     public static final String FIRESTORE_ACHIEVEMENTS = "achievements";
     public static final String FIRESTORE_MONTHLY_GOALS = "monthly_goals";
+    public static final String FIRESTORE_STEP_RECORDS = "step_records";
 
     public static final String SESSION_TYPE_FOCUS = "focus";
     public static final String SESSION_TYPE_SHORT_BREAK = "short_break";

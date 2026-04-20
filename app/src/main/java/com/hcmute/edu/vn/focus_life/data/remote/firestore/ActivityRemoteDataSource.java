@@ -23,4 +23,12 @@ public class ActivityRemoteDataSource {
                 .document(sessionId)
                 .set(data);
     }
+
+    public void upsertStepRecord(String uid, String recordId, Map<String, Object> data) {
+        firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid)
+                .collection(Constants.FIRESTORE_STEP_RECORDS)
+                .document(recordId)
+                .set(data);
+    }
 }

@@ -63,4 +63,8 @@ dependencies {
     annotationProcessor("androidx.room:room-compiler:2.6.1")
 
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    //Khai báo thư viện mapbox
+    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }

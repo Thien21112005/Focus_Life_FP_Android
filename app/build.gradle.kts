@@ -3,9 +3,16 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+val mapboxToken = providers.gradleProperty("MAPBOX_ACCESS_TOKEN").orElse("").get()
+
 android {
     namespace = "com.hcmute.edu.vn.focus_life"
     compileSdk = 36
+
+    buildFeatures {
+        buildConfig = true
+        resValues = true
+    }
 
     defaultConfig {
         applicationId = "com.hcmute.edu.vn.focus_life"
@@ -14,6 +21,9 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxToken\"")
+        resValue("string", "mapbox_access_token", mapboxToken)
     }
 
     buildTypes {
@@ -64,7 +74,6 @@ dependencies {
 
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    //Khai báo thư viện mapbox
     implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
 }

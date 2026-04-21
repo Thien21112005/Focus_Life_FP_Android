@@ -13,6 +13,7 @@ import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 
 public class OnboardingProfileActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +31,11 @@ public class OnboardingProfileActivity extends AppCompatActivity {
             if (displayName.isEmpty()) {
                 displayName = "Minh";
             }
+
             preferences.setDisplayName(displayName);
-            startActivity(new Intent(this, OnboardingGoalActivity.class));
+
+            startActivity(new Intent(this, OnboardingPermissionsActivity.class));
+            finish();
         });
 
         btnBack.setOnClickListener(v -> finish());

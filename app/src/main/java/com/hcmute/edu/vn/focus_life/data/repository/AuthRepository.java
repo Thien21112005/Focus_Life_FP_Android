@@ -2,8 +2,11 @@ package com.hcmute.edu.vn.focus_life.data.repository;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.core.common.Result;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
@@ -26,6 +29,7 @@ public class AuthRepository {
     private final AppDatabase database;
     private final UserRemoteDataSource userRemoteDataSource;
     private final Activity activity;
+    private final FirebaseStorage storage;
 
     public AuthRepository(Activity activity) {
         this.activity = activity;
@@ -33,6 +37,7 @@ public class AuthRepository {
         this.sessionManager = FocusLifeApp.getInstance().getSessionManager();
         this.database = FocusLifeApp.getInstance().getDatabase();
         this.userRemoteDataSource = new UserRemoteDataSource();
+        this.storage = FirebaseStorage.getInstance();
     }
 
     public void register(String email, String password, UserProfile profile, RepositoryCallback callback) {
@@ -48,10 +53,7 @@ public class AuthRepository {
                     if (profile.createdAt == 0L) profile.createdAt = System.currentTimeMillis();
                     profile.updatedAt = System.currentTimeMillis();
 
-                    if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
-                        new OnboardingPreferences(activity).setDisplayName(profile.displayName);
-                    }
-
+                    applyPendingProfile(profile, user);
                     saveProfile(profile);
                 }
                 callback.onComplete(Result.success(user));
@@ -71,6 +73,7 @@ public class AuthRepository {
                 FirebaseUser user = result.getUser();
                 if (user != null) {
                     sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
+                    syncExistingProfile(user);
                 }
                 callback.onComplete(Result.success(user));
             }
@@ -104,10 +107,7 @@ public class AuthRepository {
                     profile.createdAt = System.currentTimeMillis();
                     profile.updatedAt = System.currentTimeMillis();
 
-                    if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
-                        new OnboardingPreferences(activity).setDisplayName(profile.displayName);
-                    }
-
+                    applyPendingProfile(profile, user);
                     saveProfile(profile);
                 }
                 callback.onComplete(Result.success(user));
@@ -120,7 +120,103 @@ public class AuthRepository {
         });
     }
 
+    private void syncExistingProfile(FirebaseUser user) {
+        userRemoteDataSource.getUser(user.getUid(), new UserRemoteDataSource.UserProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                UserProfile merged = profile != null ? profile : createProfileFromFirebaseUser(user);
+                applyPendingProfile(merged, user);
+                saveProfile(merged);
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                UserProfile fallback = createProfileFromFirebaseUser(user);
+                applyPendingProfile(fallback, user);
+                saveProfile(fallback);
+            }
+        });
+    }
+
+    private UserProfile createProfileFromFirebaseUser(FirebaseUser user) {
+        UserProfile profile = new UserProfile();
+        profile.uid = user.getUid();
+        profile.email = user.getEmail();
+        profile.displayName = user.getDisplayName();
+        profile.phone = user.getPhoneNumber();
+        profile.avatarUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "";
+        profile.primaryGoal = new OnboardingPreferences(activity).getPrimaryGoal();
+        profile.createdAt = System.currentTimeMillis();
+        profile.updatedAt = System.currentTimeMillis();
+        return profile;
+    }
+
+    private void applyPendingProfile(UserProfile profile, FirebaseUser user) {
+        OnboardingPreferences preferences = new OnboardingPreferences(activity);
+
+        String pendingName = preferences.getDisplayName();
+        if (pendingName != null && !pendingName.trim().isEmpty()) {
+            profile.displayName = pendingName.trim();
+            preferences.setDisplayName(profile.displayName);
+        } else if ((profile.displayName == null || profile.displayName.trim().isEmpty())
+                && user != null && user.getDisplayName() != null) {
+            profile.displayName = user.getDisplayName();
+            preferences.setDisplayName(profile.displayName);
+        }
+
+        String pendingGoal = preferences.getPrimaryGoal();
+        if (pendingGoal != null && !pendingGoal.trim().isEmpty()) {
+            profile.primaryGoal = pendingGoal;
+        }
+
+        String avatarSource = preferences.getBestAvatarSource();
+        if (avatarSource != null && !avatarSource.trim().isEmpty()) {
+            profile.avatarUrl = avatarSource;
+        }
+
+        if (profile.avatarUrl != null && profile.avatarUrl.startsWith("http")) {
+            preferences.setAvatarUrl(profile.avatarUrl);
+        }
+        profile.updatedAt = System.currentTimeMillis();
+    }
+
     private void saveProfile(UserProfile profile) {
+        if (profile.avatarUrl != null && profile.avatarUrl.startsWith("content://")) {
+            uploadAvatarThenSave(profile);
+            return;
+        }
+        persistProfile(profile);
+    }
+
+    private void uploadAvatarThenSave(UserProfile profile) {
+        StorageReference avatarRef = storage.getReference()
+                .child("avatars")
+                .child(profile.uid + "_" + System.currentTimeMillis() + ".jpg");
+
+        avatarRef.putFile(Uri.parse(profile.avatarUrl))
+                .addOnSuccessListener(taskSnapshot -> avatarRef.getDownloadUrl()
+                        .addOnSuccessListener(downloadUri -> {
+                            profile.avatarUrl = downloadUri.toString();
+                            persistProfile(profile);
+                        })
+                        .addOnFailureListener(e -> persistProfile(profile)))
+                .addOnFailureListener(e -> persistProfile(profile));
+    }
+
+    private void persistProfile(UserProfile profile) {
+        OnboardingPreferences preferences = new OnboardingPreferences(activity);
+        if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
+            preferences.setDisplayName(profile.displayName);
+        }
+        if (profile.avatarUrl != null && !profile.avatarUrl.trim().isEmpty()) {
+            if (profile.avatarUrl.startsWith("http")) {
+                preferences.setAvatarUrl(profile.avatarUrl);
+                preferences.clearPendingAvatarUri();
+            } else {
+                preferences.setPendingAvatarUri(profile.avatarUrl);
+            }
+        }
+
         Executors.newSingleThreadExecutor().execute(() -> {
             userRemoteDataSource.upsertUser(profile);
 

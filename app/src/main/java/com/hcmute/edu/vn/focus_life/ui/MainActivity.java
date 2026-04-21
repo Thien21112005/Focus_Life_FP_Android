@@ -32,11 +32,12 @@ public class MainActivity extends AppCompatActivity {
         MaterialButton btnStartFocus = findViewById(R.id.btnStartFocus);
 
         String displayName = onboardingPreferences.getDisplayName();
+        String goal = onboardingPreferences.getPrimaryGoal();
         if (tvBrand != null) {
             tvBrand.setText("FocusLife · " + displayName);
         }
         if (etTaskName != null && etTaskName.getText().toString().trim().isEmpty()) {
-            etTaskName.setText("Deep Work cho " + displayName);
+            etTaskName.setText(goal + " cho " + displayName);
         }
 
         btnStartFocus.setOnClickListener(v -> {

@@ -31,7 +31,6 @@ public class RoutePreviewView extends View {
         super(context);
         init();
     }
-
     public RoutePreviewView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();

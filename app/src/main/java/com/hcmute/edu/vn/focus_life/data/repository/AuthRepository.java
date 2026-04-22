@@ -2,15 +2,18 @@ package com.hcmute.edu.vn.focus_life.data.repository;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
+
+import androidx.annotation.Nullable;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.core.common.Result;
+import com.hcmute.edu.vn.focus_life.core.exception.AppExceptionLogger;
+import com.hcmute.edu.vn.focus_life.core.exception.FirebaseExceptionMapper;
+import com.hcmute.edu.vn.focus_life.core.exception.UserFacingException;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SessionManager;
+import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.data.local.entity.ProfileEntity;
 import com.hcmute.edu.vn.focus_life.data.remote.auth.AuthRemoteDataSource;
@@ -29,7 +32,6 @@ public class AuthRepository {
     private final AppDatabase database;
     private final UserRemoteDataSource userRemoteDataSource;
     private final Activity activity;
-    private final FirebaseStorage storage;
 
     public AuthRepository(Activity activity) {
         this.activity = activity;
@@ -37,7 +39,6 @@ public class AuthRepository {
         this.sessionManager = FocusLifeApp.getInstance().getSessionManager();
         this.database = FocusLifeApp.getInstance().getDatabase();
         this.userRemoteDataSource = new UserRemoteDataSource();
-        this.storage = FirebaseStorage.getInstance();
     }
 
     public void register(String email, String password, UserProfile profile, RepositoryCallback callback) {
@@ -45,23 +46,31 @@ public class AuthRepository {
             @Override
             public void onSuccess(com.google.firebase.auth.AuthResult result) {
                 FirebaseUser user = result.getUser();
-                if (user != null) {
-                    sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
-
-                    profile.uid = user.getUid();
-                    profile.email = user.getEmail();
-                    if (profile.createdAt == 0L) profile.createdAt = System.currentTimeMillis();
-                    profile.updatedAt = System.currentTimeMillis();
-
-                    applyPendingProfile(profile, user);
-                    saveProfile(profile);
+                if (user == null) {
+                    callback.onComplete(Result.error(new UserFacingException("Không tạo được người dùng")));
+                    return;
                 }
+
+                sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
+
+                profile.uid = user.getUid();
+                profile.email = user.getEmail();
+                profile.authProvider = UserProfile.PROVIDER_PASSWORD;
+                profile.avatarUrl = Constants.DEFAULT_APP_AVATAR_URL;
+                if (profile.createdAt == 0L) profile.createdAt = System.currentTimeMillis();
+                profile.updatedAt = System.currentTimeMillis();
+
+                if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
+                    new OnboardingPreferences(activity).setDisplayName(profile.displayName);
+                }
+
+                saveProfile(profile);
                 callback.onComplete(Result.success(user));
             }
 
             @Override
             public void onError(Exception e) {
-                callback.onComplete(Result.error(e));
+                callback.onComplete(Result.error(toUserFacingException("register", e)));
             }
         });
     }
@@ -73,14 +82,15 @@ public class AuthRepository {
                 FirebaseUser user = result.getUser();
                 if (user != null) {
                     sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
-                    syncExistingProfile(user);
+                    hydrateProfileAfterLogin(user, callback);
+                } else {
+                    callback.onComplete(Result.success(null));
                 }
-                callback.onComplete(Result.success(user));
             }
 
             @Override
             public void onError(Exception e) {
-                callback.onComplete(Result.error(e));
+                callback.onComplete(Result.error(toUserFacingException("login", e)));
             }
         });
     }
@@ -94,149 +104,166 @@ public class AuthRepository {
             @Override
             public void onSuccess(com.google.firebase.auth.AuthResult result) {
                 FirebaseUser user = result.getUser();
-                if (user != null) {
-                    sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
-
-                    UserProfile profile = new UserProfile();
-                    profile.uid = user.getUid();
-                    profile.email = user.getEmail();
-                    profile.displayName = user.getDisplayName();
-                    profile.phone = user.getPhoneNumber();
-                    profile.avatarUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "";
-                    profile.primaryGoal = new OnboardingPreferences(activity).getPrimaryGoal();
-                    profile.createdAt = System.currentTimeMillis();
-                    profile.updatedAt = System.currentTimeMillis();
-
-                    applyPendingProfile(profile, user);
-                    saveProfile(profile);
+                if (user == null) {
+                    callback.onComplete(Result.error(new UserFacingException("Không lấy được tài khoản Google")));
+                    return;
                 }
+
+                sessionManager.onLoginSuccess(user.getUid(), user.getEmail());
+
+                UserProfile profile = new UserProfile();
+                profile.uid = user.getUid();
+                profile.email = user.getEmail();
+                profile.displayName = user.getDisplayName();
+                profile.phone = user.getPhoneNumber();
+                profile.avatarUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "";
+                profile.primaryGoal = new OnboardingPreferences(activity).getPrimaryGoal();
+                profile.authProvider = UserProfile.PROVIDER_GOOGLE;
+                profile.createdAt = System.currentTimeMillis();
+                profile.updatedAt = System.currentTimeMillis();
+
+                if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
+                    new OnboardingPreferences(activity).setDisplayName(profile.displayName);
+                }
+
+                saveProfile(profile);
                 callback.onComplete(Result.success(user));
             }
 
             @Override
             public void onError(Exception e) {
-                callback.onComplete(Result.error(e));
+                callback.onComplete(Result.error(toUserFacingException("google_sign_in", e)));
             }
         });
     }
 
-    private void syncExistingProfile(FirebaseUser user) {
-        userRemoteDataSource.getUser(user.getUid(), new UserRemoteDataSource.UserProfileCallback() {
-            @Override
-            public void onSuccess(UserProfile profile) {
-                UserProfile merged = profile != null ? profile : createProfileFromFirebaseUser(user);
-                applyPendingProfile(merged, user);
-                saveProfile(merged);
+    private void hydrateProfileAfterLogin(FirebaseUser user, RepositoryCallback callback) {
+        userRemoteDataSource.fetchUser(user.getUid(), remoteProfile -> {
+            UserProfile profileToSave;
+            String provider = guessProvider(user);
+
+            if (remoteProfile != null) {
+                profileToSave = remoteProfile;
+                if (profileToSave.uid == null || profileToSave.uid.trim().isEmpty()) {
+                    profileToSave.uid = user.getUid();
+                }
+                if (profileToSave.email == null || profileToSave.email.trim().isEmpty()) {
+                    profileToSave.email = user.getEmail();
+                }
+                if (profileToSave.displayName == null || profileToSave.displayName.trim().isEmpty()) {
+                    profileToSave.displayName = resolveDisplayName(user, provider);
+                }
+                if (profileToSave.updatedAt == 0L) {
+                    profileToSave.updatedAt = System.currentTimeMillis();
+                }
+                if (profileToSave.createdAt == 0L) {
+                    profileToSave.createdAt = System.currentTimeMillis();
+                }
+            } else {
+                profileToSave = new UserProfile();
+                profileToSave.uid = user.getUid();
+                profileToSave.email = user.getEmail();
+                profileToSave.displayName = resolveDisplayName(user, provider);
+                profileToSave.phone = user.getPhoneNumber();
+                profileToSave.primaryGoal = new OnboardingPreferences(activity).getPrimaryGoal();
+                profileToSave.createdAt = System.currentTimeMillis();
+                profileToSave.updatedAt = System.currentTimeMillis();
+                profileToSave.authProvider = provider;
             }
 
-            @Override
-            public void onError(Exception exception) {
-                UserProfile fallback = createProfileFromFirebaseUser(user);
-                applyPendingProfile(fallback, user);
-                saveProfile(fallback);
+            profileToSave.authProvider = provider;
+            if (UserProfile.PROVIDER_GOOGLE.equals(provider)) {
+                profileToSave.avatarUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "";
+            } else if (profileToSave.avatarUrl == null || profileToSave.avatarUrl.trim().isEmpty()) {
+                profileToSave.avatarUrl = Constants.DEFAULT_APP_AVATAR_URL;
             }
+
+            if (profileToSave.displayName != null && !profileToSave.displayName.trim().isEmpty()) {
+                new OnboardingPreferences(activity).setDisplayName(profileToSave.displayName);
+            }
+
+            saveProfile(profileToSave);
+            callback.onComplete(Result.success(user));
         });
     }
 
-    private UserProfile createProfileFromFirebaseUser(FirebaseUser user) {
-        UserProfile profile = new UserProfile();
-        profile.uid = user.getUid();
-        profile.email = user.getEmail();
-        profile.displayName = user.getDisplayName();
-        profile.phone = user.getPhoneNumber();
-        profile.avatarUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "";
-        profile.primaryGoal = new OnboardingPreferences(activity).getPrimaryGoal();
-        profile.createdAt = System.currentTimeMillis();
-        profile.updatedAt = System.currentTimeMillis();
-        return profile;
+    private UserFacingException toUserFacingException(String scope, Exception e) {
+        AppExceptionLogger.log(scope, e);
+        return new UserFacingException(FirebaseExceptionMapper.toUserMessage(e), e);
     }
 
-    private void applyPendingProfile(UserProfile profile, FirebaseUser user) {
-        OnboardingPreferences preferences = new OnboardingPreferences(activity);
-
-        String pendingName = preferences.getDisplayName();
-        if (pendingName != null && !pendingName.trim().isEmpty()) {
-            profile.displayName = pendingName.trim();
-            preferences.setDisplayName(profile.displayName);
-        } else if ((profile.displayName == null || profile.displayName.trim().isEmpty())
-                && user != null && user.getDisplayName() != null) {
-            profile.displayName = user.getDisplayName();
-            preferences.setDisplayName(profile.displayName);
+    private String resolveDisplayName(FirebaseUser user, String provider) {
+        if (user != null && user.getDisplayName() != null && !user.getDisplayName().trim().isEmpty()) {
+            return user.getDisplayName();
         }
 
-        String pendingGoal = preferences.getPrimaryGoal();
-        if (pendingGoal != null && !pendingGoal.trim().isEmpty()) {
-            profile.primaryGoal = pendingGoal;
+        String onboardingName = new OnboardingPreferences(activity).getDisplayName();
+        if (onboardingName != null && !onboardingName.trim().isEmpty()) {
+            return onboardingName;
         }
 
-        String avatarSource = preferences.getBestAvatarSource();
-        if (avatarSource != null && !avatarSource.trim().isEmpty()) {
-            profile.avatarUrl = avatarSource;
+        if (user != null && user.getEmail() != null && user.getEmail().contains("@")) {
+            return user.getEmail().substring(0, user.getEmail().indexOf('@'));
         }
 
-        if (profile.avatarUrl != null && profile.avatarUrl.startsWith("http")) {
-            preferences.setAvatarUrl(profile.avatarUrl);
+        return UserProfile.PROVIDER_GOOGLE.equals(provider) ? "Google User" : "FocusLife User";
+    }
+
+    private String guessProvider(FirebaseUser user) {
+        if (user != null && user.getProviderData() != null) {
+            for (com.google.firebase.auth.UserInfo info : user.getProviderData()) {
+                if ("google.com".equals(info.getProviderId())) {
+                    return UserProfile.PROVIDER_GOOGLE;
+                }
+            }
         }
-        profile.updatedAt = System.currentTimeMillis();
+        return UserProfile.PROVIDER_PASSWORD;
     }
 
     private void saveProfile(UserProfile profile) {
-        if (profile.avatarUrl != null && profile.avatarUrl.startsWith("content://")) {
-            uploadAvatarThenSave(profile);
-            return;
-        }
-        persistProfile(profile);
-    }
-
-    private void uploadAvatarThenSave(UserProfile profile) {
-        StorageReference avatarRef = storage.getReference()
-                .child("avatars")
-                .child(profile.uid + "_" + System.currentTimeMillis() + ".jpg");
-
-        avatarRef.putFile(Uri.parse(profile.avatarUrl))
-                .addOnSuccessListener(taskSnapshot -> avatarRef.getDownloadUrl()
-                        .addOnSuccessListener(downloadUri -> {
-                            profile.avatarUrl = downloadUri.toString();
-                            persistProfile(profile);
-                        })
-                        .addOnFailureListener(e -> persistProfile(profile)))
-                .addOnFailureListener(e -> persistProfile(profile));
-    }
-
-    private void persistProfile(UserProfile profile) {
-        OnboardingPreferences preferences = new OnboardingPreferences(activity);
-        if (profile.displayName != null && !profile.displayName.trim().isEmpty()) {
-            preferences.setDisplayName(profile.displayName);
-        }
-        if (profile.avatarUrl != null && !profile.avatarUrl.trim().isEmpty()) {
-            if (profile.avatarUrl.startsWith("http")) {
-                preferences.setAvatarUrl(profile.avatarUrl);
-                preferences.clearPendingAvatarUri();
-            } else {
-                preferences.setPendingAvatarUri(profile.avatarUrl);
-            }
-        }
-
         Executors.newSingleThreadExecutor().execute(() -> {
             userRemoteDataSource.upsertUser(profile);
-
-            ProfileEntity entity = new ProfileEntity();
-            entity.uid = profile.uid != null ? profile.uid : "";
-            entity.displayName = profile.displayName;
-            entity.email = profile.email;
-            entity.phone = profile.phone;
-            entity.dateOfBirth = profile.dateOfBirth;
-            entity.gender = profile.gender;
-            entity.heightCm = profile.heightCm;
-            entity.weightKg = profile.weightKg;
-            entity.avatarUrl = profile.avatarUrl;
-            entity.primaryGoal = profile.primaryGoal;
-            entity.createdAt = profile.createdAt;
-            entity.updatedAt = profile.updatedAt;
-            entity.synced = true;
-
-            database.profileDao().upsert(entity);
+            database.profileDao().upsert(toEntity(profile));
         });
+    }
+
+    private ProfileEntity toEntity(UserProfile profile) {
+        ProfileEntity entity = new ProfileEntity();
+        entity.uid = profile.uid != null ? profile.uid : "";
+        entity.displayName = profile.displayName;
+        entity.email = profile.email;
+        entity.phone = profile.phone;
+        entity.dateOfBirth = profile.dateOfBirth;
+        entity.gender = profile.gender;
+        entity.heightCm = profile.heightCm;
+        entity.weightKg = profile.weightKg;
+        entity.avatarUrl = profile.avatarUrl;
+        entity.primaryGoal = profile.primaryGoal;
+        entity.authProvider = profile.authProvider;
+        entity.createdAt = profile.createdAt;
+        entity.updatedAt = profile.updatedAt;
+        entity.synced = true;
+        return entity;
+    }
+
+    public static UserProfile mapEntity(@Nullable ProfileEntity entity) {
+        if (entity == null) return null;
+
+        UserProfile profile = new UserProfile();
+        profile.uid = entity.uid;
+        profile.displayName = entity.displayName;
+        profile.email = entity.email;
+        profile.phone = entity.phone;
+        profile.dateOfBirth = entity.dateOfBirth;
+        profile.gender = entity.gender;
+        profile.heightCm = entity.heightCm;
+        profile.weightKg = entity.weightKg;
+        profile.avatarUrl = entity.avatarUrl;
+        profile.primaryGoal = entity.primaryGoal;
+        profile.authProvider = entity.authProvider;
+        profile.createdAt = entity.createdAt;
+        profile.updatedAt = entity.updatedAt;
+        return profile;
     }
 
     public void logout() {

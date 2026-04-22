@@ -82,13 +82,10 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
     }
 
     private void setupInteractions() {
-        // switch chỉ hiển thị trạng thái thật, không cho bật/tắt giả
         switchHealth.setClickable(false);
         switchHealth.setFocusable(false);
-
         switchLocation.setClickable(false);
         switchLocation.setFocusable(false);
-
         switchNotification.setClickable(false);
         switchNotification.setFocusable(false);
 
@@ -115,8 +112,6 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         }
 
         boolean wasAskedBefore = wasPermissionAskedBefore(type);
-
-        // Nếu Android không hiện popup hệ thống nữa thì chuyển sang Settings
         if (PermissionManager.shouldOpenSettings(this, type, wasAskedBefore)) {
             showOpenSettingsDialog(type);
             return;
@@ -129,7 +124,6 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
 
     private void onPermissionResult(Map<String, Boolean> result) {
         boolean granted = true;
-
         for (Boolean value : result.values()) {
             if (!Boolean.TRUE.equals(value)) {
                 granted = false;
@@ -144,25 +138,12 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         }
 
         String label = getPermissionLabel(pendingPermissionType);
-
         if (granted) {
             Toast.makeText(this, "Đã cho phép " + label, Toast.LENGTH_SHORT).show();
+        } else if (PermissionManager.shouldOpenSettings(this, pendingPermissionType, true)) {
+            showOpenSettingsDialog(pendingPermissionType);
         } else {
-            boolean shouldGoSettings = PermissionManager.shouldOpenSettings(
-                    this,
-                    pendingPermissionType,
-                    true
-            );
-
-            if (shouldGoSettings) {
-                showOpenSettingsDialog(pendingPermissionType);
-            } else {
-                Toast.makeText(
-                        this,
-                        "Bạn chưa cho phép " + label + ", nên công tắc vẫn tắt",
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
+            Toast.makeText(this, "Bạn chưa cho phép " + label + ", nên công tắc vẫn tắt", Toast.LENGTH_SHORT).show();
         }
 
         pendingPermissionType = null;
@@ -191,18 +172,14 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
     }
 
     private void markPermissionAsked(String type) {
-        permissionPrefs.edit()
-                .putBoolean(KEY_ASKED_PREFIX + type, true)
-                .apply();
+        permissionPrefs.edit().putBoolean(KEY_ASKED_PREFIX + type, true).apply();
     }
 
     private void showOpenSettingsDialog(String type) {
         String label = getPermissionLabel(type);
-
         new AlertDialog.Builder(this)
                 .setTitle("Bật quyền trong cài đặt")
-                .setMessage("Android hiện không hiện lại hộp thoại cho " + label +
-                        ". Bạn mở Cài đặt ứng dụng để bật quyền này nhé.")
+                .setMessage("Android hiện không hiện lại hộp thoại cho " + label + ". Bạn mở Cài đặt ứng dụng để bật quyền này nhé.")
                 .setNegativeButton("Để sau", null)
                 .setPositiveButton("Mở cài đặt", (dialog, which) -> openAppSettings())
                 .show();

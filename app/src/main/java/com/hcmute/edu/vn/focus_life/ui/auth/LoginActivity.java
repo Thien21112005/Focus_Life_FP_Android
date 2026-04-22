@@ -3,9 +3,7 @@ package com.hcmute.edu.vn.focus_life.ui.auth;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,9 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -40,7 +36,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String MODE_REGISTER = "register";
 
     private String currentMode = MODE_LOGIN;
-    private String selectedAvatarSource = "";
 
     private AuthViewModel viewModel;
     private AuthRepository repository;
@@ -49,14 +44,11 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton tabRegister;
     private MaterialButton btnPrimary;
     private MaterialButton btnGoogleSignIn;
-    private MaterialButton btnPickAvatar;
 
     private TextView tvAuthTitle;
     private TextView tvAuthSubtitle;
     private TextView tvForgotPassword;
 
-    private View avatarSection;
-    private ShapeableImageView ivAuthAvatar;
     private TextInputLayout inputDisplayName;
     private TextInputLayout inputPhone;
     private TextInputLayout inputDob;
@@ -78,17 +70,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
 
-    private final ActivityResultLauncher<String[]> avatarPickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
-                if (uri == null) return;
-                try {
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                } catch (SecurityException ignored) {
-                }
-                selectedAvatarSource = uri.toString();
-                loadAvatarPreview(selectedAvatarSource);
-            });
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,13 +79,11 @@ public class LoginActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         bindViews();
-        seedOnboardingData();
         setupDatePicker();
         setupGenderDropdown();
 
         tabLogin.setOnClickListener(v -> switchMode(MODE_LOGIN));
         tabRegister.setOnClickListener(v -> switchMode(MODE_REGISTER));
-        btnPickAvatar.setOnClickListener(v -> avatarPickerLauncher.launch(new String[]{"image/*"}));
 
         btnPrimary.setOnClickListener(v -> {
             if (MODE_LOGIN.equals(currentMode)) {
@@ -114,8 +93,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        btnGoogleSignIn.setOnClickListener(v ->
-                googleLauncher.launch(repository.getGoogleSignInIntent()));
+        btnGoogleSignIn.setOnClickListener(v -> googleLauncher.launch(repository.getGoogleSignInIntent()));
 
         tvForgotPassword.setOnClickListener(v ->
                 Toast.makeText(this, "Chức năng quên mật khẩu sẽ làm tiếp sau", Toast.LENGTH_SHORT).show());
@@ -140,10 +118,12 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT
                 ).show();
 
-                startActivity(new Intent(this, MainActivity.class));
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 finishAffinity();
             } else if (result.getError() != null) {
-                Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                showUserFriendlyError(result.getError().getMessage());
             }
         });
     }
@@ -153,14 +133,11 @@ public class LoginActivity extends AppCompatActivity {
         tabRegister = findViewById(R.id.tabRegister);
         btnPrimary = findViewById(R.id.btnPrimary);
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
-        btnPickAvatar = findViewById(R.id.btnPickAuthAvatar);
 
         tvAuthTitle = findViewById(R.id.tvAuthTitle);
         tvAuthSubtitle = findViewById(R.id.tvAuthSubtitle);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
-        avatarSection = findViewById(R.id.authAvatarSection);
-        ivAuthAvatar = findViewById(R.id.ivAuthAvatar);
         inputDisplayName = findViewById(R.id.inputDisplayName);
         inputPhone = findViewById(R.id.inputPhone);
         inputDob = findViewById(R.id.inputDob);
@@ -176,13 +153,6 @@ public class LoginActivity extends AppCompatActivity {
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
     }
 
-    private void seedOnboardingData() {
-        OnboardingPreferences preferences = new OnboardingPreferences(this);
-        edtDisplayName.setText(preferences.getDisplayName());
-        selectedAvatarSource = preferences.getBestAvatarSource();
-        loadAvatarPreview(selectedAvatarSource);
-    }
-
     private void switchMode(String mode) {
         currentMode = mode;
         clearAllErrors();
@@ -192,27 +162,25 @@ public class LoginActivity extends AppCompatActivity {
             tvAuthSubtitle.setText("Chào mừng bạn quay lại FocusLife");
             btnPrimary.setText("Đăng nhập");
 
-            avatarSection.setVisibility(View.GONE);
-            inputDisplayName.setVisibility(View.GONE);
-            inputPhone.setVisibility(View.GONE);
-            inputDob.setVisibility(View.GONE);
-            inputGender.setVisibility(View.GONE);
-            inputConfirmPassword.setVisibility(View.GONE);
-            tvForgotPassword.setVisibility(View.VISIBLE);
+            inputDisplayName.setVisibility(android.view.View.GONE);
+            inputPhone.setVisibility(android.view.View.GONE);
+            inputDob.setVisibility(android.view.View.GONE);
+            inputGender.setVisibility(android.view.View.GONE);
+            inputConfirmPassword.setVisibility(android.view.View.GONE);
+            tvForgotPassword.setVisibility(android.view.View.VISIBLE);
 
             selectTab(tabLogin, tabRegister);
         } else {
             tvAuthTitle.setText("Đăng ký");
-            tvAuthSubtitle.setText("Hoàn thiện tên và ảnh đại diện để lưu thẳng lên hồ sơ của bạn");
+            tvAuthSubtitle.setText("Tạo tài khoản FocusLife nhanh gọn, avatar mặc định sẽ được dùng cho tài khoản thường.");
             btnPrimary.setText("Tạo tài khoản");
 
-            avatarSection.setVisibility(View.VISIBLE);
-            inputDisplayName.setVisibility(View.VISIBLE);
-            inputPhone.setVisibility(View.VISIBLE);
-            inputDob.setVisibility(View.VISIBLE);
-            inputGender.setVisibility(View.VISIBLE);
-            inputConfirmPassword.setVisibility(View.VISIBLE);
-            tvForgotPassword.setVisibility(View.GONE);
+            inputDisplayName.setVisibility(android.view.View.VISIBLE);
+            inputPhone.setVisibility(android.view.View.VISIBLE);
+            inputDob.setVisibility(android.view.View.VISIBLE);
+            inputGender.setVisibility(android.view.View.VISIBLE);
+            inputConfirmPassword.setVisibility(android.view.View.VISIBLE);
+            tvForgotPassword.setVisibility(android.view.View.GONE);
 
             selectTab(tabRegister, tabLogin);
         }
@@ -279,17 +247,13 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        OnboardingPreferences preferences = new OnboardingPreferences(this);
-        preferences.setDisplayName(displayName);
-        preferences.setPendingAvatarUri(selectedAvatarSource);
-
         UserProfile profile = new UserProfile();
         profile.displayName = displayName;
         profile.phone = phone;
         profile.dateOfBirth = dob;
         profile.gender = gender;
-        profile.avatarUrl = selectedAvatarSource;
-        profile.primaryGoal = preferences.getPrimaryGoal();
+        profile.primaryGoal = new OnboardingPreferences(this).getPrimaryGoal();
+        profile.authProvider = UserProfile.PROVIDER_PASSWORD;
         profile.createdAt = System.currentTimeMillis();
         profile.updatedAt = System.currentTimeMillis();
 
@@ -345,30 +309,41 @@ public class LoginActivity extends AppCompatActivity {
                 day
         );
 
-        Calendar maxDate = Calendar.getInstance();
-        dialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
-
-        Calendar minDate = Calendar.getInstance();
-        minDate.set(1950, Calendar.JANUARY, 1);
-        dialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
-
         dialog.show();
     }
 
     private void setupGenderDropdown() {
-        String[] genderOptions = new String[]{"Nam", "Nữ", "Khác"};
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                genderOptions
-        );
-
+        String[] options = new String[]{"Nam", "Nữ", "Khác"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, options);
         edtGender.setAdapter(adapter);
         edtGender.setOnClickListener(v -> edtGender.showDropDown());
-        edtGender.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) edtGender.showDropDown();
-        });
+        edtGender.setOnItemClickListener((parent, view, position, id) -> edtGender.setError(null));
+    }
+
+    private void showUserFriendlyError(String message) {
+        clearAllErrors();
+
+        String safeMessage = message == null || message.trim().isEmpty()
+                ? "Có lỗi xảy ra. Vui lòng thử lại."
+                : message;
+
+        String lower = safeMessage.toLowerCase(Locale.ROOT);
+
+        if (lower.contains("mật khẩu")) {
+            edtPassword.setError(safeMessage);
+        } else if (lower.contains("email")) {
+            edtEmail.setError(safeMessage);
+        } else {
+            Toast.makeText(this, safeMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void selectTab(MaterialButton selected, MaterialButton unselected) {
+        selected.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
+        selected.setTextColor(ContextCompat.getColor(this, R.color.on_primary));
+
+        unselected.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.surface_container_low)));
+        unselected.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
     }
 
     private void clearAllErrors() {
@@ -381,30 +356,7 @@ public class LoginActivity extends AppCompatActivity {
         edtConfirmPassword.setError(null);
     }
 
-    private void selectTab(MaterialButton selected, MaterialButton unselected) {
-        selected.setBackgroundTintList(ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.primary)));
-        selected.setTextColor(ContextCompat.getColor(this, android.R.color.white));
-
-        unselected.setBackgroundTintList(ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.surface_container_low)));
-        unselected.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
-    }
-
-    private String valueOf(TextView textView) {
-        return textView.getText() == null ? "" : textView.getText().toString().trim();
-    }
-
-    private void loadAvatarPreview(String source) {
-        if (source == null || source.trim().isEmpty()) {
-            ivAuthAvatar.setImageResource(R.drawable.ic_launcher_foreground);
-            return;
-        }
-        Glide.with(this)
-                .load(Uri.parse(source))
-                .placeholder(R.drawable.ic_launcher_foreground)
-                .error(R.drawable.ic_launcher_foreground)
-                .centerCrop()
-                .into(ivAuthAvatar);
+    private String valueOf(TextView view) {
+        return view.getText() == null ? "" : view.getText().toString().trim();
     }
 }

@@ -20,7 +20,6 @@ public class PermissionManager {
     public static final String TYPE_NOTIFICATION = "notification";
 
     public static String[] getHealthPermissions() {
-        // ACTIVITY_RECOGNITION chỉ là runtime permission từ Android 10 (API 29)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return new String[]{Manifest.permission.ACTIVITY_RECOGNITION};
         }
@@ -54,6 +53,21 @@ public class PermissionManager {
         }
     }
 
+    public static String[] getOnboardingPermissions() {
+        List<String> permissions = new ArrayList<>();
+        addAll(permissions, getHealthPermissions());
+        addAll(permissions, getLocationPermissions());
+        addAll(permissions, getNotificationPermissions());
+        return permissions.toArray(new String[0]);
+    }
+
+    private static void addAll(List<String> target, String[] items) {
+        if (items == null) return;
+        for (String item : items) {
+            target.add(item);
+        }
+    }
+
     public static boolean hasPermission(Context context, String permission) {
         return ContextCompat.checkSelfPermission(context, permission)
                 == PackageManager.PERMISSION_GRANTED;
@@ -76,6 +90,16 @@ public class PermissionManager {
         return hasPermissions(context, getPermissionsForType(type));
     }
 
+    public static boolean hasAllOnboardingPermissions(Context context) {
+        return hasPermissions(context, getOnboardingPermissions());
+    }
+
+    public static void requestOnboardingPermissions(ActivityResultLauncher<String[]> launcher) {
+        if (launcher != null) {
+            launcher.launch(getOnboardingPermissions());
+        }
+    }
+
     public static void requestPermissionType(ActivityResultLauncher<String[]> launcher, String type) {
         if (launcher == null) return;
 
@@ -83,18 +107,6 @@ public class PermissionManager {
         if (permissions.length > 0) {
             launcher.launch(permissions);
         }
-    }
-
-    public static boolean shouldShowPermissionRationale(Activity activity, String type) {
-        String[] permissions = getPermissionsForType(type);
-        if (permissions.length == 0) return false;
-
-        for (String permission : permissions) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static boolean shouldOpenSettings(Activity activity, String type, boolean wasAskedBefore) {
@@ -111,27 +123,6 @@ public class PermissionManager {
                 return true;
             }
         }
-
         return false;
-    }
-
-    public static String[] getOnboardingPermissions() {
-        List<String> permissions = new ArrayList<>();
-
-        for (String permission : getHealthPermissions()) {
-            permissions.add(permission);
-        }
-        for (String permission : getLocationPermissions()) {
-            permissions.add(permission);
-        }
-        for (String permission : getNotificationPermissions()) {
-            permissions.add(permission);
-        }
-
-        return permissions.toArray(new String[0]);
-    }
-
-    public static boolean hasAllOnboardingPermissions(Context context) {
-        return hasPermissions(context, getOnboardingPermissions());
     }
 }

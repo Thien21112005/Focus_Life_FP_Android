@@ -16,19 +16,17 @@ import com.hcmute.edu.vn.focus_life.ui.auth.LoginActivity;
 import com.hcmute.edu.vn.focus_life.ui.onboarding.OnboardingGoalActivity;
 
 public class SplashActivity extends AppCompatActivity {
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        new Handler(Looper.getMainLooper()).postDelayed(this::routeNext, 2000L);
+        new Handler(Looper.getMainLooper()).postDelayed(this::routeNext, 1200L);
     }
 
     private void routeNext() {
         OnboardingPreferences onboardingPreferences = new OnboardingPreferences(this);
         Intent intent;
-
         if (!onboardingPreferences.isCompleted()) {
             intent = new Intent(this, OnboardingGoalActivity.class);
         } else if (FocusLifeApp.getInstance().getSessionManager().isUserLoggedIn()) {
@@ -36,7 +34,6 @@ public class SplashActivity extends AppCompatActivity {
         } else {
             intent = new Intent(this, LoginActivity.class);
         }
-
         startActivity(intent);
         finish();
     }

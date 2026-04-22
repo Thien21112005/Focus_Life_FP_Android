@@ -1,5 +1,7 @@
 package com.hcmute.edu.vn.focus_life.data.remote.firestore;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
@@ -9,14 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserRemoteDataSource {
-    public interface UserProfileCallback {
-        void onSuccess(UserProfile profile);
-        void onError(Exception exception);
+    public interface UserCallback {
+        void onLoaded(@Nullable UserProfile profile);
     }
 
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     public void upsertUser(UserProfile profile) {
+        if (profile == null || profile.uid == null || profile.uid.trim().isEmpty()) {
+            return;
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("displayName", profile.displayName);
         data.put("email", profile.email);
@@ -27,6 +32,7 @@ public class UserRemoteDataSource {
         data.put("weightKg", profile.weightKg);
         data.put("avatarUrl", profile.avatarUrl);
         data.put("primaryGoal", profile.primaryGoal);
+        data.put("authProvider", profile.authProvider);
         data.put("createdAt", profile.createdAt);
         data.put("updatedAt", profile.updatedAt);
 
@@ -35,20 +41,27 @@ public class UserRemoteDataSource {
                 .set(data);
     }
 
-    public void getUser(String uid, UserProfileCallback callback) {
+    public void fetchUser(String uid, UserCallback callback) {
+        if (uid == null || uid.trim().isEmpty()) {
+            callback.onLoaded(null);
+            return;
+        }
+
         firestore.collection(Constants.FIRESTORE_USERS)
                 .document(uid)
                 .get()
-                .addOnSuccessListener(snapshot -> callback.onSuccess(mapSnapshotToProfile(uid, snapshot)))
-                .addOnFailureListener(callback::onError);
+                .addOnSuccessListener(snapshot -> callback.onLoaded(mapSnapshot(snapshot)))
+                .addOnFailureListener(error -> callback.onLoaded(null));
     }
 
-    private UserProfile mapSnapshotToProfile(String uid, DocumentSnapshot snapshot) {
+    @Nullable
+    private UserProfile mapSnapshot(DocumentSnapshot snapshot) {
         if (snapshot == null || !snapshot.exists()) {
             return null;
         }
+
         UserProfile profile = new UserProfile();
-        profile.uid = uid;
+        profile.uid = snapshot.getId();
         profile.displayName = snapshot.getString("displayName");
         profile.email = snapshot.getString("email");
         profile.phone = snapshot.getString("phone");
@@ -56,15 +69,17 @@ public class UserRemoteDataSource {
         profile.gender = snapshot.getString("gender");
         profile.avatarUrl = snapshot.getString("avatarUrl");
         profile.primaryGoal = snapshot.getString("primaryGoal");
+        profile.authProvider = snapshot.getString("authProvider");
 
-        Number height = snapshot.getDouble("heightCm");
-        if (height != null) profile.heightCm = height.floatValue();
-        Number weight = snapshot.getDouble("weightKg");
-        if (weight != null) profile.weightKg = weight.floatValue();
-        Number createdAt = snapshot.getLong("createdAt");
-        if (createdAt != null) profile.createdAt = createdAt.longValue();
-        Number updatedAt = snapshot.getLong("updatedAt");
-        if (updatedAt != null) profile.updatedAt = updatedAt.longValue();
+        Double height = snapshot.getDouble("heightCm");
+        Double weight = snapshot.getDouble("weightKg");
+        Long createdAt = snapshot.getLong("createdAt");
+        Long updatedAt = snapshot.getLong("updatedAt");
+
+        profile.heightCm = height == null ? 0f : height.floatValue();
+        profile.weightKg = weight == null ? 0f : weight.floatValue();
+        profile.createdAt = createdAt == null ? 0L : createdAt;
+        profile.updatedAt = updatedAt == null ? 0L : updatedAt;
 
         return profile;
     }

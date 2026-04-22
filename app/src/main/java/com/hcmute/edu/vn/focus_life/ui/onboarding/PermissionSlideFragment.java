@@ -29,26 +29,17 @@ public class PermissionSlideFragment extends Fragment {
     private LinearLayout cardPermissionHealth;
     private LinearLayout cardPermissionLocation;
     private LinearLayout cardPermissionNotification;
-
     private Switch switchHealth;
     private Switch switchLocation;
     private Switch switchNotification;
-
-    private MaterialButton btnContinue;
-    private TextView btnSkip;
-
-    private String pendingPermissionType = null;
+    private String pendingPermissionType;
 
     private final ActivityResultLauncher<String[]> permissionLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.RequestMultiplePermissions(),
-                    this::onPermissionResult
-            );
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::onPermissionResult);
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.activity_onboarding_permissions, container, false);
     }
@@ -60,15 +51,23 @@ public class PermissionSlideFragment extends Fragment {
         cardPermissionHealth = view.findViewById(R.id.cardPermissionHealth);
         cardPermissionLocation = view.findViewById(R.id.cardPermissionLocation);
         cardPermissionNotification = view.findViewById(R.id.cardPermissionNotification);
-
         switchHealth = view.findViewById(R.id.switchHealth);
         switchLocation = view.findViewById(R.id.switchLocation);
         switchNotification = view.findViewById(R.id.switchNotification);
+        MaterialButton btnContinue = view.findViewById(R.id.btnPermissionContinue);
+        TextView btnSkip = view.findViewById(R.id.btnSkip);
 
-        btnContinue = view.findViewById(R.id.btnPermissionContinue);
-        btnSkip = view.findViewById(R.id.btnSkip);
+        switchHealth.setClickable(false);
+        switchLocation.setClickable(false);
+        switchNotification.setClickable(false);
 
-        setupInteractions();
+        cardPermissionHealth.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_HEALTH));
+        cardPermissionLocation.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_LOCATION));
+        cardPermissionNotification.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_NOTIFICATION));
+
+        btnContinue.setOnClickListener(v -> completeOnboarding());
+        btnSkip.setOnClickListener(v -> completeOnboarding());
+
         syncPermissionStates();
     }
 
@@ -78,62 +77,19 @@ public class PermissionSlideFragment extends Fragment {
         syncPermissionStates();
     }
 
-    private void setupInteractions() {
-        // Switch chỉ hiển thị trạng thái thật, không cho tự toggle giả
-        switchHealth.setClickable(false);
-        switchHealth.setFocusable(false);
-
-        switchLocation.setClickable(false);
-        switchLocation.setFocusable(false);
-
-        switchNotification.setClickable(false);
-        switchNotification.setFocusable(false);
-
-        cardPermissionHealth.setOnClickListener(v ->
-                requestPermission(PermissionManager.TYPE_HEALTH));
-
-        cardPermissionLocation.setOnClickListener(v ->
-                requestPermission(PermissionManager.TYPE_LOCATION));
-
-        cardPermissionNotification.setOnClickListener(v ->
-                requestPermission(PermissionManager.TYPE_NOTIFICATION));
-
-        btnContinue.setOnClickListener(v -> completeOnboarding());
-        btnSkip.setOnClickListener(v -> completeOnboarding());
-    }
-
     private void requestPermission(String type) {
-        if (getContext() == null) return;
-
-        boolean alreadyGranted = PermissionManager.hasPermissionType(requireContext(), type);
-        if (alreadyGranted) {
-            Toast.makeText(
-                    requireContext(),
-                    "Quyền này đã được cấp rồi",
-                    Toast.LENGTH_SHORT
-            ).show();
-            syncPermissionStates();
-            return;
-        }
-
-        String[] permissions = PermissionManager.getPermissionsForType(type);
-        if (permissions == null || permissions.length == 0) {
-            Toast.makeText(
-                    requireContext(),
-                    "Thiết bị này không cần xin quyền này",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (PermissionManager.hasPermissionType(requireContext(), type)) {
+            Toast.makeText(requireContext(), "Quyền này đã được cấp rồi", Toast.LENGTH_SHORT).show();
             syncPermissionStates();
             return;
         }
 
         pendingPermissionType = type;
-        permissionLauncher.launch(permissions);
+        PermissionManager.requestPermissionType(permissionLauncher, type);
     }
 
     private void onPermissionResult(Map<String, Boolean> result) {
         boolean granted = true;
-
         for (Boolean value : result.values()) {
             if (!Boolean.TRUE.equals(value)) {
                 granted = false;
@@ -142,73 +98,29 @@ public class PermissionSlideFragment extends Fragment {
         }
 
         syncPermissionStates();
-
-        if (pendingPermissionType == null || getContext() == null) {
-            return;
+        if (pendingPermissionType != null) {
+            Toast.makeText(requireContext(), granted ? "Đã cấp quyền" : "Bạn có thể cấp quyền sau trong cài đặt", Toast.LENGTH_SHORT).show();
+            pendingPermissionType = null;
         }
-
-        String label = getPermissionLabel(pendingPermissionType);
-
-        if (granted) {
-            Toast.makeText(
-                    requireContext(),
-                    "Đã cho phép " + label,
-                    Toast.LENGTH_SHORT
-            ).show();
-        } else {
-            Toast.makeText(
-                    requireContext(),
-                    "Bạn chưa cho phép " + label + ", nên công tắc vẫn tắt",
-                    Toast.LENGTH_SHORT
-            ).show();
-        }
-
-        pendingPermissionType = null;
     }
 
     private void syncPermissionStates() {
         if (getContext() == null) return;
 
-        boolean healthGranted = PermissionManager.hasPermissionType(
-                requireContext(), PermissionManager.TYPE_HEALTH
-        );
-        boolean locationGranted = PermissionManager.hasPermissionType(
-                requireContext(), PermissionManager.TYPE_LOCATION
-        );
-        boolean notificationGranted = PermissionManager.hasPermissionType(
-                requireContext(), PermissionManager.TYPE_NOTIFICATION
-        );
+        boolean healthGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_HEALTH);
+        boolean locationGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_LOCATION);
+        boolean notificationGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_NOTIFICATION);
 
         switchHealth.setChecked(healthGranted);
         switchLocation.setChecked(locationGranted);
         switchNotification.setChecked(notificationGranted);
 
-        updateCardState(cardPermissionHealth, healthGranted);
-        updateCardState(cardPermissionLocation, locationGranted);
-        updateCardState(cardPermissionNotification, notificationGranted);
-    }
-
-    private void updateCardState(View card, boolean granted) {
-        if (card == null) return;
-        card.setAlpha(granted ? 1f : 0.94f);
-    }
-
-    private String getPermissionLabel(String type) {
-        switch (type) {
-            case PermissionManager.TYPE_HEALTH:
-                return "quyền dữ liệu sức khỏe";
-            case PermissionManager.TYPE_LOCATION:
-                return "quyền vị trí";
-            case PermissionManager.TYPE_NOTIFICATION:
-                return "quyền thông báo";
-            default:
-                return "quyền truy cập";
-        }
+        cardPermissionHealth.setAlpha(healthGranted ? 1f : 0.95f);
+        cardPermissionLocation.setAlpha(locationGranted ? 1f : 0.95f);
+        cardPermissionNotification.setAlpha(notificationGranted ? 1f : 0.95f);
     }
 
     private void completeOnboarding() {
-        if (getContext() == null || getActivity() == null) return;
-
         new OnboardingPreferences(requireContext()).setCompleted(true);
         startActivity(new Intent(requireContext(), LoginActivity.class));
         requireActivity().finishAffinity();

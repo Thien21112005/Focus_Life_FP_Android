@@ -1,6 +1,9 @@
 package com.hcmute.edu.vn.focus_life.domain.model;
 
 public class UserProfile {
+    public static final String PROVIDER_PASSWORD = "password";
+    public static final String PROVIDER_GOOGLE = "google";
+
     public String uid;
     public String displayName;
     public String email;
@@ -11,8 +14,12 @@ public class UserProfile {
     public float weightKg;
     public String avatarUrl;
     public String primaryGoal;
+    public String authProvider;
     public long createdAt;
     public long updatedAt;
+
+    // Chỉ dùng tạm lúc đăng ký / đổi avatar, không lưu vào DB
+    public String pendingAvatarUri;
 
     public UserProfile() {}
 
@@ -26,6 +33,7 @@ public class UserProfile {
                        float weightKg,
                        String avatarUrl,
                        String primaryGoal,
+                       String authProvider,
                        long createdAt,
                        long updatedAt) {
         this.uid = uid;
@@ -38,6 +46,7 @@ public class UserProfile {
         this.weightKg = weightKg;
         this.avatarUrl = avatarUrl;
         this.primaryGoal = primaryGoal;
+        this.authProvider = authProvider;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }

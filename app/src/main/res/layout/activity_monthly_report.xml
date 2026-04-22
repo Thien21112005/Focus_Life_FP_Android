@@ -24,28 +24,14 @@
         <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_circle_primary_soft" android:gravity="center" android:text="M" android:textColor="@color/primary" android:textStyle="bold"/>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/bottomNav"
-        android:layout_width="0dp"
-        android:layout_height="90dp"
-        android:background="@drawable/bg_bottom_nav"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Home" android:textColor="@color/on_surface_variant"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:background="@drawable/bg_selected_nav_item" android:gravity="center" android:text="Reports" android:textColor="@color/primary" android:textStyle="bold"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Focus" android:textColor="@color/on_surface_variant"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Sanctuary" android:textColor="@color/on_surface_variant"/>
-    </LinearLayout>
+    
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/topBar"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 

@@ -13,7 +13,7 @@ import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.ui.MainActivity;
 import com.hcmute.edu.vn.focus_life.ui.auth.LoginActivity;
-import com.hcmute.edu.vn.focus_life.ui.onboarding.OnboardingProfileActivity;
+import com.hcmute.edu.vn.focus_life.ui.onboarding.OnboardingGoalActivity;
 
 public class SplashActivity extends AppCompatActivity {
     @Override
@@ -28,7 +28,7 @@ public class SplashActivity extends AppCompatActivity {
         OnboardingPreferences onboardingPreferences = new OnboardingPreferences(this);
         Intent intent;
         if (!onboardingPreferences.isCompleted()) {
-            intent = new Intent(this, OnboardingProfileActivity.class);
+            intent = new Intent(this, OnboardingGoalActivity.class);
         } else if (FocusLifeApp.getInstance().getSessionManager().isUserLoggedIn()) {
             intent = new Intent(this, MainActivity.class);
         } else {

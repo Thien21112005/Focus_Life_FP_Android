@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,8 +93,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        btnGoogleSignIn.setOnClickListener(v ->
-                googleLauncher.launch(repository.getGoogleSignInIntent()));
+        btnGoogleSignIn.setOnClickListener(v -> googleLauncher.launch(repository.getGoogleSignInIntent()));
 
         tvForgotPassword.setOnClickListener(v ->
                 Toast.makeText(this, "Chức năng quên mật khẩu sẽ làm tiếp sau", Toast.LENGTH_SHORT).show());
@@ -120,10 +118,12 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT
                 ).show();
 
-                startActivity(new Intent(this, MainActivity.class));
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 finishAffinity();
             } else if (result.getError() != null) {
-                Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                showUserFriendlyError(result.getError().getMessage());
             }
         });
     }
@@ -162,25 +162,25 @@ public class LoginActivity extends AppCompatActivity {
             tvAuthSubtitle.setText("Chào mừng bạn quay lại FocusLife");
             btnPrimary.setText("Đăng nhập");
 
-            inputDisplayName.setVisibility(View.GONE);
-            inputPhone.setVisibility(View.GONE);
-            inputDob.setVisibility(View.GONE);
-            inputGender.setVisibility(View.GONE);
-            inputConfirmPassword.setVisibility(View.GONE);
-            tvForgotPassword.setVisibility(View.VISIBLE);
+            inputDisplayName.setVisibility(android.view.View.GONE);
+            inputPhone.setVisibility(android.view.View.GONE);
+            inputDob.setVisibility(android.view.View.GONE);
+            inputGender.setVisibility(android.view.View.GONE);
+            inputConfirmPassword.setVisibility(android.view.View.GONE);
+            tvForgotPassword.setVisibility(android.view.View.VISIBLE);
 
             selectTab(tabLogin, tabRegister);
         } else {
             tvAuthTitle.setText("Đăng ký");
-            tvAuthSubtitle.setText("Tạo tài khoản mới với nhiều thông tin hơn");
+            tvAuthSubtitle.setText("Tạo tài khoản FocusLife nhanh gọn, avatar mặc định sẽ được dùng cho tài khoản thường.");
             btnPrimary.setText("Tạo tài khoản");
 
-            inputDisplayName.setVisibility(View.VISIBLE);
-            inputPhone.setVisibility(View.VISIBLE);
-            inputDob.setVisibility(View.VISIBLE);
-            inputGender.setVisibility(View.VISIBLE);
-            inputConfirmPassword.setVisibility(View.VISIBLE);
-            tvForgotPassword.setVisibility(View.GONE);
+            inputDisplayName.setVisibility(android.view.View.VISIBLE);
+            inputPhone.setVisibility(android.view.View.VISIBLE);
+            inputDob.setVisibility(android.view.View.VISIBLE);
+            inputGender.setVisibility(android.view.View.VISIBLE);
+            inputConfirmPassword.setVisibility(android.view.View.VISIBLE);
+            tvForgotPassword.setVisibility(android.view.View.GONE);
 
             selectTab(tabRegister, tabLogin);
         }
@@ -253,6 +253,7 @@ public class LoginActivity extends AppCompatActivity {
         profile.dateOfBirth = dob;
         profile.gender = gender;
         profile.primaryGoal = new OnboardingPreferences(this).getPrimaryGoal();
+        profile.authProvider = UserProfile.PROVIDER_PASSWORD;
         profile.createdAt = System.currentTimeMillis();
         profile.updatedAt = System.currentTimeMillis();
 
@@ -308,30 +309,41 @@ public class LoginActivity extends AppCompatActivity {
                 day
         );
 
-        Calendar maxDate = Calendar.getInstance();
-        dialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
-
-        Calendar minDate = Calendar.getInstance();
-        minDate.set(1950, Calendar.JANUARY, 1);
-        dialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
-
         dialog.show();
     }
 
     private void setupGenderDropdown() {
-        String[] genderOptions = new String[]{"Nam", "Nữ", "Khác"};
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                genderOptions
-        );
-
+        String[] options = new String[]{"Nam", "Nữ", "Khác"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, options);
         edtGender.setAdapter(adapter);
         edtGender.setOnClickListener(v -> edtGender.showDropDown());
-        edtGender.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) edtGender.showDropDown();
-        });
+        edtGender.setOnItemClickListener((parent, view, position, id) -> edtGender.setError(null));
+    }
+
+    private void showUserFriendlyError(String message) {
+        clearAllErrors();
+
+        String safeMessage = message == null || message.trim().isEmpty()
+                ? "Có lỗi xảy ra. Vui lòng thử lại."
+                : message;
+
+        String lower = safeMessage.toLowerCase(Locale.ROOT);
+
+        if (lower.contains("mật khẩu")) {
+            edtPassword.setError(safeMessage);
+        } else if (lower.contains("email")) {
+            edtEmail.setError(safeMessage);
+        } else {
+            Toast.makeText(this, safeMessage, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void selectTab(MaterialButton selected, MaterialButton unselected) {
+        selected.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
+        selected.setTextColor(ContextCompat.getColor(this, R.color.on_primary));
+
+        unselected.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.surface_container_low)));
+        unselected.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
     }
 
     private void clearAllErrors() {
@@ -344,17 +356,7 @@ public class LoginActivity extends AppCompatActivity {
         edtConfirmPassword.setError(null);
     }
 
-    private void selectTab(MaterialButton selected, MaterialButton unselected) {
-        selected.setBackgroundTintList(ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.primary)));
-        selected.setTextColor(ContextCompat.getColor(this, android.R.color.white));
-
-        unselected.setBackgroundTintList(ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.surface_container_low)));
-        unselected.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
-    }
-
-    private String valueOf(TextView textView) {
-        return textView.getText() == null ? "" : textView.getText().toString().trim();
+    private String valueOf(TextView view) {
+        return view.getText() == null ? "" : view.getText().toString().trim();
     }
 }

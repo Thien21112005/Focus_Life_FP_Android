@@ -19,6 +19,7 @@ public class ProfileEntity {
     public float weightKg;
     public String avatarUrl;
     public String primaryGoal;
+    public String authProvider;
 
     public long createdAt;
     public long updatedAt;

@@ -22,28 +22,14 @@
         <TextView android:layout_width="40dp" android:layout_height="40dp" android:gravity="center" android:text="⚙" android:textColor="@color/on_surface"/>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/bottomNav"
-        android:layout_width="0dp"
-        android:layout_height="90dp"
-        android:background="@drawable/bg_bottom_nav"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Home" android:textColor="@color/on_surface_variant"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Focus" android:textColor="@color/on_surface_variant"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:background="@drawable/bg_gradient_primary" android:gravity="center" android:text="Medals" android:textColor="@color/on_primary" android:textStyle="bold"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Profile" android:textColor="@color/on_surface_variant"/>
-    </LinearLayout>
+    
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/topBar"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 

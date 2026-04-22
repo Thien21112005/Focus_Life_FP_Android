@@ -5,154 +5,50 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <LinearLayout
-        android:id="@+id/statusBar"
-        android:layout_width="0dp"
-        android:layout_height="28dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="10:45" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="WiFi 12%" android:textColor="@color/on_surface" android:textSize="11sp"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/topBar"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/bg_glass_panel"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statusBar">
-        <TextView android:id="@+id/tvHomeBrand" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="FocusLife" android:textColor="@color/primary" android:textSize="24sp" android:textStyle="bold"/>
-        <TextView android:layout_width="40dp" android:layout_height="40dp" android:gravity="center" android:text="🔔" android:textColor="@color/primary" android:textSize="18sp"/>
-    </LinearLayout>
-
-    <androidx.core.widget.NestedScrollView
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/mainContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        android:paddingBottom="120dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+        app:layout_constraintBottom_toTopOf="@+id/navShell"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/topBar">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="24dp"
-            android:paddingEnd="24dp"
-            android:paddingBottom="24dp">
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chào buổi sáng, Minh 👋" android:textColor="@color/on_surface" android:textSize="30sp" android:textStyle="bold"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="28dp" android:layout_marginStart="12dp" android:background="@drawable/bg_chip_selected" android:gravity="center" android:paddingStart="10dp" android:paddingEnd="10dp" android:text="🔥 12 DAYS" android:textColor="@color/secondary" android:textSize="10sp" android:textStyle="bold"/>
-            </LinearLayout>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Thứ Tư, 22 tháng 5, 2024" android:textColor="@color/on_surface_variant" android:textSize="14sp"/>
-
-            <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:scrollbars="none">
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <LinearLayout android:layout_width="136dp" android:layout_height="wrap_content" android:layout_marginEnd="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="16dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="STEPS" android:textColor="@color/outline" android:textSize="10sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="6,240" android:textColor="@color/on_surface" android:textSize="22sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="/ 10,000" android:textColor="@color/on_surface_variant" android:textSize="10sp"/>
-                    </LinearLayout>
-                    <LinearLayout android:layout_width="136dp" android:layout_height="wrap_content" android:layout_marginEnd="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="16dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FOCUS" android:textColor="@color/outline" android:textSize="10sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="2h 15m" android:textColor="@color/on_surface" android:textSize="22sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hôm nay" android:textColor="@color/on_surface_variant" android:textSize="10sp"/>
-                    </LinearLayout>
-                    <LinearLayout android:layout_width="136dp" android:layout_height="wrap_content" android:layout_marginEnd="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="16dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="WATER" android:textColor="@color/outline" android:textSize="10sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="5/8" android:textColor="@color/on_surface" android:textSize="22sp" android:textStyle="bold"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ly nước" android:textColor="@color/on_surface_variant" android:textSize="10sp"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:background="@drawable/bg_gradient_primary" android:orientation="vertical" android:padding="28dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sẵn sàng tập trung?" android:textColor="@color/on_primary" android:textSize="28sp" android:textStyle="bold"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Thiết lập phiên làm việc sâu tiếp theo của bạn." android:textColor="#CCFFFFFF" android:textSize="14sp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:text="TÊN NHIỆM VỤ" android:textColor="#99FFFFFF" android:textSize="10sp" android:textStyle="bold"/>
-                <EditText android:id="@+id/etTaskName" android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input_dark" android:hint="Bạn đang làm gì?" android:paddingStart="18dp" android:paddingEnd="18dp" android:textColor="@color/on_primary" android:textColorHint="#80FFFFFF"/>
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:gravity="center_vertical" android:orientation="horizontal">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1" android:background="@drawable/bg_input_dark" android:gravity="center" android:orientation="horizontal">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⏱  25:00  ▾" android:textColor="@color/on_primary" android:textSize="18sp" android:textStyle="bold"/>
-                    </LinearLayout>
-                    <com.google.android.material.button.MaterialButton android:id="@+id/btnStartFocus" android:layout_width="wrap_content" android:layout_height="52dp" android:layout_marginStart="14dp" android:background="@drawable/bg_card_white" android:text="Bắt đầu phiên Focus" android:textAllCaps="false" android:textColor="@color/primary" android:textStyle="bold"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:background="@drawable/bg_card_surface_high" android:gravity="center_vertical" android:orientation="horizontal" android:padding="18dp">
-                <TextView android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_circle_primary_soft" android:gravity="center" android:text="AI" android:textColor="@color/primary" android:textStyle="bold"/>
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="AI COACH INSIGHT" android:textColor="@color/primary" android:textSize="10sp" android:textStyle="bold"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Minh ơi, bạn đang thiếu 3 ly nước để đạt mục tiêu. Uống một ngụm nước trước khi bắt đầu focus nhé!" android:textColor="@color/on_surface" android:textSize="14sp"/>
-                </LinearLayout>
-                <TextView android:layout_width="44dp" android:layout_height="44dp" android:background="@drawable/bg_circle_primary" android:gravity="center" android:text="💬" android:textColor="@color/on_primary"/>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:gravity="center_vertical" android:orientation="horizontal">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Thói quen hôm nay" android:textColor="@color/on_surface" android:textSize="22sp" android:textStyle="bold"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Xem tất cả thói quen" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold"/>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:background="@drawable/bg_card_white" android:gravity="center_vertical" android:orientation="horizontal" android:padding="16dp">
-                <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_secondary_soft" android:gravity="center" android:text="📚"/>
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đọc sách 30 phút" android:textColor="@color/on_surface" android:textStyle="bold"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="🔥 8 Ngày liên tiếp" android:textColor="@color/outline" android:textSize="10sp"/>
-                </LinearLayout>
-                <TextView android:layout_width="30dp" android:layout_height="30dp" android:gravity="center" android:text="○" android:textColor="@color/secondary"/>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/bg_card_white" android:gravity="center_vertical" android:orientation="horizontal" android:padding="16dp">
-                <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_tertiary_soft" android:gravity="center" android:text="🏋"/>
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tập thể dục buổi sáng" android:textColor="@color/on_surface" android:textStyle="bold"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="🔥 12 Ngày liên tiếp" android:textColor="@color/outline" android:textSize="10sp"/>
-                </LinearLayout>
-                <TextView android:layout_width="30dp" android:layout_height="30dp" android:background="@drawable/bg_circle_secondary_soft" android:gravity="center" android:text="✓" android:textColor="@color/secondary" android:textStyle="bold"/>
-            </LinearLayout>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <LinearLayout
-        android:id="@+id/bottomNav"
+    <HorizontalScrollView
+        android:id="@+id/navShell"
         android:layout_width="0dp"
-        android:layout_height="88dp"
+        android:layout_height="92dp"
         android:background="@drawable/bg_bottom_nav"
-        android:gravity="center"
-        android:orientation="horizontal"
+        android:fillViewport="false"
+        android:overScrollMode="never"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:background="@drawable/bg_selected_nav_item" android:gravity="center" android:text="Home" android:textColor="@color/primary" android:textStyle="bold"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Health" android:textColor="@color/on_surface_variant"/>
-        <TextView android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Focus" android:textColor="@color/on_surface_variant"/>
-        <TextView
-            android:id="@+id/tvNavMap"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Map"
-            android:textColor="@color/on_surface_variant" />
-        <TextView android:id="@+id/tvNavProfile" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:text="Profile" android:textColor="@color/on_surface_variant"/>
-    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottomNav"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
+
+            <TextView android:id="@+id/tvNavHome" style="@style/FocusLife.BottomNavItem" android:text="Home" />
+            <TextView android:id="@+id/tvNavHealth" style="@style/FocusLife.BottomNavItem" android:text="Health" />
+            <TextView android:id="@+id/tvNavFocus" style="@style/FocusLife.BottomNavItem" android:text="Focus" />
+            <TextView android:id="@+id/tvNavMap" style="@style/FocusLife.BottomNavItem" android:text="Map" />
+            <TextView android:id="@+id/tvNavDiary" style="@style/FocusLife.BottomNavItem" android:text="Diary" />
+            <TextView android:id="@+id/tvNavAiCoach" style="@style/FocusLife.BottomNavItem" android:text="AI Coach" />
+            <TextView android:id="@+id/tvNavNotification" style="@style/FocusLife.BottomNavItem" android:text="Notification" />
+            <TextView android:id="@+id/tvNavReport" style="@style/FocusLife.BottomNavItem" android:text="Report" />
+            <TextView android:id="@+id/tvNavStatistic" style="@style/FocusLife.BottomNavItem" android:text="Statistic" />
+            <TextView android:id="@+id/tvNavTarget" style="@style/FocusLife.BottomNavItem" android:text="Target" />
+            <TextView android:id="@+id/tvNavProfile" style="@style/FocusLife.BottomNavItem" android:text="Profile" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

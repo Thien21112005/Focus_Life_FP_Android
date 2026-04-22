@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.ui.focus.FocusFragment;
 import com.hcmute.edu.vn.focus_life.ui.home.HomeFragment;
 import com.hcmute.edu.vn.focus_life.ui.profile.ProfileFragment;
 import com.hcmute.edu.vn.focus_life.ui.running.RunningMapFragment;
@@ -20,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-
     public static final String EXTRA_START_TAB = "extra_start_tab";
     public static final String TAB_HOME = "home";
     public static final String TAB_HEALTH = "health";
@@ -88,50 +88,12 @@ public class MainActivity extends AppCompatActivity {
         switchTab(tab);
     }
 
-    private void switchTab(String tab) {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-
-        Fragment current = fm.findFragmentByTag(currentTab);
-        if (current != null) {
-            ft.hide(current);
-        }
-
-        Fragment target = fm.findFragmentByTag(tab);
-        if (target == null) {
-            target = createFragmentForTab(tab);
-            ft.add(R.id.mainContainer, target, tab);
-        } else {
-            ft.show(target);
-        }
-
-        currentTab = tab;
-        ft.commit();
-        updateBottomNav(tab);
-    }
-
-    @Override
-    protected void onNewIntent(android.content.Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        String requestedTab = intent != null ? intent.getStringExtra(EXTRA_START_TAB) : null;
-        if (requestedTab != null && navViews.containsKey(requestedTab)) {
-            openTab(requestedTab);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(STATE_CURRENT_TAB, currentTab);
-    }
-
     private Fragment createFragmentForTab(String tab) {
         switch (tab) {
             case TAB_HEALTH:
                 return DashboardScreenFragment.newInstance(R.layout.activity_health_tracker);
             case TAB_FOCUS:
-                return DashboardScreenFragment.newInstance(R.layout.activity_focus_mode);
+                return new FocusFragment();
             case TAB_MAP:
                 return new RunningMapFragment();
             case TAB_DIARY:
@@ -152,6 +114,32 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return new HomeFragment();
         }
+    }
+
+    private void switchTab(String tab) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+        Fragment current = fm.findFragmentByTag(currentTab);
+        if (current != null) ft.hide(current);
+
+        Fragment target = fm.findFragmentByTag(tab);
+        if (target == null) {
+            target = createFragmentForTab(tab);
+            ft.add(R.id.mainContainer, target, tab);
+        } else {
+            ft.show(target);
+        }
+
+        currentTab = tab;
+        ft.commit();
+        updateBottomNav(tab);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_CURRENT_TAB, currentTab);
     }
 
     private void updateBottomNav(String selectedTab) {

@@ -17,15 +17,42 @@
         android:paddingEnd="16dp"
         android:text="🔕  Thông báo đã tắt"
         android:textColor="@color/white_70"
-        android:textSize="11sp"/>
+        android:textSize="11sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="24:52" android:textColor="@android:color/white" android:textSize="96sp" android:textStyle="bold"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:letterSpacing="0.12" android:text="Phác thảo giao diện cho Linh" android:textAllCaps="true" android:textColor="#99FFFFFF" android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/tvFocusCountdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="24:52"
+            android:textColor="@android:color/white"
+            android:textSize="96sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvFocusTaskTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:letterSpacing="0.12"
+            android:text="Task hiện tại"
+            android:textAllCaps="true"
+            android:textColor="#99FFFFFF"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tvFocusSessionMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Focus 25 phút"
+            android:textColor="@color/white_40"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -34,12 +61,52 @@
         android:layout_gravity="bottom"
         android:layout_marginBottom="28dp"
         android:orientation="vertical">
-        <FrameLayout android:layout_width="match_parent" android:layout_height="4dp" android:background="#1AFFFFFF">
-            <View android:layout_width="220dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill_primary"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:background="#1AFFFFFF">
+
+            <View
+                android:layout_width="220dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_progress_fill_primary" />
         </FrameLayout>
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:gravity="center_vertical" android:orientation="horizontal">
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Kết thúc sớm" android:textColor="#66FFFFFF" android:textSize="12sp"/>
-            <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_status_chip_dark" android:gravity="center" android:text="❚❚" android:textColor="@android:color/white" android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/tvFocusProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="0% hoàn thành"
+            android:textColor="@color/white_40"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnFocusEndEarly"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Kết thúc sớm"
+                android:textColor="#66FFFFFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/btnFocusPauseResume"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_status_chip_dark"
+                android:gravity="center"
+                android:text="❚❚"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
 

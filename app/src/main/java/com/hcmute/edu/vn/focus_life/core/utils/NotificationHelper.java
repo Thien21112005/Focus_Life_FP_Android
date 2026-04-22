@@ -8,6 +8,7 @@ import android.os.Build;
 public class NotificationHelper {
     public static final String REMINDER_CHANNEL = "focuslife_reminders";
     public static final String RUNNING_CHANNEL = "focuslife_running";
+    public static final String FOCUS_CHANNEL = "focuslife_focus";
 
     public static void createChannels(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
@@ -30,5 +31,13 @@ public class NotificationHelper {
         );
         runningChannel.setDescription("Theo dõi phiên chạy nền");
         manager.createNotificationChannel(runningChannel);
+
+        NotificationChannel focusChannel = new NotificationChannel(
+                FOCUS_CHANNEL,
+                "FocusLife Focus Session",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        focusChannel.setDescription("Giữ phiên Pomodoro hoạt động ở nền");
+        manager.createNotificationChannel(focusChannel);
     }
 }

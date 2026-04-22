@@ -22,16 +22,17 @@ import com.hcmute.edu.vn.focus_life.data.repository.AuthRepository;
 import com.hcmute.edu.vn.focus_life.data.repository.ProfileRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
 import com.hcmute.edu.vn.focus_life.ui.auth.LoginActivity;
+import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroPreferences;
+import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroSettingsActivity;
 
 public class ProfileFragment extends Fragment {
-
     private ProfileRepository profileRepository;
     private ImageView imgProfileAvatar;
     private TextView tvProfileInitial;
     private TextView tvTopBarInitial;
     private TextView tvProfileName;
     private TextView tvProfileEmail;
-    private UserProfile currentProfile;
+    private TextView tvPomodoroSettingSummary;
 
     @Nullable
     @Override
@@ -51,7 +52,11 @@ public class ProfileFragment extends Fragment {
         tvTopBarInitial = view.findViewById(R.id.tvTopBarInitial);
         tvProfileName = view.findViewById(R.id.tvProfileName);
         tvProfileEmail = view.findViewById(R.id.tvProfileEmail);
+        tvPomodoroSettingSummary = view.findViewById(R.id.tvPomodoroSettingSummary);
         TextView btnLogout = view.findViewById(R.id.btnLogout);
+        View rowPomodoroSettings = view.findViewById(R.id.rowPomodoroSettings);
+
+        rowPomodoroSettings.setOnClickListener(v -> startActivity(new Intent(requireContext(), PomodoroSettingsActivity.class)));
 
         btnLogout.setOnClickListener(v -> {
             new AuthRepository(requireActivity()).logout();
@@ -60,27 +65,25 @@ public class ProfileFragment extends Fragment {
         });
 
         loadProfile();
+        bindPomodoroSummary();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         loadProfile();
+        bindPomodoroSummary();
     }
 
     private void loadProfile() {
         if (profileRepository == null) return;
 
         profileRepository.getCurrentProfile(profile -> {
-            if (profile != null) {
-                bindProfile(profile);
-            }
+            if (profile != null) bindProfile(profile);
         });
     }
 
     private void bindProfile(UserProfile profile) {
-        currentProfile = profile;
-
         String displayName = safe(profile.displayName, new OnboardingPreferences(requireContext()).getDisplayName());
         String email = safe(profile.email, currentEmail());
         String avatarUrl = safe(profile.avatarUrl,
@@ -96,14 +99,20 @@ public class ProfileFragment extends Fragment {
         if (!avatarUrl.isEmpty()) {
             imgProfileAvatar.setVisibility(View.VISIBLE);
             tvProfileInitial.setVisibility(View.GONE);
-            Glide.with(this)
-                    .load(avatarUrl)
-                    .circleCrop()
-                    .into(imgProfileAvatar);
+            Glide.with(this).load(avatarUrl).circleCrop().into(imgProfileAvatar);
         } else {
             imgProfileAvatar.setVisibility(View.GONE);
             tvProfileInitial.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void bindPomodoroSummary() {
+        PomodoroPreferences.Config config = new PomodoroPreferences(requireContext()).getConfig();
+        String summary = config.focusMinutes + "m focus · "
+                + config.shortBreakMinutes + "m nghỉ ngắn · "
+                + config.longBreakMinutes + "m nghỉ dài"
+                + (config.autoDnd ? " · Auto DND" : "");
+        tvPomodoroSettingSummary.setText(summary);
     }
 
     private String currentEmail() {

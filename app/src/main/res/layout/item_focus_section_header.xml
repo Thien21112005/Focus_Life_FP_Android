@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvSectionHeader"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="18dp"
+    android:layout_marginBottom="10dp"
+    android:text="Hôm nay"
+    android:textColor="@color/on_surface_variant"
+    android:textSize="12sp"
+    android:textStyle="bold" />

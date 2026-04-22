@@ -9,6 +9,7 @@ public final class Constants {
     public static final String FIRESTORE_ACHIEVEMENTS = "achievements";
     public static final String FIRESTORE_MONTHLY_GOALS = "monthly_goals";
     public static final String FIRESTORE_STEP_RECORDS = "step_records";
+    public static final String FIRESTORE_FOCUS_TASKS = "focus_tasks";
 
     public static final String DEFAULT_APP_AVATAR_URL = "https://res.cloudinary.com/df4ojgg7k/image/upload/v1776792758/images_fwzwji.jpg";
 

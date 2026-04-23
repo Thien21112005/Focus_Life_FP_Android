@@ -34,7 +34,7 @@ import com.hcmute.edu.vn.focus_life.data.local.entity.WaterEntryEntity;
                 DailySummaryEntity.class,
                 ProfileEntity.class
         },
-        version = 3,
+        version = 5,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

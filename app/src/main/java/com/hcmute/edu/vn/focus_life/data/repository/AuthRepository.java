@@ -22,6 +22,8 @@ import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
 
 import java.util.concurrent.Executors;
 
+import com.hcmute.edu.vn.focus_life.worker.SyncScheduler;
+
 public class AuthRepository {
     public interface RepositoryCallback {
         void onComplete(Result<FirebaseUser> result);
@@ -65,6 +67,7 @@ public class AuthRepository {
                 }
 
                 saveProfile(profile);
+                SyncScheduler.requestImmediate(activity);
                 callback.onComplete(Result.success(user));
             }
 
@@ -127,6 +130,7 @@ public class AuthRepository {
                 }
 
                 saveProfile(profile);
+                SyncScheduler.requestImmediate(activity);
                 callback.onComplete(Result.success(user));
             }
 
@@ -183,6 +187,7 @@ public class AuthRepository {
             }
 
             saveProfile(profileToSave);
+            SyncScheduler.requestImmediate(activity);
             callback.onComplete(Result.success(user));
         });
     }

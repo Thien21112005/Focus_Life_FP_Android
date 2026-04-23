@@ -21,6 +21,7 @@ public class FirebaseSyncWorker extends Worker {
             repository.syncUnsyncedDailySummaries();
             repository.syncUnsyncedPomodoroSessions();
             repository.syncUnsyncedStepRecords();
+            repository.syncUnsyncedNutritionEntries();
             return Result.success();
         } catch (Exception e) {
             return Result.retry();

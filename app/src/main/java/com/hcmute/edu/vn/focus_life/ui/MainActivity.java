@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.ui.diary.NutritionDiaryFragment;
 import com.hcmute.edu.vn.focus_life.ui.focus.FocusFragment;
 import com.hcmute.edu.vn.focus_life.ui.home.HomeFragment;
 import com.hcmute.edu.vn.focus_life.ui.profile.ProfileFragment;
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             case TAB_MAP:
                 return new RunningMapFragment();
             case TAB_DIARY:
-                return DashboardScreenFragment.newInstance(R.layout.activity_nutrition_diary);
+                return new NutritionDiaryFragment();
             case TAB_AI_COACH:
                 return DashboardScreenFragment.newInstance(R.layout.activity_ai_coach_chat);
             case TAB_NOTIFICATION:

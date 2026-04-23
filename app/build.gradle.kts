@@ -4,6 +4,10 @@ plugins {
 }
 
 val mapboxToken = providers.gradleProperty("MAPBOX_ACCESS_TOKEN").orElse("").get()
+val cloudinaryCloudName = providers.gradleProperty("CLOUDINARY_CLOUD_NAME").orElse("").get()
+val cloudinaryUploadPreset = providers.gradleProperty("CLOUDINARY_UPLOAD_PRESET").orElse("").get()
+val cloudinaryApiKey = providers.gradleProperty("CLOUDINARY_API_KEY").orElse("").get()
+val cloudinaryBaseFolder = providers.gradleProperty("CLOUDINARY_BASE_FOLDER").orElse("focuslife/nutrition").get()
 
 android {
     namespace = "com.hcmute.edu.vn.focus_life"
@@ -24,6 +28,10 @@ android {
 
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxToken\"")
         resValue("string", "mapbox_access_token", mapboxToken)
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$cloudinaryUploadPreset\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
+        buildConfigField("String", "CLOUDINARY_BASE_FOLDER", "\"$cloudinaryBaseFolder\"")
     }
 
     buildTypes {
@@ -80,4 +88,6 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation("com.google.mlkit:image-labeling:17.0.9")
 }

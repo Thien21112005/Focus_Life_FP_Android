@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card_white"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvFoodEmoji"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_card_surface_low"
+        android:gravity="center"
+        android:text="🍜"
+        android:textSize="24sp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvFoodResultName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bún bò Huế"
+            android:textColor="@color/on_surface"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvFoodResultMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="1 tô · 380 kcal"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvFoodResultMacros"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="P: 28g · C: 45g · F: 8g"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/btnAddFoodResult"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_gradient_primary"
+        android:gravity="center"
+        android:text="+"
+        android:textColor="@color/on_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+</LinearLayout>

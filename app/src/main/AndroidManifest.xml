@@ -33,9 +33,14 @@
         <activity android:name=".ui.auth.LoginActivity" android:exported="false" />
         <activity android:name=".ui.onboarding.OnboardingGoalActivity" android:exported="false" />
         <activity android:name=".ui.onboarding.OnboardingPermissionsActivity" android:exported="false" />
+        <activity android:name=".ui.onboarding.OnboardingProfileActivity" android:exported="false" />
         <activity android:name=".ui.profile.ProfileSettingsActivity" android:exported="false" />
         <activity android:name=".ui.MainActivity" android:exported="false" />
         <activity android:name=".ui.running.RunningMapActivity" android:exported="false" />
+        <activity
+            android:name=".ui.diary.AddFoodActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.splash.SplashActivity"

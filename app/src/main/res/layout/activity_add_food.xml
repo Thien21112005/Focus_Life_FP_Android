@@ -57,6 +57,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
+        android:fillViewport="true"
         android:paddingBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -210,7 +211,7 @@
                         android:id="@+id/tvCustomEntryTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tự thêm món thủ công"
+                        android:text="Thêm món mới"
                         android:textColor="@color/on_surface"
                         android:textStyle="bold" />
 
@@ -219,17 +220,34 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Dùng khi món không có sẵn hoặc bạn đã tự đo kcal và macro."
+                        android:text="Tự nhập nhanh món bạn vừa ăn."
                         android:textColor="@color/on_surface_variant"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="Kết quả tìm kiếm"
+                android:textColor="@color/on_surface_variant"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/layoutResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical" />
+
             <LinearLayout
                 android:id="@+id/bottomSheet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="18dp"
                 android:background="@drawable/bg_bottom_sheet_glass"
                 android:orientation="vertical"
                 android:padding="20dp">
@@ -314,7 +332,7 @@
                         android:gravity="center"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="Đơn vị"
+                        android:text="phần"
                         android:textColor="@color/on_surface"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -469,22 +487,6 @@
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:text="Kết quả tìm kiếm"
-                android:textColor="@color/on_surface_variant"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:id="@+id/layoutResults"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="vertical" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

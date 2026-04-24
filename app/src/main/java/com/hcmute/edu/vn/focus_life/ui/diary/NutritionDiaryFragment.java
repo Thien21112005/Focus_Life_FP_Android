@@ -1,5 +1,6 @@
 package com.hcmute.edu.vn.focus_life.ui.diary;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,7 +40,6 @@ public class NutritionDiaryFragment extends Fragment {
 
     private final List<NutritionEntryEntity> currentEntries = new ArrayList<>();
     private NutritionDiaryRepository repository;
-
     private String currentDateKey = DateUtils.todayKey();
 
     private TextView tvSyncStatus;
@@ -75,7 +75,7 @@ public class NutritionDiaryFragment extends Fragment {
         addFoodLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == android.app.Activity.RESULT_OK) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
                         loadDiary(true);
                     }
                 }
@@ -134,10 +134,10 @@ public class NutritionDiaryFragment extends Fragment {
             loadDiary(true);
         });
         root.findViewById(R.id.btnRefreshDiary).setOnClickListener(v -> loadDiary(true));
-        root.findViewById(R.id.btnAddBreakfast).setOnClickListener(v -> openAddFood(Constants.MEAL_BREAKFAST, null));
-        root.findViewById(R.id.btnAddLunch).setOnClickListener(v -> openAddFood(Constants.MEAL_LUNCH, null));
-        root.findViewById(R.id.btnAddDinner).setOnClickListener(v -> openAddFood(Constants.MEAL_DINNER, null));
-        root.findViewById(R.id.btnAddSnack).setOnClickListener(v -> openAddFood(Constants.MEAL_SNACK, null));
+        root.findViewById(R.id.btnAddBreakfast).setOnClickListener(v -> openAddFood(Constants.MEAL_BREAKFAST));
+        root.findViewById(R.id.btnAddLunch).setOnClickListener(v -> openAddFood(Constants.MEAL_LUNCH));
+        root.findViewById(R.id.btnAddDinner).setOnClickListener(v -> openAddFood(Constants.MEAL_DINNER));
+        root.findViewById(R.id.btnAddSnack).setOnClickListener(v -> openAddFood(Constants.MEAL_SNACK));
     }
 
     private void renderDate() {
@@ -159,7 +159,7 @@ public class NutritionDiaryFragment extends Fragment {
             } else if (fromRemote) {
                 tvSyncStatus.setText("Dữ liệu đã được đồng bộ theo tài khoản hiện tại.");
             } else {
-                tvSyncStatus.setText("Hiển thị dữ liệu đang lưu trên thiết bị.");
+                tvSyncStatus.setText("Hiển thị dữ liệu đã lưu trên thiết bị.");
             }
             if (error != null) {
                 Toast.makeText(requireContext(), error.getMessage(), Toast.LENGTH_LONG).show();
@@ -172,11 +172,10 @@ public class NutritionDiaryFragment extends Fragment {
         tvCaloriesSummary.setText(String.format(Locale.getDefault(), "%d", summary.calories));
         int remaining = summary.remainingCalories();
         if (remaining >= 0) {
-            tvCaloriesRemaining.setText(String.format(Locale.getDefault(), "Còn khoảng %d kcal để chạm mục tiêu hôm nay", remaining));
+            tvCaloriesRemaining.setText(String.format(Locale.getDefault(), "Bạn còn thiếu khoảng %d kcal cho mục tiêu hôm nay", remaining));
         } else {
-            tvCaloriesRemaining.setText(String.format(Locale.getDefault(), "Đang vượt khoảng %d kcal so với mục tiêu", Math.abs(remaining)));
+            tvCaloriesRemaining.setText(String.format(Locale.getDefault(), "Bạn đang vượt khoảng %d kcal so với mục tiêu hôm nay", Math.abs(remaining)));
         }
-
         progressCalories.setProgress(percent(summary.calories, DEFAULT_CALORIE_GOAL));
         tvProteinMeta.setText(String.format(Locale.getDefault(), "Protein %.0fg / %dg", summary.protein, DEFAULT_PROTEIN_GOAL));
         tvCarbsMeta.setText(String.format(Locale.getDefault(), "Carbs %.0fg / %dg", summary.carbs, DEFAULT_CARBS_GOAL));
@@ -187,16 +186,16 @@ public class NutritionDiaryFragment extends Fragment {
     }
 
     private void renderMealSections() {
-        renderMealBlock(containerBreakfast, filterByMeal(Constants.MEAL_BREAKFAST), tvBreakfastTotal, "Bữa sáng");
-        renderMealBlock(containerLunch, filterByMeal(Constants.MEAL_LUNCH), tvLunchTotal, "Bữa trưa");
-        renderMealBlock(containerDinner, filterByMeal(Constants.MEAL_DINNER), tvDinnerTotal, "Bữa tối");
-        renderMealBlock(containerSnack, filterByMeal(Constants.MEAL_SNACK), tvSnackTotal, "Bữa phụ");
+        renderMealBlock(containerBreakfast, filterByMeal(Constants.MEAL_BREAKFAST), tvBreakfastTotal, "bữa sáng");
+        renderMealBlock(containerLunch, filterByMeal(Constants.MEAL_LUNCH), tvLunchTotal, "bữa trưa");
+        renderMealBlock(containerDinner, filterByMeal(Constants.MEAL_DINNER), tvDinnerTotal, "bữa tối");
+        renderMealBlock(containerSnack, filterByMeal(Constants.MEAL_SNACK), tvSnackTotal, "bữa phụ");
     }
 
     private void renderMealBlock(@NonNull LinearLayout container,
                                  @NonNull List<NutritionEntryEntity> entries,
                                  @NonNull TextView totalView,
-                                 @NonNull String emptyMealLabel) {
+                                 @NonNull String mealLabel) {
         container.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         int totalCalories = 0;
@@ -209,7 +208,7 @@ public class NutritionDiaryFragment extends Fragment {
 
         if (entries.isEmpty()) {
             TextView empty = new TextView(requireContext());
-            empty.setText("Chưa có món nào trong " + emptyMealLabel.toLowerCase(Locale.ROOT) + ".");
+            empty.setText("Hôm nay chưa có món nào ở " + mealLabel + ".");
             empty.setTextColor(requireContext().getColor(R.color.on_surface_variant));
             empty.setPadding(0, dp(8), 0, dp(4));
             container.addView(empty);
@@ -221,18 +220,29 @@ public class NutritionDiaryFragment extends Fragment {
             TextView tvFoodName = row.findViewById(R.id.tvFoodName);
             TextView tvFoodMeta = row.findViewById(R.id.tvFoodMeta);
             TextView tvFoodFlags = row.findViewById(R.id.tvFoodFlags);
+            TextView btnEdit = row.findViewById(R.id.btnEditEntry);
             TextView btnDelete = row.findViewById(R.id.btnDeleteEntry);
 
             tvFoodName.setText(entry.foodName);
-            tvFoodMeta.setText(String.format(Locale.getDefault(), "%s %s · %d kcal · P %.0fg / C %.0fg / F %.0fg",
+            tvFoodMeta.setText(String.format(
+                    Locale.getDefault(),
+                    "%s %s · %d kcal · P %.0fg / C %.0fg / F %.0fg",
                     valueOfQuantity(entry.quantity),
                     safeUnit(entry.unit),
                     entry.calories,
                     entry.protein,
                     entry.carbs,
-                    entry.fat));
+                    entry.fat
+            ));
             tvFoodFlags.setText(buildFlagText(entry));
             btnDelete.setOnClickListener(v -> confirmDelete(entry));
+
+            if (Constants.NUTRITION_SOURCE_MANUAL.equals(entry.source)) {
+                btnEdit.setVisibility(View.VISIBLE);
+                btnEdit.setOnClickListener(v -> openEditFood(entry));
+            } else {
+                btnEdit.setVisibility(View.GONE);
+            }
             container.addView(row);
         }
     }
@@ -255,12 +265,30 @@ public class NutritionDiaryFragment extends Fragment {
         }
     }
 
-    private void openAddFood(@NonNull String mealType, @Nullable String prefillName) {
+    private void openAddFood(@NonNull String mealType) {
         if (!isAdded()) return;
         Intent intent = new Intent(requireContext(), AddFoodActivity.class);
         intent.putExtra(AddFoodActivity.EXTRA_DATE_KEY, currentDateKey);
         intent.putExtra(AddFoodActivity.EXTRA_MEAL_TYPE, mealType);
-        intent.putExtra(AddFoodActivity.EXTRA_PREFILL_NAME, prefillName);
+        addFoodLauncher.launch(intent);
+    }
+
+    private void openEditFood(@NonNull NutritionEntryEntity entry) {
+        if (!isAdded()) return;
+        Intent intent = new Intent(requireContext(), AddFoodActivity.class);
+        intent.putExtra(AddFoodActivity.EXTRA_DATE_KEY, currentDateKey);
+        intent.putExtra(AddFoodActivity.EXTRA_MEAL_TYPE, entry.mealType);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_ENTRY_UUID, entry.entryUuid);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_FOOD_NAME, entry.foodName);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_UNIT, entry.unit);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_QUANTITY, entry.quantity);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_CALORIES, entry.calories);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_PROTEIN, entry.protein);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_CARBS, entry.carbs);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_FAT, entry.fat);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_FIBER, entry.fiber);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_SUGAR, entry.sugar);
+        intent.putExtra(AddFoodActivity.EXTRA_EDIT_SODIUM, entry.sodium);
         addFoodLauncher.launch(intent);
     }
 
@@ -295,14 +323,17 @@ public class NutritionDiaryFragment extends Fragment {
 
     private String buildFlagText(@NonNull NutritionEntryEntity entry) {
         List<String> flags = new ArrayList<>();
+        if (Constants.NUTRITION_SOURCE_MANUAL.equals(entry.source)) {
+            flags.add("Tự nhập");
+            flags.add("Có thể sửa");
+        } else {
+            flags.add("Món có sẵn");
+        }
         if (!TextUtils.isEmpty(entry.healthFlags)) {
             if (entry.healthFlags.contains("natri_cao")) flags.add("Natri cao");
             if (entry.healthFlags.contains("duong_cao")) flags.add("Đường cao");
             if (entry.healthFlags.contains("protein_tot")) flags.add("Protein tốt");
             if (entry.healthFlags.contains("giau_chat_xo")) flags.add("Giàu xơ");
-        }
-        if (flags.isEmpty()) {
-            flags.add("Đã lưu theo ngày cho tài khoản hiện tại");
         }
         return TextUtils.join(" · ", flags);
     }
@@ -320,7 +351,7 @@ public class NutritionDiaryFragment extends Fragment {
     }
 
     private String safeUnit(@Nullable String unit) {
-        return TextUtils.isEmpty(unit) ? "khẩu phần" : unit;
+        return TextUtils.isEmpty(unit) ? "phần" : unit;
     }
 
     private int dp(int value) {

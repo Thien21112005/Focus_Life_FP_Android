@@ -27,6 +27,6 @@ public class NutritionMlKitAnalyzer {
     }
 
     public void analyze(@NonNull Context context, @NonNull Uri imageUri, @NonNull Callback callback) {
-        callback.onError(new UserFacingException("Tính năng quét món ăn bằng ML Kit đã được tắt trong bản này."));
+        callback.onError(new UserFacingException("Tính năng quét ảnh món ăn hiện đã được tắt trong bản này."));
     }
 }

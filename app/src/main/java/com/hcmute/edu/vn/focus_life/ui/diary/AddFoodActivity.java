@@ -37,13 +37,25 @@ public class AddFoodActivity extends AppCompatActivity {
     public static final String EXTRA_CONFIDENCE = "extra_confidence";
     public static final String EXTRA_IMAGE_URI = "extra_image_uri";
 
+    public static final String EXTRA_EDIT_ENTRY_UUID = "extra_edit_entry_uuid";
+    public static final String EXTRA_EDIT_FOOD_NAME = "extra_edit_food_name";
+    public static final String EXTRA_EDIT_UNIT = "extra_edit_unit";
+    public static final String EXTRA_EDIT_QUANTITY = "extra_edit_quantity";
+    public static final String EXTRA_EDIT_CALORIES = "extra_edit_calories";
+    public static final String EXTRA_EDIT_PROTEIN = "extra_edit_protein";
+    public static final String EXTRA_EDIT_CARBS = "extra_edit_carbs";
+    public static final String EXTRA_EDIT_FAT = "extra_edit_fat";
+    public static final String EXTRA_EDIT_FIBER = "extra_edit_fiber";
+    public static final String EXTRA_EDIT_SUGAR = "extra_edit_sugar";
+    public static final String EXTRA_EDIT_SODIUM = "extra_edit_sodium";
+
     private NutritionDiaryRepository repository;
 
     private NestedScrollView scrollAddFood;
-    private View bottomSheet;
     private EditText etSearchFood;
     private LinearLayout layoutQuickPicks;
     private LinearLayout layoutResults;
+    private LinearLayout bottomSheet;
     private TextView chipBreakfast;
     private TextView chipLunch;
     private TextView chipDinner;
@@ -78,6 +90,10 @@ public class AddFoodActivity extends AppCompatActivity {
     private boolean saving = false;
     private boolean customMode = false;
     private boolean suppressCustomWatcher = false;
+    private String editingEntryUuid;
+    private double editFiber;
+    private double editSugar;
+    private double editSodium;
 
     private final TextWatcher searchWatcher = new TextWatcher() {
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -86,9 +102,6 @@ public class AddFoodActivity extends AppCompatActivity {
             String query = s == null ? "" : s.toString();
             renderResults(FoodCatalog.search(query));
             updateCustomEntryCard(query);
-            if (customMode && TextUtils.isEmpty(cleanText(etCustomName.getText()))) {
-                syncCustomItemFromInputs(true);
-            }
         }
     };
 
@@ -116,17 +129,22 @@ public class AddFoodActivity extends AppCompatActivity {
         updateSubtitle();
         renderResults(FoodCatalog.search(getIntent().getStringExtra(EXTRA_PREFILL_NAME)));
         updateCustomEntryCard(getIntent().getStringExtra(EXTRA_PREFILL_NAME));
-        autoPrefillIfNeeded();
-        updateSelectedCard();
+
+        if (isEditingManualEntry()) {
+            enterEditMode();
+        } else {
+            autoPrefillIfNeeded();
+            updateSelectedCard();
+        }
     }
 
     private void bindViews() {
         findViewById(R.id.btnBackAddFood).setOnClickListener(v -> finish());
         scrollAddFood = findViewById(R.id.scrollAddFood);
-        bottomSheet = findViewById(R.id.bottomSheet);
         etSearchFood = findViewById(R.id.etSearchFood);
         layoutQuickPicks = findViewById(R.id.layoutQuickPicks);
         layoutResults = findViewById(R.id.layoutResults);
+        bottomSheet = findViewById(R.id.bottomSheet);
         chipBreakfast = findViewById(R.id.chipBreakfast);
         chipLunch = findViewById(R.id.chipLunch);
         chipDinner = findViewById(R.id.chipDinner);
@@ -161,6 +179,10 @@ public class AddFoodActivity extends AppCompatActivity {
         selectedSource = Constants.NUTRITION_SOURCE_MANUAL;
         selectedConfidence = 0f;
         selectedImageUri = null;
+        editingEntryUuid = getIntent().getStringExtra(EXTRA_EDIT_ENTRY_UUID);
+        editFiber = getIntent().getDoubleExtra(EXTRA_EDIT_FIBER, 0d);
+        editSugar = getIntent().getDoubleExtra(EXTRA_EDIT_SUGAR, 0d);
+        editSodium = getIntent().getDoubleExtra(EXTRA_EDIT_SODIUM, 0d);
     }
 
     private void setupListeners() {
@@ -184,15 +206,15 @@ public class AddFoodActivity extends AppCompatActivity {
             }
         });
         findViewById(R.id.btnPlusQty).setOnClickListener(v -> {
-            if (quantityCount < 10) {
+            if (quantityCount < 99) {
                 quantityCount++;
                 updateSelectedCard();
             }
         });
 
         cardManualEntry.setOnClickListener(v -> {
-            selectCustomItem(cleanText(etSearchFood.getText()), true);
-            scrollToEditor();
+            selectCustomItem(cleanText(etSearchFood.getText()));
+            scrollToCustomEditor(true);
         });
         btnSaveFood.setOnClickListener(v -> saveSelectedFood());
     }
@@ -224,7 +246,7 @@ public class AddFoodActivity extends AppCompatActivity {
 
         if (items.isEmpty()) {
             TextView empty = new TextView(this);
-            empty.setText("Chưa thấy món trùng khớp. Bạn có thể bấm ‘Tự thêm món thủ công’ để nhập kcal và macro.");
+            empty.setText("Chưa thấy món phù hợp. Bạn có thể bấm ‘Thêm món mới’ để tự nhập nhanh kcal và macro.");
             empty.setTextColor(getColor(R.color.on_surface_variant));
             empty.setBackgroundResource(R.drawable.bg_card_surface_low);
             empty.setPadding(dp(16), dp(16), dp(16), dp(16));
@@ -234,23 +256,18 @@ public class AddFoodActivity extends AppCompatActivity {
 
         for (FoodCatalogItem item : items) {
             View row = inflater.inflate(R.layout.item_food_result, layoutResults, false);
-            TextView tvFoodEmoji = row.findViewById(R.id.tvFoodEmoji);
-            TextView tvFoodName = row.findViewById(R.id.tvFoodResultName);
-            TextView tvFoodMeta = row.findViewById(R.id.tvFoodResultMeta);
-            TextView tvFoodMacros = row.findViewById(R.id.tvFoodResultMacros);
-            TextView btnAdd = row.findViewById(R.id.btnAddFoodResult);
+            TextView tvEmoji = row.findViewById(R.id.tvFoodEmoji);
+            TextView tvName = row.findViewById(R.id.tvFoodResultName);
+            TextView tvMeta = row.findViewById(R.id.tvFoodResultMeta);
+            TextView tvMacros = row.findViewById(R.id.tvFoodResultMacros);
+            View btnAdd = row.findViewById(R.id.btnAddFoodResult);
 
-            tvFoodEmoji.setText(item.emoji);
-            tvFoodName.setText(item.name);
-            tvFoodMeta.setText(String.format(Locale.getDefault(), "%s · %d kcal", item.unitLabel, item.calories));
-            tvFoodMacros.setText(String.format(Locale.getDefault(), "P: %.0fg · C: %.0fg · F: %.0fg", item.protein, item.carbs, item.fat));
-
-            View.OnClickListener selectListener = v -> {
-                selectItem(item);
-                scrollToEditor();
-            };
-            row.setOnClickListener(selectListener);
-            btnAdd.setOnClickListener(selectListener);
+            tvEmoji.setText(item.emoji);
+            tvName.setText(item.name);
+            tvMeta.setText(String.format(Locale.getDefault(), "%s · %d kcal", item.unitLabel, item.calories));
+            tvMacros.setText(String.format(Locale.getDefault(), "P: %.0fg · C: %.0fg · F: %.0fg", item.protein, item.carbs, item.fat));
+            row.setOnClickListener(v -> selectItem(item));
+            btnAdd.setOnClickListener(v -> selectItem(item));
             layoutResults.addView(row);
         }
     }
@@ -260,21 +277,46 @@ public class AddFoodActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(prefillName)) {
             return;
         }
-        etSearchFood.setText(prefillName);
-        etSearchFood.setSelection(prefillName.length());
-
         FoodCatalogItem item = FoodCatalog.findByName(prefillName);
         if (item == null) {
             List<FoodCatalogItem> search = FoodCatalog.search(prefillName);
-            if (!search.isEmpty()) {
-                item = search.get(0);
-            }
+            if (!search.isEmpty()) item = search.get(0);
         }
         if (item != null) {
             selectItem(item);
         } else {
-            selectCustomItem(prefillName, false);
+            etSearchFood.setText(prefillName);
+            etSearchFood.setSelection(prefillName.length());
+            selectCustomItem(prefillName);
+            scrollToCustomEditor(false);
         }
+    }
+
+    private void enterEditMode() {
+        customMode = true;
+        quantityCount = Math.max(1, (int) Math.round(getIntent().getDoubleExtra(EXTRA_EDIT_QUANTITY, 1d)));
+        suppressCustomWatcher = true;
+        try {
+            String foodName = safeText(getIntent().getStringExtra(EXTRA_EDIT_FOOD_NAME));
+            String unit = safeText(getIntent().getStringExtra(EXTRA_EDIT_UNIT));
+            int calories = getIntent().getIntExtra(EXTRA_EDIT_CALORIES, 0);
+            double protein = getIntent().getDoubleExtra(EXTRA_EDIT_PROTEIN, 0d);
+            double carbs = getIntent().getDoubleExtra(EXTRA_EDIT_CARBS, 0d);
+            double fat = getIntent().getDoubleExtra(EXTRA_EDIT_FAT, 0d);
+            etSearchFood.setText(foodName);
+            etCustomName.setText(foodName);
+            etCustomUnit.setText(unit);
+            etCustomCalories.setText(calories > 0 ? String.valueOf(calories) : "");
+            etCustomProtein.setText(protein > 0 ? trimDecimal(protein) : "");
+            etCustomCarbs.setText(carbs > 0 ? trimDecimal(carbs) : "");
+            etCustomFat.setText(fat > 0 ? trimDecimal(fat) : "");
+        } finally {
+            suppressCustomWatcher = false;
+        }
+        syncCustomItemFromInputs(false);
+        updateCustomEntryCard(etSearchFood.getText() == null ? "" : etSearchFood.getText().toString());
+        updateSelectedCard();
+        scrollToCustomEditor(false);
     }
 
     private void selectItem(@NonNull FoodCatalogItem item) {
@@ -283,31 +325,21 @@ public class AddFoodActivity extends AppCompatActivity {
         selectedSource = Constants.NUTRITION_SOURCE_MANUAL;
         selectedConfidence = 0f;
         selectedImageUri = null;
-        if (quantityCount < 1) quantityCount = 1;
         updateSelectedCard();
     }
 
-    private void selectCustomItem(@Nullable String suggestedName, boolean userInitiated) {
+    private void selectCustomItem(@Nullable String suggestedName) {
         customMode = true;
         selectedSource = Constants.NUTRITION_SOURCE_MANUAL;
         selectedConfidence = 0f;
         selectedImageUri = null;
-        suppressCustomWatcher = true;
-        try {
-            String resolvedName = cleanText(suggestedName);
-            etCustomName.setText(resolvedName);
-            etCustomUnit.setText("");
-            etCustomCalories.setText("");
-            etCustomProtein.setText("");
-            etCustomCarbs.setText("");
-            etCustomFat.setText("");
-        } finally {
-            suppressCustomWatcher = false;
+        if (!isEditingManualEntry()) {
+            if (TextUtils.isEmpty(cleanText(etCustomName.getText())) && !TextUtils.isEmpty(cleanText(suggestedName))) {
+                etCustomName.setText(cleanText(suggestedName));
+                etCustomName.setSelection(etCustomName.getText().length());
+            }
         }
         syncCustomItemFromInputs(true);
-        if (userInitiated) {
-            etCustomName.requestFocus();
-        }
     }
 
     private void syncCustomItemFromInputs(boolean refreshUi) {
@@ -321,9 +353,9 @@ public class AddFoodActivity extends AppCompatActivity {
         selectedItem = new FoodCatalogItem(
                 "custom_manual_item",
                 "🍽️",
-                name,
+                TextUtils.isEmpty(name) ? "Món mới" : name,
                 1,
-                unit,
+                TextUtils.isEmpty(unit) ? "đơn vị" : unit,
                 calories,
                 protein,
                 carbs,
@@ -332,7 +364,7 @@ public class AddFoodActivity extends AppCompatActivity {
                 0,
                 0,
                 buildCustomHealthNote(calories, protein, carbs, fat),
-                TextUtils.isEmpty(name) ? "manual" : name
+                name
         );
         if (refreshUi) {
             updateSelectedCard();
@@ -346,11 +378,10 @@ public class AddFoodActivity extends AppCompatActivity {
         if (selectedItem == null) {
             tvSelectedFoodName.setText("Chọn món để xem chi tiết");
             tvSelectedFoodMeta.setText("Bạn có thể chọn món có sẵn hoặc tự nhập món mới");
-            tvUnitLabel.setText("Đơn vị");
+            tvUnitLabel.setText("đơn vị");
             tvSelectedCalories.setText("0 kcal");
             tvSelectedMacros.setText("Protein 0g · Carbs 0g · Fat 0g");
             tvSelectedHealthNote.setText("Gợi ý dinh dưỡng sẽ hiện ở đây");
-            btnSaveFood.setAlpha(0.55f);
             btnSaveFood.setText("Lưu vào nhật ký");
             return;
         }
@@ -361,20 +392,19 @@ public class AddFoodActivity extends AppCompatActivity {
         double fat = selectedItem.fat * quantityCount;
 
         if (customMode) {
-            String displayName = cleanText(etCustomName.getText());
-            String displayUnit = cleanText(etCustomUnit.getText());
-            tvSelectedFoodName.setText(TextUtils.isEmpty(displayName) ? "🍽️ Món tự nhập" : "🍽️ " + displayName);
-            if (TextUtils.isEmpty(displayUnit)) {
-                tvSelectedFoodMeta.setText("Nhập tên món, đơn vị và kcal theo khẩu phần bạn đang theo dõi");
-                tvUnitLabel.setText("Đơn vị");
+            String inputName = cleanText(etCustomName.getText());
+            String inputUnit = cleanText(etCustomUnit.getText());
+            tvSelectedFoodName.setText(TextUtils.isEmpty(inputName) ? "🍽️ Món mới" : "🍽️ " + inputName);
+            if (TextUtils.isEmpty(inputName) || TextUtils.isEmpty(inputUnit)) {
+                tvSelectedFoodMeta.setText("Điền tên món, đơn vị và macro mỗi khẩu phần rồi bấm lưu.");
             } else {
-                tvSelectedFoodMeta.setText(quantityCount + " × " + displayUnit + " · tự nhập");
-                tvUnitLabel.setText(displayUnit);
+                tvSelectedFoodMeta.setText(String.format(Locale.getDefault(), "%d × %s · tự nhập", quantityCount, inputUnit));
             }
-            btnSaveFood.setText("Lưu món tự nhập");
+            tvUnitLabel.setText(TextUtils.isEmpty(inputUnit) ? "khẩu phần" : inputUnit);
+            btnSaveFood.setText(isEditingManualEntry() ? "Cập nhật món" : "Lưu món mới");
         } else {
             tvSelectedFoodName.setText(selectedItem.emoji + " " + selectedItem.name);
-            tvSelectedFoodMeta.setText(quantityCount + " × " + selectedItem.unitLabel);
+            tvSelectedFoodMeta.setText(String.format(Locale.getDefault(), "%d × %s", quantityCount, selectedItem.unitLabel));
             tvUnitLabel.setText(selectedItem.unitLabel);
             btnSaveFood.setText("Lưu vào nhật ký");
         }
@@ -391,49 +421,44 @@ public class AddFoodActivity extends AppCompatActivity {
             Toast.makeText(this, "Bạn hãy chọn món ăn trước khi lưu nhé.", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (customMode) {
             syncCustomItemFromInputs(false);
-            if (TextUtils.isEmpty(cleanText(etCustomName.getText()))) {
+            String inputName = cleanText(etCustomName.getText());
+            if (TextUtils.isEmpty(inputName)) {
                 Toast.makeText(this, "Bạn nhập tên món trước đã nhé.", Toast.LENGTH_SHORT).show();
-                etCustomName.requestFocus();
-                scrollToEditor();
-                return;
-            }
-            if (TextUtils.isEmpty(cleanText(etCustomUnit.getText()))) {
-                Toast.makeText(this, "Bạn nhập đơn vị như phần, gram hay ly để lưu rõ hơn nhé.", Toast.LENGTH_SHORT).show();
-                etCustomUnit.requestFocus();
-                scrollToEditor();
                 return;
             }
             if (selectedItem.calories <= 0) {
                 Toast.makeText(this, "Bạn nên nhập kcal cho món tự đo để nhật ký tính đúng tổng ngày.", Toast.LENGTH_SHORT).show();
-                etCustomCalories.requestFocus();
-                scrollToEditor();
                 return;
             }
-            updateSelectedCard();
         }
 
         try {
             saving = true;
             updateSelectedCard();
-
             NutritionEntryEntity entry = new NutritionEntryEntity();
+            if (!TextUtils.isEmpty(editingEntryUuid)) {
+                entry.entryUuid = editingEntryUuid;
+            }
             entry.mealType = selectedMealType;
-            entry.foodName = selectedItem.name;
-            entry.quantity = selectedItem.defaultQuantity * quantityCount;
-            entry.unit = selectedItem.unitLabel;
+            entry.foodName = customMode ? cleanText(etCustomName.getText()) : selectedItem.name;
+            entry.quantity = quantityCount;
+            entry.unit = customMode && !TextUtils.isEmpty(cleanText(etCustomUnit.getText())) ? cleanText(etCustomUnit.getText()) : selectedItem.unitLabel;
             entry.calories = (int) Math.round(selectedItem.calories * quantityCount);
             entry.protein = selectedItem.protein * quantityCount;
             entry.carbs = selectedItem.carbs * quantityCount;
             entry.fat = selectedItem.fat * quantityCount;
-            entry.fiber = selectedItem.fiber * quantityCount;
-            entry.sugar = selectedItem.sugar * quantityCount;
-            entry.sodium = selectedItem.sodium * quantityCount;
+            entry.fiber = customMode ? editFiber * quantityCount : selectedItem.fiber * quantityCount;
+            entry.sugar = customMode ? editSugar * quantityCount : selectedItem.sugar * quantityCount;
+            entry.sodium = customMode ? editSodium * quantityCount : selectedItem.sodium * quantityCount;
             entry.entryDate = selectedDateKey;
             entry.source = Constants.NUTRITION_SOURCE_MANUAL;
             entry.mlConfidence = 0f;
             entry.imageUri = null;
+            entry.imageUrl = null;
+            entry.imagePublicId = null;
             entry.healthFlags = NutritionInsightEngine.buildEntryFlags(entry.protein, entry.fiber, entry.sugar, entry.sodium);
 
             repository.saveEntry(entry, (savedEntry, infoMessage, error) -> {
@@ -473,32 +498,96 @@ public class AddFoodActivity extends AppCompatActivity {
     private void updateCustomEntryCard(@Nullable String query) {
         String cleanQuery = cleanText(query);
         if (TextUtils.isEmpty(cleanQuery)) {
-            tvCustomEntryTitle.setText("Tự thêm món thủ công");
-            tvCustomEntrySubtitle.setText("Dùng khi món không có sẵn hoặc bạn đã tự đo kcal và macro.");
+            tvCustomEntryTitle.setText("Thêm món mới");
+            tvCustomEntrySubtitle.setText("Tự nhập nhanh món bạn vừa ăn.");
         } else {
-            tvCustomEntryTitle.setText("Tự thêm: " + cleanQuery);
-            tvCustomEntrySubtitle.setText("Không cần món có sẵn trong danh sách. Bạn có thể nhập kcal, protein, carb và fat theo cách bạn đang theo dõi.");
+            tvCustomEntryTitle.setText("Thêm món mới");
+            tvCustomEntrySubtitle.setText("Tạo nhanh cho “" + cleanQuery + "”.");
         }
     }
 
     private String buildCustomHealthNote(int calories, double protein, double carbs, double fat) {
         if (protein >= 20) {
-            return "Món tự nhập này có lượng đạm khá ổn. Nếu đây là bữa chính, bạn chỉ cần cân đối thêm rau và chất xơ.";
+            return "Món này có lượng đạm khá ổn. Nếu đây là bữa chính, bạn có thể cân bằng thêm rau và chất xơ.";
         }
         if (fat >= 18) {
-            return "Món tự nhập này có chất béo tương đối cao. Bạn nên chú ý tổng fat của cả ngày để dễ cân bằng hơn.";
+            return "Món này có chất béo tương đối cao. Bạn nên chú ý tổng fat của cả ngày để dễ cân bằng hơn.";
         }
-        if (carbs >= 50) {
-            return "Lượng carb của món này khá đáng kể. Hợp trước vận động, còn nếu ăn muộn bạn nên cân lại khẩu phần.";
+        if (carbs >= 45 && protein < 10) {
+            return "Món này thiên về carb. Nếu ăn một mình, bạn có thể cân nhắc thêm nguồn đạm cho no lâu hơn.";
         }
-        if (calories <= 180 && calories > 0) {
+        if (calories <= 180) {
             return "Khá hợp làm bữa phụ nhẹ. Bạn có thể kết hợp thêm đạm hoặc trái cây nếu muốn no lâu hơn.";
         }
-        return "Bạn có thể chỉnh kcal và macro tự do cho đúng cách mình đang đo món này.";
+        return "Bạn có thể chỉnh lại kcal và macro theo đúng khẩu phần mình vừa ăn để nhật ký phản ánh sát hơn.";
     }
 
-    private String readableMeal(String mealType) {
-        switch (safeMeal(mealType)) {
+    private void scrollToCustomEditor(boolean smooth) {
+        if (scrollAddFood == null || layoutCustomEditor == null || bottomSheet == null) return;
+        layoutCustomEditor.setVisibility(View.VISIBLE);
+        scrollAddFood.post(() -> {
+            int y = Math.max(0, bottomSheet.getTop() + layoutCustomEditor.getTop() - dp(24));
+            if (smooth) {
+                scrollAddFood.smoothScrollTo(0, y);
+                scrollAddFood.postDelayed(() -> scrollAddFood.smoothScrollTo(0, y), 120L);
+            } else {
+                scrollAddFood.scrollTo(0, y);
+            }
+            etCustomName.requestFocus();
+        });
+    }
+
+    private boolean isEditingManualEntry() {
+        return !TextUtils.isEmpty(editingEntryUuid);
+    }
+
+    private int dp(int value) {
+        return Math.round(getResources().getDisplayMetrics().density * value);
+    }
+
+    private int parseInt(@Nullable CharSequence value, int fallback) {
+        try {
+            return TextUtils.isEmpty(value) ? fallback : Integer.parseInt(value.toString().trim());
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private double parseDouble(@Nullable CharSequence value, double fallback) {
+        try {
+            return TextUtils.isEmpty(value) ? fallback : Double.parseDouble(value.toString().trim());
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private String trimDecimal(double value) {
+        if (Math.abs(value - Math.rint(value)) < 0.0001d) {
+            return String.valueOf((int) Math.rint(value));
+        }
+        return String.format(Locale.getDefault(), "%.1f", value);
+    }
+
+    private String cleanText(@Nullable CharSequence value) {
+        return value == null ? "" : value.toString().trim();
+    }
+
+    private String safeText(@Nullable String value) {
+        return value == null ? "" : value;
+    }
+
+    private String safeMeal(@Nullable String meal) {
+        if (Constants.MEAL_BREAKFAST.equals(meal)
+                || Constants.MEAL_LUNCH.equals(meal)
+                || Constants.MEAL_DINNER.equals(meal)
+                || Constants.MEAL_SNACK.equals(meal)) {
+            return meal;
+        }
+        return Constants.MEAL_LUNCH;
+    }
+
+    private String readableMeal(@NonNull String meal) {
+        switch (meal) {
             case Constants.MEAL_BREAKFAST:
                 return "Bữa sáng";
             case Constants.MEAL_DINNER:
@@ -509,46 +598,5 @@ public class AddFoodActivity extends AppCompatActivity {
             default:
                 return "Bữa trưa";
         }
-    }
-
-    private String safeMeal(String raw) {
-        if (Constants.MEAL_BREAKFAST.equals(raw)
-                || Constants.MEAL_LUNCH.equals(raw)
-                || Constants.MEAL_DINNER.equals(raw)
-                || Constants.MEAL_SNACK.equals(raw)) {
-            return raw;
-        }
-        return Constants.MEAL_LUNCH;
-    }
-
-    private String cleanText(@Nullable CharSequence value) {
-        return value == null ? "" : value.toString().trim();
-    }
-
-    private int parseInt(@Nullable CharSequence value, int fallback) {
-        try {
-            String raw = cleanText(value);
-            return raw.isEmpty() ? fallback : Integer.parseInt(raw);
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
-
-    private double parseDouble(@Nullable CharSequence value, double fallback) {
-        try {
-            String raw = cleanText(value).replace(',', '.');
-            return raw.isEmpty() ? fallback : Double.parseDouble(raw);
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
-
-    private void scrollToEditor() {
-        if (scrollAddFood == null || bottomSheet == null) return;
-        scrollAddFood.post(() -> scrollAddFood.smoothScrollTo(0, Math.max(0, bottomSheet.getTop() - dp(12))));
-    }
-
-    private int dp(int value) {
-        return Math.round(getResources().getDisplayMetrics().density * value);
     }
 }

@@ -139,7 +139,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Còn thiếu 2000 kcal"
+                    android:text="Bạn còn thiếu khoảng 2000 kcal cho mục tiêu hôm nay"
                     android:textColor="@color/on_surface_variant"
                     android:textSize="13sp" />
 
@@ -218,6 +218,31 @@
                         android:progress="0"
                         android:progressDrawable="@drawable/progress_tertiary" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_card_primary_soft"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thêm món cho hôm nay"
+                    android:textColor="@color/on_surface"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Bắt đầu từ bữa bạn vừa ăn nhé."
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -433,7 +458,7 @@
                     android:id="@+id/tvInsightHeadline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hôm nay bạn chưa log món nào"
+                    android:text="Bạn chưa có dữ liệu hôm nay"
                     android:textColor="@color/on_surface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -443,7 +468,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Bắt đầu bằng cách thêm món thủ công hoặc chọn từ danh sách theo từng bữa trong ngày."
+                    android:text="Hãy thêm món ở từng bữa để app tổng hợp kcal, macros và lưu nhật ký theo đúng tài khoản của bạn."
                     android:textColor="@color/on_secondary_container"
                     android:textSize="13sp" />
 

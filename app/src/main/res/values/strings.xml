@@ -51,7 +51,7 @@
     <string name="about_focuslife">About FocusLife</string>
     <string name="about_focuslife_summary">What the app does, its message and the project team</string>
     <string name="about_focuslife_dialog_title">About FocusLife</string>
-    <string name="about_focuslife_body">FocusLife is a companion app for building a balanced lifestyle: tracking health, nutrition, food diary, focus sessions, movement and personal goals.\n\nThe app is designed around a simple message: improve a little every day, live with more focus, take better care of your body, and love yourself through small consistent habits.\n\nCreated by:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nThe authors are students of Ho Chi Minh City University of Technology and Education (HCMUTE).\n\nThis is a Mobile Programming course project instructed by Master Trương Thị Ngọc Phượng.</string>
+    <string name="about_focuslife_body">FocusLife is a companion app for building a balanced lifestyle: tracking health, nutrition, food diary, focus sessions, movement and personal goals.\n\nThe app is designed around a simple message: improve a little every day, live with more focus, take better care of your body, and love yourself through small consistent actions.\n\nCreated by:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nThe authors are students of Ho Chi Minh City University of Technology and Education (HCMUTE).\n\nThis is a Mobile Programming course project instructed by Master Trương Thị Ngọc Phượng.</string>
     <string name="close">Close</string>
 
     <string name="focus_section">Focus</string>
@@ -127,7 +127,7 @@
     <string name="about_focuslife_header_subtitle">Meaning, mission and the team behind FocusLife</string>
     <string name="about_focuslife_chip">FocusLife Story</string>
     <string name="about_focuslife_hero_title">A companion for a more balanced life.</string>
-    <string name="about_focuslife_intro">FocusLife is a mobile application that helps users balance study, health and personal growth in one place. The app supports focus sessions, movement tracking, nutrition logging, health monitoring and habit-oriented goals so every day can become a little more intentional.</string>
+    <string name="about_focuslife_intro">FocusLife is a mobile application that helps users balance study, health and personal growth in one place. The app supports focus sessions, movement tracking, nutrition logging, health monitoring and personal goals so every day can become a little more intentional.</string>
     <string name="about_focuslife_message_title">Life message</string>
     <string name="about_focuslife_message_body">FocusLife is built around a simple message: live mindfully, improve a little every day, and create meaningful progress through small consistent actions. When you take care of your focus, your body and your routines, you take better care of your future.</string>
     <string name="about_focuslife_team_title">Project team</string>

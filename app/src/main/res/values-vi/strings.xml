@@ -50,7 +50,7 @@
     <string name="about_focuslife">About FocusLife</string>
     <string name="about_focuslife_summary">Giới thiệu ứng dụng, thông điệp và nhóm thực hiện</string>
     <string name="about_focuslife_dialog_title">About FocusLife</string>
-    <string name="about_focuslife_body">FocusLife là ứng dụng đồng hành giúp bạn xây dựng một lối sống cân bằng hơn: theo dõi sức khỏe, dinh dưỡng, nhật ký ăn uống, phiên tập trung, vận động và mục tiêu cá nhân.\n\nỨng dụng mang thông điệp sống tích cực: mỗi ngày tốt hơn một chút, sống tập trung hơn, chăm sóc cơ thể tốt hơn và yêu bản thân bằng những thói quen nhỏ nhưng đều đặn.\n\nNgười thực hiện:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nNhóm thực hiện là sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).\n\nĐây là đồ án môn Lập trình di động dưới sự hướng dẫn của Thạc sĩ Trương Thị Ngọc Phượng.</string>
+    <string name="about_focuslife_body">FocusLife là ứng dụng đồng hành giúp bạn xây dựng một lối sống cân bằng hơn: theo dõi sức khỏe, dinh dưỡng, nhật ký ăn uống, phiên tập trung, vận động và mục tiêu cá nhân.\n\nỨng dụng mang thông điệp sống tích cực: mỗi ngày tốt hơn một chút, sống tập trung hơn, chăm sóc cơ thể tốt hơn và yêu bản thân bằng những hành động nhỏ nhưng đều đặn.\n\nNgười thực hiện:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nNhóm thực hiện là sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).\n\nĐây là đồ án môn Lập trình di động dưới sự hướng dẫn của Thạc sĩ Trương Thị Ngọc Phượng.</string>
     <string name="close">Đóng</string>
 
     <string name="focus_section">Tập trung</string>
@@ -125,7 +125,7 @@
     <string name="about_focuslife_header_subtitle">Ý nghĩa, thông điệp và nhóm đứng sau FocusLife</string>
     <string name="about_focuslife_chip">Câu chuyện FocusLife</string>
     <string name="about_focuslife_hero_title">Người bạn đồng hành cho một cuộc sống cân bằng hơn.</string>
-    <string name="about_focuslife_intro">FocusLife là ứng dụng di động hỗ trợ người dùng cân bằng việc học tập, sức khỏe và phát triển bản thân trong cùng một nơi. Ứng dụng giúp quản lý phiên tập trung, theo dõi vận động, nhật ký dinh dưỡng, chỉ số sức khỏe và các mục tiêu theo thói quen để mỗi ngày đều trở nên có định hướng hơn.</string>
+    <string name="about_focuslife_intro">FocusLife là ứng dụng di động hỗ trợ người dùng cân bằng việc học tập, sức khỏe và phát triển bản thân trong cùng một nơi. Ứng dụng giúp quản lý phiên tập trung, theo dõi vận động, nhật ký dinh dưỡng, chỉ số sức khỏe và các mục tiêu cá nhân để mỗi ngày đều trở nên có định hướng hơn.</string>
     <string name="about_focuslife_message_title">Thông điệp sống</string>
     <string name="about_focuslife_message_body">FocusLife được xây dựng với một thông điệp đơn giản: sống có chủ đích, tốt hơn một chút mỗi ngày và tạo nên tiến bộ ý nghĩa từ những hành động nhỏ nhưng bền bỉ. Khi bạn chăm sóc sự tập trung, cơ thể và nếp sống của mình, bạn cũng đang chăm sóc tương lai của chính mình.</string>
     <string name="about_focuslife_team_title">Nhóm thực hiện</string>

@@ -2,6 +2,8 @@ package com.hcmute.edu.vn.focus_life.ui.onboarding;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,13 +26,13 @@ public class OnboardingGoalActivity extends AppCompatActivity {
     private final Map<Integer, String> goalMap = Map.of(
             R.id.cardGoalFocus, "Deep Work",
             R.id.cardGoalHealth, "Health First",
-            R.id.cardGoalHabit, "Consistency",
             R.id.cardGoalAll, "Holistic Life"
     );
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        hideStatusBar();
         setContentView(R.layout.activity_onboarding_goal);
 
         OnboardingPreferences preferences = new OnboardingPreferences(this);
@@ -88,7 +90,6 @@ public class OnboardingGoalActivity extends AppCompatActivity {
     private void refreshGoalStates() {
         updateCard(R.id.cardGoalFocus, R.id.goalCheckFocus, selectedGoals.contains("Deep Work"));
         updateCard(R.id.cardGoalHealth, R.id.goalCheckHealth, selectedGoals.contains("Health First"));
-        updateCard(R.id.cardGoalHabit, R.id.goalCheckHabit, selectedGoals.contains("Consistency"));
         updateCard(R.id.cardGoalAll, R.id.goalCheckAll, selectedGoals.contains("Holistic Life"));
 
         btnContinue.setEnabled(!selectedGoals.isEmpty());
@@ -109,4 +110,17 @@ public class OnboardingGoalActivity extends AppCompatActivity {
         startActivity(new Intent(this, OnboardingPermissionsActivity.class));
         finish();
     }
+
+    private void hideStatusBar() {
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        );
+    }
+
 }

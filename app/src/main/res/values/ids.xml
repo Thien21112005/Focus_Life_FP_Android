@@ -12,4 +12,7 @@
     <!-- Running map ids kept stable for programmatic MapView creation -->
     <item name="mapContainer" type="id" />
     <item name="mapView" type="id" />
+    <item name="btnChatAI" type="id" />
+    <item name="tvDuration" type="id" />
+    <item name="tvFocusCountdown" type="id" />
 </resources>

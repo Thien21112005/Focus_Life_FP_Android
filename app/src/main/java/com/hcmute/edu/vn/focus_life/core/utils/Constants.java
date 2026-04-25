@@ -10,6 +10,7 @@ public final class Constants {
     public static final String FIRESTORE_MONTHLY_GOALS = "monthly_goals";
     public static final String FIRESTORE_STEP_RECORDS = "step_records";
     public static final String FIRESTORE_FOCUS_TASKS = "focus_tasks";
+    public static final String FIRESTORE_NUTRITION_ENTRIES = "nutrition_entries";
 
     public static final String DEFAULT_APP_AVATAR_URL = "https://res.cloudinary.com/df4ojgg7k/image/upload/v1776792758/images_fwzwji.jpg";
 
@@ -21,4 +22,7 @@ public final class Constants {
     public static final String MEAL_LUNCH = "lunch";
     public static final String MEAL_DINNER = "dinner";
     public static final String MEAL_SNACK = "snack";
+
+    public static final String NUTRITION_SOURCE_MANUAL = "manual";
+    public static final String NUTRITION_SOURCE_ML_KIT = "ml_kit";
 }

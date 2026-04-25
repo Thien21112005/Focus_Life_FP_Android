@@ -3,11 +3,12 @@
     android:id="@+id/cardTaskRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:background="@drawable/bg_card_white"
+    android:layout_marginBottom="14dp"
+    android:background="@drawable/bg_focus_task_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:minHeight="132dp"
+    android:padding="18dp">
 
     <CheckBox
         android:id="@+id/cbTaskComplete"
@@ -28,7 +29,7 @@
             android:layout_height="wrap_content"
             android:text="Thiết kế flow focus"
             android:textColor="@color/on_surface"
-            android:textSize="17sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
@@ -38,7 +39,7 @@
             android:layout_marginTop="4dp"
             android:text="Không có mô tả thêm"
             android:textColor="@color/on_surface_variant"
-            android:textSize="13sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvTaskSchedule"
@@ -47,7 +48,7 @@
             android:layout_marginTop="8dp"
             android:text="Thứ 4, 22/04 · 10:00"
             android:textColor="@color/primary"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <LinearLayout

@@ -18,7 +18,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
-import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.data.repository.FocusTaskRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.FocusTask;
 
@@ -33,25 +32,21 @@ import java.util.Locale;
 
 public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener {
 
-    private static final int FILTER_SMART = 0;
-    private static final int FILTER_ACTIVE = 1;
-    private static final int FILTER_COMPLETED = 2;
+    private static final int FILTER_ACTIVE = 0;
+    private static final int FILTER_COMPLETED = 1;
 
     private final FocusTaskRepository repository = new FocusTaskRepository();
     private final List<FocusTask> allTasks = new ArrayList<>();
 
     private FocusTaskAdapter adapter;
-    private TextView tvFocusGreeting;
-    private TextView tvFocusSubtitle;
     private TextView tvStatsPrimary;
     private TextView tvStatsSecondary;
     private TextView tvSelectionCount;
     private TextView tvEmptyState;
     private View selectionBar;
-    private MaterialButton btnSmart;
     private MaterialButton btnActive;
     private MaterialButton btnCompleted;
-    private int currentFilter = FILTER_SMART;
+    private int currentFilter = FILTER_ACTIVE;
 
     @Nullable
     @Override
@@ -64,16 +59,14 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        tvFocusGreeting = view.findViewById(R.id.tvFocusGreeting);
-        tvFocusSubtitle = view.findViewById(R.id.tvFocusSubtitle);
         tvStatsPrimary = view.findViewById(R.id.tvFocusStatsPrimary);
         tvStatsSecondary = view.findViewById(R.id.tvFocusStatsSecondary);
         tvSelectionCount = view.findViewById(R.id.tvSelectionCount);
         tvEmptyState = view.findViewById(R.id.tvFocusEmptyState);
         selectionBar = view.findViewById(R.id.layoutFocusSelection);
-        btnSmart = view.findViewById(R.id.btnFocusSmart);
         btnActive = view.findViewById(R.id.btnFocusActive);
         btnCompleted = view.findViewById(R.id.btnFocusCompleted);
+
         MaterialButton btnDeleteSelected = view.findViewById(R.id.btnDeleteSelected);
         MaterialButton btnCancelSelection = view.findViewById(R.id.btnCancelSelection);
         FloatingActionButton fabAdd = view.findViewById(R.id.fabAddTask);
@@ -83,12 +76,6 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
         adapter = new FocusTaskAdapter(this);
         recyclerView.setAdapter(adapter);
 
-        OnboardingPreferences onboardingPreferences = new OnboardingPreferences(requireContext());
-        String displayName = onboardingPreferences.getDisplayName();
-        tvFocusGreeting.setText("Focus cho " + displayName);
-        tvFocusSubtitle.setText("Task quá khứ, hiện tại và tương lai được gom theo ngày, tuần, tháng để bạn kéo nhanh hơn.");
-
-        btnSmart.setOnClickListener(v -> setFilter(FILTER_SMART));
         btnActive.setOnClickListener(v -> setFilter(FILTER_ACTIVE));
         btnCompleted.setOnClickListener(v -> setFilter(FILTER_COMPLETED));
 
@@ -112,14 +99,15 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     }
 
     private void updateFilterButtons() {
-        updateButton(btnSmart, currentFilter == FILTER_SMART);
         updateButton(btnActive, currentFilter == FILTER_ACTIVE);
         updateButton(btnCompleted, currentFilter == FILTER_COMPLETED);
     }
 
     private void updateButton(@NonNull MaterialButton button, boolean selected) {
-        button.setBackgroundResource(selected ? R.drawable.bg_gradient_primary : R.drawable.bg_card_surface_low);
-        button.setTextColor(requireContext().getColor(selected ? R.color.on_primary : R.color.on_surface_variant));
+        button.setBackgroundResource(selected ? R.drawable.bg_focus_tab_selected : R.drawable.bg_focus_tab_unselected);
+        button.setTextColor(requireContext().getColor(selected ? R.color.secondary : R.color.on_surface_variant));
+        button.setElevation(0f);
+        button.setStrokeWidth(0);
     }
 
     private void loadTasks() {
@@ -142,11 +130,16 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
             filtered.add(task);
         }
 
+        tvEmptyState.setText(currentFilter == FILTER_ACTIVE
+                ? "Không còn task đang làm. Nhấn + để tạo task mới."
+                : "Chưa có task đã hoàn thành.");
         tvEmptyState.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+
         updateStats(filtered);
 
         List<FocusTaskAdapter.ListItem> items = new ArrayList<>();
         String lastHeader = "";
+
         for (FocusTask task : filtered) {
             String header = buildGroupHeader(task);
             if (!header.equals(lastHeader)) {
@@ -155,35 +148,55 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
             }
             items.add(new FocusTaskAdapter.TaskItem(task));
         }
+
         adapter.submit(items);
     }
 
-    private void updateStats(@NonNull List<FocusTask> tasks) {
+    private void updateStats(@NonNull List<FocusTask> visibleTasks) {
+        int activeCount = 0;
+        int completedCount = 0;
         int overdue = 0;
         int upcomingSevenDays = 0;
+
         long now = System.currentTimeMillis();
         long sevenDaysLater = now + 7L * 24L * 60L * 60L * 1000L;
 
-        for (FocusTask task : tasks) {
-            if (!task.completed && task.dueAt > 0 && task.dueAt < now) {
+        for (FocusTask task : allTasks) {
+            if (task.completed) {
+                completedCount++;
+                continue;
+            }
+
+            activeCount++;
+
+            if (task.dueAt > 0 && task.dueAt < now) {
                 overdue++;
             }
+
             long anchor = task.resolveAnchorTime();
-            if (!task.completed && anchor >= now && anchor <= sevenDaysLater) {
+            if (anchor >= now && anchor <= sevenDaysLater) {
                 upcomingSevenDays++;
             }
         }
 
-        tvStatsPrimary.setText(tasks.size() + " task hiển thị");
-        tvStatsSecondary.setText(upcomingSevenDays + " việc trong 7 ngày tới · " + overdue + " việc trễ hạn");
+        if (currentFilter == FILTER_ACTIVE) {
+            tvStatsPrimary.setText(visibleTasks.size() + " task đang làm");
+            tvStatsSecondary.setText(upcomingSevenDays + " việc trong 7 ngày tới · " + overdue + " trễ hạn");
+        } else {
+            tvStatsPrimary.setText(visibleTasks.size() + " task đã xong");
+            tvStatsSecondary.setText(activeCount + " task chưa xong · " + completedCount + " đã hoàn thành");
+        }
     }
 
     @NonNull
     private String buildGroupHeader(@NonNull FocusTask task) {
         long anchor = task.resolveAnchorTime();
+
         Calendar today = startOfDay(Calendar.getInstance());
+
         Calendar target = Calendar.getInstance();
         target.setTimeInMillis(anchor);
+
         Calendar targetStart = startOfDay((Calendar) target.clone());
 
         long diffMillis = targetStart.getTimeInMillis() - today.getTimeInMillis();
@@ -193,18 +206,22 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
             SimpleDateFormat monthFormat = new SimpleDateFormat("'Đã qua ·' MMMM/yyyy", new Locale("vi", "VN"));
             return capitalize(monthFormat.format(new Date(anchor)));
         }
+
         if (diffDays == 0) return "Hôm nay";
         if (diffDays == 1) return "Ngày mai";
+
         if (diffDays <= 7) {
             SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE, dd/MM", new Locale("vi", "VN"));
             return capitalize(dayFormat.format(new Date(anchor)));
         }
+
         if (diffDays <= 31) {
             int weekOfMonth = target.get(Calendar.WEEK_OF_MONTH);
             int month = target.get(Calendar.MONTH) + 1;
             int year = target.get(Calendar.YEAR);
             return "Tuần " + weekOfMonth + " · Tháng " + month + "/" + year;
         }
+
         SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM/yyyy", new Locale("vi", "VN"));
         return capitalize(monthFormat.format(new Date(anchor)));
     }
@@ -227,9 +244,12 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     private void deleteSelectedTasks() {
         List<String> ids = adapter.getSelectedTaskIds();
         if (ids.isEmpty()) return;
+
         String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+
         repository.deleteTasks(uid, ids, (success, error) -> {
             if (!isAdded()) return;
+
             if (success) {
                 Toast.makeText(requireContext(), "Đã xóa " + ids.size() + " task", Toast.LENGTH_SHORT).show();
                 adapter.clearSelection();
@@ -255,8 +275,10 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     @Override
     public void onTaskCheckedChanged(@NonNull FocusTask task, boolean checked) {
         String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+
         repository.updateCompleted(uid, task.id, checked, (success, error) -> {
             if (!isAdded()) return;
+
             if (success) {
                 Toast.makeText(requireContext(), checked ? "Task đã hoàn thành" : "Task chuyển về đang làm", Toast.LENGTH_SHORT).show();
                 loadTasks();

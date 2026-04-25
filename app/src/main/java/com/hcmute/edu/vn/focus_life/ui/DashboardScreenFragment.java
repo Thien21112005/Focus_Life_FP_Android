@@ -37,9 +37,21 @@ public class DashboardScreenFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        // Xử lý ẩn bottomNav nếu có trong layout được inflate
         View bottomNav = view.findViewById(R.id.bottomNav);
         if (bottomNav != null) {
             bottomNav.setVisibility(View.GONE);
+        }
+
+        // Xử lý sự kiện click nút Chat AI trong Health Tracker
+        View btnChatAI = view.findViewById(R.id.btnChatAI);
+        if (btnChatAI != null) {
+            btnChatAI.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).openTab(MainActivity.TAB_AI_COACH);
+                }
+            });
         }
     }
 }

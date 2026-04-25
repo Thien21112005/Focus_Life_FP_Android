@@ -19,4 +19,7 @@ public interface ProfileDao {
 
     @Query("SELECT * FROM profiles WHERE synced = 0")
     List<ProfileEntity> getUnsynced();
+
+    @Query("DELETE FROM profiles WHERE uid = :uid")
+    void deleteByUid(String uid);
 }

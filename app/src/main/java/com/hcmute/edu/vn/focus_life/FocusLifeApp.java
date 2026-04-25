@@ -5,6 +5,7 @@ import android.app.Application;
 import com.google.firebase.FirebaseApp;
 import com.hcmute.edu.vn.focus_life.core.session.AuthStatePreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SessionManager;
+import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
 import com.hcmute.edu.vn.focus_life.core.utils.NotificationHelper;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.worker.SyncScheduler;
@@ -19,6 +20,7 @@ public class FocusLifeApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        new SettingsPreferences(this).applyToAppCompat();
         FirebaseApp.initializeApp(this);
         database = AppDatabase.getInstance(this);
         authStatePreferences = new AuthStatePreferences(this);

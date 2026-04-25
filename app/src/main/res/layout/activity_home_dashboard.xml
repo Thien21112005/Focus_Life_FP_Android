@@ -37,17 +37,17 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp">
 
-            <TextView android:id="@+id/tvNavHome" style="@style/FocusLife.BottomNavItem" android:text="Home" />
-            <TextView android:id="@+id/tvNavHealth" style="@style/FocusLife.BottomNavItem" android:text="Health" />
-            <TextView android:id="@+id/tvNavFocus" style="@style/FocusLife.BottomNavItem" android:text="Focus" />
-            <TextView android:id="@+id/tvNavMap" style="@style/FocusLife.BottomNavItem" android:text="Map" />
-            <TextView android:id="@+id/tvNavDiary" style="@style/FocusLife.BottomNavItem" android:text="Diary" />
-            <TextView android:id="@+id/tvNavAiCoach" style="@style/FocusLife.BottomNavItem" android:text="AI Coach" />
-            <TextView android:id="@+id/tvNavNotification" style="@style/FocusLife.BottomNavItem" android:text="Notification" />
-            <TextView android:id="@+id/tvNavReport" style="@style/FocusLife.BottomNavItem" android:text="Report" />
-            <TextView android:id="@+id/tvNavStatistic" style="@style/FocusLife.BottomNavItem" android:text="Statistic" />
-            <TextView android:id="@+id/tvNavTarget" style="@style/FocusLife.BottomNavItem" android:text="Target" />
-            <TextView android:id="@+id/tvNavProfile" style="@style/FocusLife.BottomNavItem" android:text="Profile" />
+            <TextView android:id="@+id/tvNavHome" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_home" />
+            <TextView android:id="@+id/tvNavHealth" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_health" />
+            <TextView android:id="@+id/tvNavFocus" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_focus" />
+            <TextView android:id="@+id/tvNavMap" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_map" />
+            <TextView android:id="@+id/tvNavDiary" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_diary" />
+            <TextView android:id="@+id/tvNavAiCoach" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_ai_coach" />
+            <TextView android:id="@+id/tvNavNotification" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_notification" />
+            <TextView android:id="@+id/tvNavReport" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_report" />
+            <TextView android:id="@+id/tvNavStatistic" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_statistic" />
+            <TextView android:id="@+id/tvNavTarget" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_target" />
+            <TextView android:id="@+id/tvNavProfile" style="@style/FocusLife.BottomNavItem" android:text="@string/nav_profile" />
         </LinearLayout>
     </HorizontalScrollView>
 

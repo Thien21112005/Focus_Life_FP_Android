@@ -1,6 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">FocusLife</string>
-    <!-- TODO: Replace with your real Web Client ID from google-services.json -->
-    <string name="default_web_client_id">997531936411-3qohal553jq71go40k39itlq2h2v9lc9.apps.googleusercontent.com</string>
+    <string name="default_web_client_id" translatable="false">997531936411-3qohal553jq71go40k39itlq2h2v9lc9.apps.googleusercontent.com</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_health">Health</string>
+    <string name="nav_focus">Focus</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_diary">Diary</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_notification">Notifications</string>
+    <string name="nav_report">Reports</string>
+    <string name="nav_statistic">Stats</string>
+    <string name="nav_target">Goals</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="profile_screen_title">Profile</string>
+    <string name="profile_screen_subtitle">Account, theme and security</string>
+    <string name="provider_google">Google account</string>
+    <string name="provider_password">Email account</string>
+    <string name="account_section">Account</string>
+    <string name="profile_info">Profile information</string>
+    <string name="profile_summary_placeholder">Manage your basic information</string>
+    <string name="profile_google_basic_info">Basic Google information is read-only</string>
+    <string name="profile_google_readonly">Google accounts can only view basic profile information.</string>
+    <string name="profile_no_phone">No phone number</string>
+    <string name="profile_summary_format">%1$s · Goal: %2$s</string>
+    <string name="password">Password</string>
+    <string name="password_summary">Change with old password and new password</string>
+    <string name="password_google_hidden">Password settings are only available for email accounts.</string>
+
+    <string name="appearance_section">Appearance</string>
+    <string name="dark_mode">Dark mode</string>
+    <string name="dark_mode_summary">Use a darker, more comfortable interface</string>
+    <string name="theme_color">Theme color</string>
+    <string name="theme_title">Choose theme</string>
+    <string name="theme_indigo">Indigo</string>
+    <string name="theme_emerald">Emerald</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_rose">Rose</string>
+    <string name="theme_amber">Amber</string>
+    <string name="theme_updated">Theme updated</string>
+    <string name="language">Language</string>
+    <string name="language_title">Choose language</string>
+    <string name="language_vietnamese">Vietnamese</string>
+    <string name="language_english">English</string>
+    <string name="language_updated">Language updated</string>
+
+    <string name="about_section">About</string>
+    <string name="about_focuslife">About FocusLife</string>
+    <string name="about_focuslife_summary">What the app does, its message and the project team</string>
+    <string name="about_focuslife_dialog_title">About FocusLife</string>
+    <string name="about_focuslife_body">FocusLife is a companion app for building a balanced lifestyle: tracking health, nutrition, food diary, focus sessions, movement and personal goals.\n\nThe app is designed around a simple message: improve a little every day, live with more focus, take better care of your body, and love yourself through small consistent habits.\n\nCreated by:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nThe authors are students of Ho Chi Minh City University of Technology and Education (HCMUTE).\n\nThis is a Mobile Programming course project instructed by Master Trương Thị Ngọc Phượng.</string>
+    <string name="close">Close</string>
+
+    <string name="focus_section">Focus</string>
+    <string name="pomodoro_settings">Pomodoro settings</string>
+    <string name="pomodoro_summary_placeholder">25m focus · 5m short break · 15m long break</string>
+    <string name="pomodoro_summary_format">%1$dm focus · %2$dm short break · %3$dm long break</string>
+    <string name="pomodoro_summary_dnd_suffix"> · Auto DND</string>
+
+    <string name="danger_section">Data and privacy</string>
+    <string name="delete_account">Delete account</string>
+    <string name="delete_account_summary">Permanently remove this account</string>
+    <string name="delete_account_title">Delete account?</string>
+    <string name="delete_account_warning_message">This action is permanent. Your account and cloud profile will be removed. Please make sure you want to continue.</string>
+    <string name="delete_account_action">Delete</string>
+    <string name="keep_account">Keep account</string>
+    <string name="delete_account_success">Your account has been deleted.</string>
+    <string name="delete_account_recent_login_required">For security, please sign in again and try deleting your account once more.</string>
+    <string name="logout">Log out</string>
+
+    <string name="edit_profile_title">Edit profile</string>
+    <string name="profile_name">Full name</string>
+    <string name="profile_phone">Phone number</string>
+    <string name="profile_dob">Date of birth</string>
+    <string name="profile_gender">Gender</string>
+    <string name="profile_height">Height (cm)</string>
+    <string name="profile_weight">Weight (kg)</string>
+    <string name="profile_primary_goal">Primary goal</string>
+    <string name="old_password">Old password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="current_password">Current password</string>
+    <string name="change_password_title">Change password</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+
+    <string name="profile_update_success">Profile updated successfully.</string>
+    <string name="profile_update_saved_offline">Profile saved on this device. It will sync when the network is stable.</string>
+    <string name="password_update_success">Password updated successfully.</string>
+    <string name="error_login_required">Please sign in again to continue.</string>
+    <string name="error_profile_empty">Profile information is missing.</string>
+    <string name="error_name_required">Please enter your full name.</string>
+    <string name="error_invalid_health_numbers">Height and weight cannot be negative.</string>
+    <string name="error_old_password_required">Please enter your current password.</string>
+    <string name="error_new_password_length">New password must be at least 6 characters.</string>
+    <string name="error_password_confirm_mismatch">New password confirmation does not match.</string>
+    <string name="error_password_same">New password must be different from the old password.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="error_invalid_number_format">%1$s must be a valid number.</string>
+
+    <string name="open_appearance_settings">Open detailed appearance settings</string>
+    <string name="open_language_settings">Open language selection</string>
+    <string name="profile_editor_subtitle">Update your basic profile and wellness details</string>
+    <string name="profile_readonly_title">Profile details</string>
+    <string name="profile_readonly_info_format">%1$s: %2$s
+%3$s: %4$s
+%5$s: %6$s</string>
+    <string name="label_email">Email</string>
+    <string name="label_provider">Provider</string>
+    <string name="profile_personal_section">Personal details</string>
+    <string name="save_changes">Save changes</string>
+    <string name="password_screen_subtitle">Keep your account secure with a stronger password</string>
+    <string name="password_security_title">Security reminder</string>
+    <string name="password_security_message">Use at least 6 characters and avoid reusing your previous password.</string>
+    <string name="password_google_title">Password managed by Google</string>
+    <string name="update_password_action">Update password</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_subtitle">Personalize theme, color and language for the whole app</string>
+    <string name="theme_help_text">Choose the color accent that best matches your style.</string>
+    <string name="language_help_text">Select the language you want to use across FocusLife.</string>
+    <string name="selected_label">Selected</string>
+    <string name="not_selected">Select</string>
+    <string name="about_focuslife_header_subtitle">Meaning, mission and the team behind FocusLife</string>
+    <string name="about_focuslife_chip">FocusLife Story</string>
+    <string name="about_focuslife_hero_title">A companion for a more balanced life.</string>
+    <string name="about_focuslife_intro">FocusLife is a mobile application that helps users balance study, health and personal growth in one place. The app supports focus sessions, movement tracking, nutrition logging, health monitoring and habit-oriented goals so every day can become a little more intentional.</string>
+    <string name="about_focuslife_message_title">Life message</string>
+    <string name="about_focuslife_message_body">FocusLife is built around a simple message: live mindfully, improve a little every day, and create meaningful progress through small consistent actions. When you take care of your focus, your body and your routines, you take better care of your future.</string>
+    <string name="about_focuslife_team_title">Project team</string>
+    <string name="about_focuslife_team_body">Nguyễn Ngọc Thiện - 23110154
+Nghiêm Phú Đăng Quân - 23110144
+Nguyễn Quốc Khoa - 23110116
+
+Students of Ho Chi Minh City University of Technology and Education (HCMUTE).</string>
+    <string name="about_focuslife_course_title">Academic project</string>
+    <string name="about_focuslife_course_body">This application was developed as a Mobile Programming course project under the guidance of Master Trương Thị Ngọc Phượng. It reflects the team effort to combine usability, thoughtful UI and positive lifestyle values into one product.</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_other">Other</string>
+    <string name="error_invalid_email">Please enter a valid email address.</string>
+    <string name="error_phone_10_digits">Phone number must contain exactly 10 digits.</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.ui.ai.AICoachChatFragment;
 import com.hcmute.edu.vn.focus_life.ui.diary.NutritionDiaryFragment;
 import com.hcmute.edu.vn.focus_life.ui.focus.FocusFragment;
 import com.hcmute.edu.vn.focus_life.ui.home.HomeFragment;
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             case TAB_DIARY:
                 return new NutritionDiaryFragment();
             case TAB_AI_COACH:
-                return DashboardScreenFragment.newInstance(R.layout.activity_ai_coach_chat);
+                return new AICoachChatFragment();
             case TAB_NOTIFICATION:
                 return DashboardScreenFragment.newInstance(R.layout.activity_notification_center);
             case TAB_REPORT:

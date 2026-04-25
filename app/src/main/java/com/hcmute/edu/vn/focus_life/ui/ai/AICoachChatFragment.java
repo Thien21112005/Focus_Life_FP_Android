@@ -3,7 +3,6 @@ package com.hcmute.edu.vn.focus_life.ui.ai;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hcmute.edu.vn.focus_life.R;
-
+import com.hcmute.edu.vn.focus_life.BuildConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -41,11 +40,8 @@ public class AICoachChatFragment extends Fragment {
     private View btnSend;
     private ProgressBar chatProgressBar;
 
-    // 1. KIỂM TRA LẠI KEY NÀY: Hãy thử tạo một Key mới hoàn toàn trên AI Studio nếu vẫn lỗi
-    private static final String GEMINI_API_KEY = "AIzaSyCMA1ara-xoC6dk2AUZBcuA3KlInaP6MLk";
-
-    // 2. URL CHUẨN: v1beta + gemini-1.5-flash
-    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_API_KEY;
+    // URL CHUẨN: v1beta + gemini-1.5-flash
+    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + BuildConfig.GEMINI_API_KEY;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 

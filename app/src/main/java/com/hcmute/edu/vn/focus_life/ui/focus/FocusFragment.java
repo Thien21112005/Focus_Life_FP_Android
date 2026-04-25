@@ -105,7 +105,7 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
 
     private void updateButton(@NonNull MaterialButton button, boolean selected) {
         button.setBackgroundResource(selected ? R.drawable.bg_focus_tab_selected : R.drawable.bg_focus_tab_unselected);
-        button.setTextColor(requireContext().getColor(selected ? R.color.secondary : R.color.on_surface_variant));
+        button.setTextColor(requireContext().getColor(selected ? R.color.primary : R.color.on_surface_variant));
         button.setElevation(0f);
         button.setStrokeWidth(0);
     }
@@ -241,25 +241,6 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
         return text.substring(0, 1).toUpperCase(new Locale("vi", "VN")) + text.substring(1);
     }
 
-    private void deleteSelectedTasks() {
-        List<String> ids = adapter.getSelectedTaskIds();
-        if (ids.isEmpty()) return;
-
-        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
-
-        repository.deleteTasks(uid, ids, (success, error) -> {
-            if (!isAdded()) return;
-
-            if (success) {
-                Toast.makeText(requireContext(), "Đã xóa " + ids.size() + " task", Toast.LENGTH_SHORT).show();
-                adapter.clearSelection();
-                loadTasks();
-            } else {
-                Toast.makeText(requireContext(), "Xóa task thất bại", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     @Override
     public void onTaskClicked(@NonNull FocusTask task) {
         Intent intent = new Intent(requireContext(), FocusTaskDetailActivity.class);
@@ -269,21 +250,17 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
 
     @Override
     public void onTaskLongPressed(@NonNull FocusTask task) {
-        tvSelectionCount.setText("Đang chọn task");
+        // no-op, selection handled in adapter
     }
 
     @Override
     public void onTaskCheckedChanged(@NonNull FocusTask task, boolean checked) {
         String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
-
         repository.updateCompleted(uid, task.id, checked, (success, error) -> {
-            if (!isAdded()) return;
-
-            if (success) {
-                Toast.makeText(requireContext(), checked ? "Task đã hoàn thành" : "Task chuyển về đang làm", Toast.LENGTH_SHORT).show();
-                loadTasks();
+            if (!success && isAdded()) {
+                requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(), "Không thể cập nhật task", Toast.LENGTH_SHORT).show());
             } else {
-                Toast.makeText(requireContext(), "Không thể cập nhật task", Toast.LENGTH_SHORT).show();
+                loadTasks();
             }
         });
     }
@@ -292,5 +269,25 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     public void onSelectionChanged(int count) {
         selectionBar.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         tvSelectionCount.setText(count + " task đang được chọn");
+    }
+
+    private void deleteSelectedTasks() {
+        List<String> ids = adapter.getSelectedTaskIds();
+        if (ids.isEmpty()) return;
+
+        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+        repository.deleteTasks(uid, ids, (success, error) -> {
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(requireContext(), "Đã xóa các task đã chọn", Toast.LENGTH_SHORT).show();
+                        adapter.clearSelection();
+                        loadTasks();
+                    } else {
+                        Toast.makeText(requireContext(), "Xóa task thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 }

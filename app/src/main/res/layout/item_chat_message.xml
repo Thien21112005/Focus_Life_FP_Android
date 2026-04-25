@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Tin nhắn của AI -->
+    <LinearLayout
+        android:id="@+id/layoutAI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginEnd="64dp"
+        android:background="@drawable/bg_card_surface_low"
+        android:orientation="vertical"
+        android:padding="12dp">
+        <TextView
+            android:id="@+id/tvMessageAI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/on_surface"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- Tin nhắn của Người dùng -->
+    <LinearLayout
+        android:id="@+id/layoutUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginStart="64dp"
+        android:background="@drawable/bg_gradient_primary"
+        android:orientation="vertical"
+        android:padding="12dp">
+        <TextView
+            android:id="@+id/tvMessageUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/on_primary"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+</LinearLayout>

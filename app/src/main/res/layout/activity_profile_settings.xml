@@ -264,11 +264,6 @@
                 android:id="@+id/rowDarkMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="FOCUS SETTINGS"
-                android:textColor="@color/primary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
@@ -350,50 +345,6 @@
                     android:id="@+id/tvThemeSummary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/primary"
-                    android:textSize="24sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowCategorySettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card_white"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="20dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Các Category"
-                        android:textColor="@color/on_surface"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvCategorySettingSummary"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="Study, Work, Design..."
-                        android:textColor="@color/on_surface_variant"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="@color/primary"
-                    android:textSize="24sp" />
                     android:background="@drawable/bg_card_surface_low"
                     android:paddingStart="12dp"
                     android:paddingTop="7dp"
@@ -516,6 +467,51 @@
                 android:textSize="24sp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/rowCategorySettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card_white"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Các Category"
+                    android:textColor="@color/on_surface"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCategorySettingSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="Học tập, Công việc, Cá nhân..."
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="›"
+                android:textColor="@color/outline"
+                android:textSize="24sp" />
+        </LinearLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -621,8 +617,6 @@
                 android:textColor="@color/error"
                 android:textSize="24sp" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/btnLogout"

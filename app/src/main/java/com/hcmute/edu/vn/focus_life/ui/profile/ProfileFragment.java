@@ -6,8 +6,8 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,14 +41,11 @@ import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroPreferences;
 import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroSettingsActivity;
 
 import java.util.List;
-
-public class ProfileFragment extends Fragment {
-    private ProfileRepository profileRepository;
-    private FocusCategoryManager categoryManager;
 import java.util.Locale;
 
 public class ProfileFragment extends Fragment {
     private ProfileRepository profileRepository;
+    private FocusCategoryManager categoryManager;
     private SettingsPreferences settingsPreferences;
 
     private ImageView imgProfileAvatar;
@@ -94,6 +91,7 @@ public class ProfileFragment extends Fragment {
         bindAppearance();
         loadProfile();
         bindPomodoroSummary();
+        bindCategorySummary();
     }
 
     @Override
@@ -101,6 +99,7 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         loadProfile();
         bindPomodoroSummary();
+        bindCategorySummary();
         bindAppearance();
     }
 
@@ -114,9 +113,6 @@ public class ProfileFragment extends Fragment {
         tvProfileInfoSummary = view.findViewById(R.id.tvProfileInfoSummary);
         tvPomodoroSettingSummary = view.findViewById(R.id.tvPomodoroSettingSummary);
         tvCategorySettingSummary = view.findViewById(R.id.tvCategorySettingSummary);
-        TextView btnLogout = view.findViewById(R.id.btnLogout);
-        View rowPomodoroSettings = view.findViewById(R.id.rowPomodoroSettings);
-        View rowCategorySettings = view.findViewById(R.id.rowCategorySettings);
         tvThemeSummary = view.findViewById(R.id.tvThemeSummary);
         tvLanguageSummary = view.findViewById(R.id.tvLanguageSummary);
         switchDarkMode = view.findViewById(R.id.switchDarkMode);
@@ -131,6 +127,7 @@ public class ProfileFragment extends Fragment {
 
     private void setupActions() {
         View rowPomodoroSettings = requireView().findViewById(R.id.rowPomodoroSettings);
+        View rowCategorySettings = requireView().findViewById(R.id.rowCategorySettings);
         TextView btnLogout = requireView().findViewById(R.id.btnLogout);
 
         rowEditProfile.setOnClickListener(v -> startActivity(new Intent(requireContext(), EditProfileActivity.class)));
@@ -153,18 +150,6 @@ public class ProfileFragment extends Fragment {
             startActivity(new Intent(requireContext(), LoginActivity.class));
             requireActivity().finishAffinity();
         });
-
-        loadProfile();
-        bindPomodoroSummary();
-        bindCategorySummary();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadProfile();
-        bindPomodoroSummary();
-        bindCategorySummary();
     }
 
     private void loadProfile() {
@@ -278,6 +263,7 @@ public class ProfileFragment extends Fragment {
     private void showCategoryInputDialog(@Nullable String oldCategory) {
         EditText input = new EditText(requireContext());
         input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setHint("Ví dụ: Android, Reading, Fitness");
         if (oldCategory != null) {
             input.setText(oldCategory);
@@ -330,6 +316,8 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(requireContext(), "Đã xóa category", Toast.LENGTH_SHORT).show();
                 })
                 .show();
+    }
+
     private void bindAppearance() {
         if (settingsPreferences == null || switchDarkMode == null) return;
         syncingSwitch = true;

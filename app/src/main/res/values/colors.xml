@@ -51,4 +51,14 @@
     <color name="priority_medium_text">#B45309</color>
     <color name="priority_high_bg">#FEE2E2</color>
     <color name="priority_high_text">#DC2626</color>
+    <color name="theme_indigo">#4648D4</color>
+    <color name="theme_indigo_container">#E1E0FF</color>
+    <color name="theme_emerald">#007A52</color>
+    <color name="theme_emerald_container">#D9FBEA</color>
+    <color name="theme_ocean">#0077B6</color>
+    <color name="theme_ocean_container">#DDF3FF</color>
+    <color name="theme_rose">#C0265A</color>
+    <color name="theme_rose_container">#FFE3ED</color>
+    <color name="theme_amber">#B45309</color>
+    <color name="theme_amber_container">#FFF1D6</color>
 </resources>

@@ -1,8 +1,15 @@
+import java.util.Properties
+import java.io.FileInputStream
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
 }
-
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
 val mapboxToken = providers.gradleProperty("MAPBOX_ACCESS_TOKEN").orElse("").get()
 val cloudinaryCloudName = providers.gradleProperty("CLOUDINARY_CLOUD_NAME").orElse("").get()
 val cloudinaryUploadPreset = providers.gradleProperty("CLOUDINARY_UPLOAD_PRESET").orElse("").get()
@@ -26,6 +33,7 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxToken\"")
         resValue("string", "mapbox_access_token", mapboxToken)
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")

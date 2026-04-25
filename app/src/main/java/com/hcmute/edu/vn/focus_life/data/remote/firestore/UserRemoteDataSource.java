@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserRemoteDataSource {
+    public interface WriteCallback {
+        void onComplete(boolean success, @Nullable Exception error);
+    }
+
     public interface UserCallback {
         void onLoaded(@Nullable UserProfile profile);
     }
@@ -18,7 +22,12 @@ public class UserRemoteDataSource {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     public void upsertUser(UserProfile profile) {
+        upsertUser(profile, null);
+    }
+
+    public void upsertUser(UserProfile profile, @Nullable WriteCallback callback) {
         if (profile == null || profile.uid == null || profile.uid.trim().isEmpty()) {
+            if (callback != null) callback.onComplete(false, new IllegalArgumentException("Missing user id"));
             return;
         }
 
@@ -38,7 +47,30 @@ public class UserRemoteDataSource {
 
         firestore.collection(Constants.FIRESTORE_USERS)
                 .document(profile.uid)
-                .set(data);
+                .set(data)
+                .addOnSuccessListener(unused -> {
+                    if (callback != null) callback.onComplete(true, null);
+                })
+                .addOnFailureListener(error -> {
+                    if (callback != null) callback.onComplete(false, error);
+                });
+    }
+
+    public void deleteUser(String uid, @Nullable WriteCallback callback) {
+        if (uid == null || uid.trim().isEmpty()) {
+            if (callback != null) callback.onComplete(false, new IllegalArgumentException("Missing user id"));
+            return;
+        }
+
+        firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid)
+                .delete()
+                .addOnSuccessListener(unused -> {
+                    if (callback != null) callback.onComplete(true, null);
+                })
+                .addOnFailureListener(error -> {
+                    if (callback != null) callback.onComplete(false, error);
+                });
     }
 
     public void fetchUser(String uid, UserCallback callback) {

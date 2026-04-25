@@ -35,6 +35,10 @@
         <activity android:name=".ui.onboarding.OnboardingPermissionsActivity" android:exported="false" />
         <activity android:name=".ui.onboarding.OnboardingProfileActivity" android:exported="false" />
         <activity android:name=".ui.profile.ProfileSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.profile.EditProfileActivity" android:exported="false" />
+        <activity android:name=".ui.profile.ChangePasswordActivity" android:exported="false" />
+        <activity android:name=".ui.profile.AppearanceSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.profile.AboutFocusLifeActivity" android:exported="false" />
         <activity android:name=".ui.MainActivity" android:exported="false" />
         <activity android:name=".ui.running.RunningMapActivity" android:exported="false" />
         <activity

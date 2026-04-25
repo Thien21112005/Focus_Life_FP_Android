@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FocusLife</string>
+
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_health">Sức khỏe</string>
+    <string name="nav_focus">Tập trung</string>
+    <string name="nav_map">Bản đồ</string>
+    <string name="nav_diary">Bữa ăn</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_notification">Thông báo</string>
+    <string name="nav_report">Báo cáo</string>
+    <string name="nav_statistic">Thống kê</string>
+    <string name="nav_target">Mục tiêu</string>
+    <string name="nav_profile">Hồ sơ</string>
+
+    <string name="profile_screen_title">Hồ sơ</string>
+    <string name="profile_screen_subtitle">Tài khoản, giao diện và bảo mật</string>
+    <string name="provider_google">Tài khoản Google</string>
+    <string name="provider_password">Tài khoản email</string>
+    <string name="account_section">Tài khoản</string>
+    <string name="profile_info">Thông tin hồ sơ</string>
+    <string name="profile_summary_placeholder">Quản lý thông tin cơ bản</string>
+    <string name="profile_google_basic_info">Thông tin Google chỉ được xem, không chỉnh sửa</string>
+    <string name="profile_google_readonly">Tài khoản Google chỉ được xem thông tin hồ sơ cơ bản.</string>
+    <string name="profile_no_phone">Chưa có số điện thoại</string>
+    <string name="profile_summary_format">%1$s · Mục tiêu: %2$s</string>
+    <string name="password">Mật khẩu</string>
+    <string name="password_summary">Đổi bằng mật khẩu cũ và mật khẩu mới</string>
+    <string name="password_google_hidden">Mục mật khẩu chỉ hiển thị cho tài khoản email.</string>
+
+    <string name="appearance_section">Giao diện</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="dark_mode_summary">Chuyển app sang giao diện tối dễ nhìn hơn</string>
+    <string name="theme_color">Màu chủ đề</string>
+    <string name="theme_title">Chọn chủ đề</string>
+    <string name="theme_indigo">Tím Indigo</string>
+    <string name="theme_emerald">Xanh Emerald</string>
+    <string name="theme_ocean">Xanh Ocean</string>
+    <string name="theme_rose">Hồng Rose</string>
+    <string name="theme_amber">Vàng Amber</string>
+    <string name="theme_updated">Đã cập nhật chủ đề</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="language_title">Chọn ngôn ngữ</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
+    <string name="language_english">Tiếng Anh</string>
+    <string name="language_updated">Đã cập nhật ngôn ngữ</string>
+
+    <string name="about_section">Giới thiệu</string>
+    <string name="about_focuslife">About FocusLife</string>
+    <string name="about_focuslife_summary">Giới thiệu ứng dụng, thông điệp và nhóm thực hiện</string>
+    <string name="about_focuslife_dialog_title">About FocusLife</string>
+    <string name="about_focuslife_body">FocusLife là ứng dụng đồng hành giúp bạn xây dựng một lối sống cân bằng hơn: theo dõi sức khỏe, dinh dưỡng, nhật ký ăn uống, phiên tập trung, vận động và mục tiêu cá nhân.\n\nỨng dụng mang thông điệp sống tích cực: mỗi ngày tốt hơn một chút, sống tập trung hơn, chăm sóc cơ thể tốt hơn và yêu bản thân bằng những thói quen nhỏ nhưng đều đặn.\n\nNgười thực hiện:\nNguyễn Ngọc Thiện - 23110154\nNghiêm Phú Đăng Quân - 23110144\nNguyễn Quốc Khoa - 23110116\n\nNhóm thực hiện là sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).\n\nĐây là đồ án môn Lập trình di động dưới sự hướng dẫn của Thạc sĩ Trương Thị Ngọc Phượng.</string>
+    <string name="close">Đóng</string>
+
+    <string name="focus_section">Tập trung</string>
+    <string name="pomodoro_settings">Cài đặt Pomodoro</string>
+    <string name="pomodoro_summary_placeholder">25m tập trung · 5m nghỉ ngắn · 15m nghỉ dài</string>
+    <string name="pomodoro_summary_format">%1$dm tập trung · %2$dm nghỉ ngắn · %3$dm nghỉ dài</string>
+    <string name="pomodoro_summary_dnd_suffix"> · Tự bật DND</string>
+
+    <string name="danger_section">Dữ liệu và quyền riêng tư</string>
+    <string name="delete_account">Xóa tài khoản</string>
+    <string name="delete_account_summary">Xóa vĩnh viễn tài khoản này</string>
+    <string name="delete_account_title">Xóa tài khoản?</string>
+    <string name="delete_account_warning_message">Hành động này không thể hoàn tác. Tài khoản và hồ sơ trên cloud sẽ bị xóa. Hãy chắc chắn trước khi tiếp tục.</string>
+    <string name="delete_account_action">Xóa</string>
+    <string name="keep_account">Giữ tài khoản</string>
+    <string name="delete_account_success">Tài khoản đã được xóa.</string>
+    <string name="delete_account_recent_login_required">Để bảo mật, bạn hãy đăng nhập lại rồi thử xóa tài khoản thêm lần nữa.</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="edit_profile_title">Chỉnh sửa hồ sơ</string>
+    <string name="profile_name">Họ và tên</string>
+    <string name="profile_phone">Số điện thoại</string>
+    <string name="profile_dob">Ngày sinh</string>
+    <string name="profile_gender">Giới tính</string>
+    <string name="profile_height">Chiều cao (cm)</string>
+    <string name="profile_weight">Cân nặng (kg)</string>
+    <string name="profile_primary_goal">Mục tiêu chính</string>
+    <string name="old_password">Mật khẩu cũ</string>
+    <string name="new_password">Mật khẩu mới</string>
+    <string name="confirm_new_password">Nhập lại mật khẩu mới</string>
+    <string name="current_password">Mật khẩu hiện tại</string>
+    <string name="change_password_title">Đổi mật khẩu</string>
+    <string name="cancel">Hủy</string>
+    <string name="save">Lưu</string>
+    <string name="update">Cập nhật</string>
+
+    <string name="profile_update_success">Cập nhật hồ sơ thành công.</string>
+    <string name="profile_update_saved_offline">Hồ sơ đã lưu trên máy. App sẽ đồng bộ khi mạng ổn định.</string>
+    <string name="password_update_success">Đổi mật khẩu thành công.</string>
+    <string name="error_login_required">Bạn cần đăng nhập lại để tiếp tục.</string>
+    <string name="error_profile_empty">Thiếu thông tin hồ sơ.</string>
+    <string name="error_name_required">Vui lòng nhập họ tên.</string>
+    <string name="error_invalid_health_numbers">Chiều cao và cân nặng không được âm.</string>
+    <string name="error_old_password_required">Vui lòng nhập mật khẩu hiện tại.</string>
+    <string name="error_new_password_length">Mật khẩu mới phải có ít nhất 6 ký tự.</string>
+    <string name="error_password_confirm_mismatch">Mật khẩu mới nhập lại không khớp.</string>
+    <string name="error_password_same">Mật khẩu mới phải khác mật khẩu cũ.</string>
+    <string name="error_unknown">Có lỗi xảy ra. Vui lòng thử lại.</string>
+    <string name="error_invalid_number_format">%1$s phải là số hợp lệ.</string>
+
+    <string name="open_appearance_settings">Mở phần cài đặt giao diện chi tiết</string>
+    <string name="open_language_settings">Mở phần chọn ngôn ngữ</string>
+    <string name="profile_editor_subtitle">Cập nhật hồ sơ cá nhân và thông tin sức khỏe của bạn</string>
+    <string name="profile_readonly_title">Thông tin hồ sơ</string>
+    <string name="profile_readonly_info_format">%1$s: %2$s
+%3$s: %4$s
+%5$s: %6$s</string>
+    <string name="label_email">Email</string>
+    <string name="label_provider">Phương thức đăng nhập</string>
+    <string name="profile_personal_section">Thông tin cá nhân</string>
+    <string name="save_changes">Lưu thay đổi</string>
+    <string name="password_screen_subtitle">Giữ tài khoản an toàn hơn với mật khẩu mạnh</string>
+    <string name="password_security_title">Lưu ý bảo mật</string>
+    <string name="password_security_message">Nên dùng mật khẩu từ 6 ký tự trở lên và không trùng với mật khẩu cũ.</string>
+    <string name="password_google_title">Mật khẩu do Google quản lý</string>
+    <string name="update_password_action">Cập nhật mật khẩu</string>
+    <string name="appearance_title">Giao diện</string>
+    <string name="appearance_subtitle">Tùy chỉnh chế độ tối, màu chủ đề và ngôn ngữ cho toàn ứng dụng</string>
+    <string name="theme_help_text">Chọn màu chủ đề phù hợp với phong cách của bạn.</string>
+    <string name="language_help_text">Chọn ngôn ngữ bạn muốn sử dụng trong toàn bộ FocusLife.</string>
+    <string name="selected_label">Đang chọn</string>
+    <string name="not_selected">Chọn</string>
+    <string name="about_focuslife_header_subtitle">Ý nghĩa, thông điệp và nhóm đứng sau FocusLife</string>
+    <string name="about_focuslife_chip">Câu chuyện FocusLife</string>
+    <string name="about_focuslife_hero_title">Người bạn đồng hành cho một cuộc sống cân bằng hơn.</string>
+    <string name="about_focuslife_intro">FocusLife là ứng dụng di động hỗ trợ người dùng cân bằng việc học tập, sức khỏe và phát triển bản thân trong cùng một nơi. Ứng dụng giúp quản lý phiên tập trung, theo dõi vận động, nhật ký dinh dưỡng, chỉ số sức khỏe và các mục tiêu theo thói quen để mỗi ngày đều trở nên có định hướng hơn.</string>
+    <string name="about_focuslife_message_title">Thông điệp sống</string>
+    <string name="about_focuslife_message_body">FocusLife được xây dựng với một thông điệp đơn giản: sống có chủ đích, tốt hơn một chút mỗi ngày và tạo nên tiến bộ ý nghĩa từ những hành động nhỏ nhưng bền bỉ. Khi bạn chăm sóc sự tập trung, cơ thể và nếp sống của mình, bạn cũng đang chăm sóc tương lai của chính mình.</string>
+    <string name="about_focuslife_team_title">Nhóm thực hiện</string>
+    <string name="about_focuslife_team_body">Nguyễn Ngọc Thiện - 23110154
+Nghiêm Phú Đăng Quân - 23110144
+Nguyễn Quốc Khoa - 23110116
+Sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).</string>
+    <string name="about_focuslife_course_title">Thông tin đồ án</string>
+    <string name="about_focuslife_course_body">Ứng dụng được thực hiện trong khuôn khổ đồ án môn Lập trình di động dưới sự hướng dẫn của Thạc sĩ Trương Thị Ngọc Phượng. Sản phẩm thể hiện nỗ lực của nhóm trong việc kết hợp tính hữu dụng, giao diện chỉn chu và những giá trị sống tích cực vào cùng một ứng dụng.</string>
+    <string name="gender_male">Nam</string>
+    <string name="gender_female">Nữ</string>
+    <string name="gender_other">Khác</string>
+    <string name="error_invalid_email">Vui lòng nhập email hợp lệ.</string>
+    <string name="error_phone_10_digits">Số điện thoại phải gồm đúng 10 chữ số.</string>
+</resources>

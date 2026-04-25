@@ -1,12 +1,16 @@
 package com.hcmute.edu.vn.focus_life.ui.profile;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,17 +26,22 @@ import com.hcmute.edu.vn.focus_life.data.repository.AuthRepository;
 import com.hcmute.edu.vn.focus_life.data.repository.ProfileRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
 import com.hcmute.edu.vn.focus_life.ui.auth.LoginActivity;
+import com.hcmute.edu.vn.focus_life.ui.focus.FocusCategoryManager;
 import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroPreferences;
 import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroSettingsActivity;
 
+import java.util.List;
+
 public class ProfileFragment extends Fragment {
     private ProfileRepository profileRepository;
+    private FocusCategoryManager categoryManager;
     private ImageView imgProfileAvatar;
     private TextView tvProfileInitial;
     private TextView tvTopBarInitial;
     private TextView tvProfileName;
     private TextView tvProfileEmail;
     private TextView tvPomodoroSettingSummary;
+    private TextView tvCategorySettingSummary;
 
     @Nullable
     @Override
@@ -46,6 +55,7 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         profileRepository = new ProfileRepository(requireActivity());
+        categoryManager = new FocusCategoryManager(requireContext());
 
         imgProfileAvatar = view.findViewById(R.id.imgProfileAvatar);
         tvProfileInitial = view.findViewById(R.id.tvProfileInitial);
@@ -53,10 +63,13 @@ public class ProfileFragment extends Fragment {
         tvProfileName = view.findViewById(R.id.tvProfileName);
         tvProfileEmail = view.findViewById(R.id.tvProfileEmail);
         tvPomodoroSettingSummary = view.findViewById(R.id.tvPomodoroSettingSummary);
+        tvCategorySettingSummary = view.findViewById(R.id.tvCategorySettingSummary);
         TextView btnLogout = view.findViewById(R.id.btnLogout);
         View rowPomodoroSettings = view.findViewById(R.id.rowPomodoroSettings);
+        View rowCategorySettings = view.findViewById(R.id.rowCategorySettings);
 
         rowPomodoroSettings.setOnClickListener(v -> startActivity(new Intent(requireContext(), PomodoroSettingsActivity.class)));
+        rowCategorySettings.setOnClickListener(v -> showCategoryManagerDialog());
 
         btnLogout.setOnClickListener(v -> {
             new AuthRepository(requireActivity()).logout();
@@ -66,6 +79,7 @@ public class ProfileFragment extends Fragment {
 
         loadProfile();
         bindPomodoroSummary();
+        bindCategorySummary();
     }
 
     @Override
@@ -73,6 +87,7 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         loadProfile();
         bindPomodoroSummary();
+        bindCategorySummary();
     }
 
     private void loadProfile() {
@@ -113,6 +128,105 @@ public class ProfileFragment extends Fragment {
                 + config.longBreakMinutes + "m nghỉ dài"
                 + (config.autoDnd ? " · Auto DND" : "");
         tvPomodoroSettingSummary.setText(summary);
+    }
+
+    private void bindCategorySummary() {
+        if (categoryManager == null || tvCategorySettingSummary == null) return;
+        List<String> categories = categoryManager.getCategories();
+        StringBuilder builder = new StringBuilder();
+        int visibleCount = Math.min(3, categories.size());
+        for (int i = 0; i < visibleCount; i++) {
+            if (i > 0) builder.append(", ");
+            builder.append(categories.get(i));
+        }
+        if (categories.size() > visibleCount) {
+            builder.append(" +").append(categories.size() - visibleCount).append(" mục khác");
+        }
+        tvCategorySettingSummary.setText(builder.toString());
+    }
+
+    private void showCategoryManagerDialog() {
+        List<String> categories = categoryManager.getCategories();
+        String[] items = categories.toArray(new String[0]);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Các Category")
+                .setItems(items, (dialog, which) -> showCategoryActionDialog(categories.get(which)))
+                .setPositiveButton("+ Thêm", (dialog, which) -> showCategoryInputDialog(null))
+                .setNegativeButton("Đóng", null)
+                .show();
+    }
+
+    private void showCategoryActionDialog(@NonNull String category) {
+        String[] actions = {"Đổi tên", "Xóa"};
+        new AlertDialog.Builder(requireContext())
+                .setTitle(category)
+                .setItems(actions, (dialog, which) -> {
+                    if (which == 0) {
+                        showCategoryInputDialog(category);
+                    } else {
+                        showDeleteCategoryDialog(category);
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void showCategoryInputDialog(@Nullable String oldCategory) {
+        EditText input = new EditText(requireContext());
+        input.setSingleLine(true);
+        input.setHint("Ví dụ: Android, Reading, Fitness");
+        if (oldCategory != null) {
+            input.setText(oldCategory);
+            input.setSelection(oldCategory.length());
+        }
+
+        String title = oldCategory == null ? "Thêm category" : "Đổi tên category";
+        String positive = oldCategory == null ? "Thêm" : "Lưu";
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle(title)
+                .setView(input)
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton(positive, null)
+                .create();
+
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String value = input.getText().toString().trim();
+            if (TextUtils.isEmpty(value)) {
+                input.setError("Nhập tên category");
+                return;
+            }
+
+            if (oldCategory == null) {
+                categoryManager.addCategory(value);
+                Toast.makeText(requireContext(), "Đã thêm category", Toast.LENGTH_SHORT).show();
+            } else {
+                categoryManager.renameCategory(oldCategory, value);
+                Toast.makeText(requireContext(), "Đã đổi tên category", Toast.LENGTH_SHORT).show();
+            }
+            bindCategorySummary();
+            dialog.dismiss();
+        }));
+        dialog.show();
+    }
+
+    private void showDeleteCategoryDialog(@NonNull String category) {
+        if (categoryManager.getCategories().size() <= 1) {
+            Toast.makeText(requireContext(), "Cần giữ lại ít nhất 1 category", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Xóa category?")
+                .setMessage("Category \"" + category + "\" sẽ không còn xuất hiện trong dropdown tạo task mới.")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    categoryManager.deleteCategory(category);
+                    bindCategorySummary();
+                    Toast.makeText(requireContext(), "Đã xóa category", Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private String currentEmail() {

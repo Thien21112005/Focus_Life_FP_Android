@@ -9,14 +9,14 @@
     </item>
 
     <item
+        android:bottom="8dp"
         android:gravity="bottom"
         android:left="18dp"
-        android:right="18dp"
-        android:bottom="8dp">
+        android:right="18dp">
 
         <shape android:shape="rectangle">
             <size android:height="4dp" />
-            <solid android:color="@color/secondary" />
+            <solid android:color="@color/primary" />
             <corners android:radius="999dp" />
         </shape>
     </item>

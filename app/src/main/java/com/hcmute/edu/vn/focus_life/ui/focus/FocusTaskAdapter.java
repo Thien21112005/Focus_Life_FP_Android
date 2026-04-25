@@ -205,8 +205,7 @@ public class FocusTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             boolean selected = selectedTaskIds.contains(task.id);
-            root.setBackgroundResource(selected ? R.drawable.bg_card_primary_soft : R.drawable.bg_card_white);
-            tvSelection.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            root.setBackgroundResource(selected ? R.drawable.bg_card_primary_soft : R.drawable.bg_focus_task_card);            tvSelection.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
             tvSelection.setText(selected ? "Đã chọn" : "Chọn");
             tvSelection.setAlpha(selected ? 1f : 0.45f);
 

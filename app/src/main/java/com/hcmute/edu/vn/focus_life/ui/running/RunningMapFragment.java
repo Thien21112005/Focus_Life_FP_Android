@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +41,7 @@ import java.util.Locale;
 
 public class RunningMapFragment extends Fragment {
 
+    private FrameLayout mapContainer;
     private MapView mapView;
     private MapboxMap mapboxMap;
     private Polyline routePolyline;
@@ -124,12 +126,20 @@ public class RunningMapFragment extends Fragment {
     public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mapView = view.findViewById(R.id.mapView);
+        mapContainer = view.findViewById(R.id.mapContainer);
+        mapView = new MapView(requireContext());
+        mapView.setId(R.id.mapView);
+        mapContainer.addView(mapView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
         btnBackRunning = view.findViewById(R.id.btnBackRunning);
         tvRunState = view.findViewById(R.id.tvRunState);
         btnStyleToggle = view.findViewById(R.id.btnStyleToggle);
         btnCenterMap = view.findViewById(R.id.btnCenterMap);
         tvFollowBadge = view.findViewById(R.id.tvFollowBadge);
+        if (btnStyleToggle != null) btnStyleToggle.setVisibility(android.view.View.GONE);
+        if (tvFollowBadge != null) tvFollowBadge.setVisibility(android.view.View.GONE);
         tvDistance = view.findViewById(R.id.tvDistance);
         tvPace = view.findViewById(R.id.tvPace);
         tvDuration = view.findViewById(R.id.tvDuration);
@@ -138,6 +148,7 @@ public class RunningMapFragment extends Fragment {
         tvCalories = view.findViewById(R.id.tvCalories);
         tvRunningHint = view.findViewById(R.id.tvRunningHint);
         tvSyncStatus = view.findViewById(R.id.tvSyncStatus);
+        if (tvSyncStatus != null) tvSyncStatus.setVisibility(android.view.View.GONE);
         btnSecondaryAction = view.findViewById(R.id.btnSecondaryAction);
         btnPrimaryAction = view.findViewById(R.id.btnPrimaryAction);
 
@@ -150,7 +161,9 @@ public class RunningMapFragment extends Fragment {
             }
         });
 
-        btnStyleToggle.setOnClickListener(v -> toggleMapStyle());
+        if (btnStyleToggle != null) {
+            btnStyleToggle.setOnClickListener(v -> toggleMapStyle());
+        }
         btnCenterMap.setOnClickListener(v -> {
             followUser = true;
             updateFollowBadge();
@@ -256,10 +269,23 @@ public class RunningMapFragment extends Fragment {
 
     private void stopRun() {
         if (getContext() == null) return;
+        RunningSessionSnapshot snapshot = runningService != null ? runningService.getSnapshot() : RunningSessionSnapshot.idle();
+        boolean tooShortToSave = isRunTooShortToSave(snapshot);
+
         Intent intent = new Intent(requireContext(), RunningTrackerService.class);
         intent.setAction(RunningTrackerService.ACTION_STOP);
         requireContext().startService(intent);
-        Toast.makeText(requireContext(), "Đang kết thúc và lưu phiên chạy", Toast.LENGTH_SHORT).show();
+
+        if (tooShortToSave) {
+            Toast.makeText(requireContext(), "Phiên chạy quá ngắn nên không lưu.", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(requireContext(), "Đang kết thúc và lưu phiên chạy", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isRunTooShortToSave(RunningSessionSnapshot snapshot) {
+        if (snapshot == null) return true;
+        return snapshot.steps <= 0 && snapshot.distanceMeters < 30f;
     }
 
     private void bindRunningService() {
@@ -287,9 +313,9 @@ public class RunningMapFragment extends Fragment {
             tvDistance.setText(String.format(Locale.getDefault(), "%.2f km", snapshot.distanceMeters / 1000f));
             tvPace.setText(snapshot.paceSecondsPerKm <= 0f ? "--'--\"" : formatPace(snapshot.paceSecondsPerKm));
             tvDuration.setText(formatDuration(snapshot.durationMillis));
-            tvSpeed.setText(String.format(Locale.getDefault(), "🚀 %.1f km/h", snapshot.avgSpeedKmh));
-            tvSteps.setText(String.format(Locale.getDefault(), "👟 %d bước", snapshot.steps));
-            tvCalories.setText(String.format(Locale.getDefault(), "⚡ %.0f kcal", snapshot.calories));
+            tvSpeed.setText(String.format(Locale.getDefault(), "%.1f km/h", snapshot.avgSpeedKmh));
+            tvSteps.setText(String.format(Locale.getDefault(), "%d bước", snapshot.steps));
+            tvCalories.setText(String.format(Locale.getDefault(), "%.0f kcal", snapshot.calories));
             tvRunningHint.setText(snapshot.gpsLocked
                     ? "GPS đang hoạt động, quãng đường sẽ được đo theo lộ trình thật."
                     : "Đang chờ GPS khóa vị trí chính xác hơn...");
@@ -308,9 +334,9 @@ public class RunningMapFragment extends Fragment {
         tvDistance.setText("0.00 km");
         tvPace.setText("--'--\"");
         tvDuration.setText("00:00");
-        tvSpeed.setText("🚀 0.0 km/h");
-        tvSteps.setText("👟 0 bước");
-        tvCalories.setText("⚡ 0 kcal");
+        tvSpeed.setText("0.0 km/h");
+        tvSteps.setText("0 bước");
+        tvCalories.setText("0 kcal");
         tvRunState.setText("Sẵn sàng bắt đầu");
         tvRunningHint.setText("Bấm Bắt đầu chạy để ghi lại GPS, quãng đường và số bước.");
         tvSyncStatus.setText(runningService != null ? runningService.getSyncStatus() : "Chưa có phiên chạy");
@@ -387,14 +413,14 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        mapView.onStart();
+        if (mapView != null) mapView.onStart();
         bindRunningService();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mapView.onResume();
+        if (mapView != null) mapView.onResume();
         uiHandler.removeCallbacks(snapshotUpdater);
         uiHandler.post(snapshotUpdater);
     }
@@ -402,13 +428,13 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onPause() {
         uiHandler.removeCallbacks(snapshotUpdater);
-        mapView.onPause();
+        if (mapView != null) mapView.onPause();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        mapView.onStop();
+        if (mapView != null) mapView.onStop();
         unbindRunningService();
         super.onStop();
     }
@@ -416,19 +442,19 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mapView.onLowMemory();
+        if (mapView != null) mapView.onLowMemory();
     }
 
     @Override
     public void onDestroyView() {
         uiHandler.removeCallbacks(snapshotUpdater);
-        mapView.onDestroy();
+        if (mapView != null) mapView.onDestroy();
         super.onDestroyView();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
+        if (mapView != null) mapView.onSaveInstanceState(outState);
     }
 }

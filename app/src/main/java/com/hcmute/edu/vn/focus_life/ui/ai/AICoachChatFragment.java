@@ -64,6 +64,10 @@ public class AICoachChatFragment extends Fragment {
         btnSend = view.findViewById(R.id.btnSend);
         chatProgressBar = view.findViewById(R.id.chatProgressBar);
 
+        if (rvChat == null || etMessage == null || btnSend == null || chatProgressBar == null) {
+            throw new IllegalStateException("activity_ai_coach_chat.xml is missing required AI Coach views: rvChat, etMessage, btnSend or chatProgressBar");
+        }
+
         messageList = new ArrayList<>();
         messageList.add(new ChatMessage("Chào bạn! Tôi là FocusLife AI. Bạn cần tư vấn gì về sức khỏe hôm nay?", ChatMessage.TYPE_AI));
 
@@ -151,7 +155,13 @@ public class AICoachChatFragment extends Fragment {
                     String line;
                     while ((line = br.readLine()) != null) sb.append(line);
                     br.close();
-                    responseText = "Google báo lỗi: " + sb.toString();
+                    String errorBody = sb.toString();
+                    Log.e("AICoach", "Gemini API error " + responseCode + ": " + errorBody);
+                    if (responseCode == 403 || errorBody.contains("PERMISSION_DENIED") || errorBody.contains("API key")) {
+                        responseText = "AI Coach hiện chưa thể phản hồi. Vui lòng kiểm tra lại API key Gemini hoặc thử lại sau.";
+                    } else {
+                        responseText = "AI Coach đang gặp lỗi kết nối. Bạn thử lại sau nhé.";
+                    }
                 }
             } catch (Exception e) {
                 responseText = "Lỗi kết nối App: " + e.getMessage();

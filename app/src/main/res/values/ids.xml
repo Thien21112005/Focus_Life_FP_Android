@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AI Coach ids kept stable for AICoachChatFragment.java -->
+    <item name="rvChat" type="id" />
+    <item name="etMessage" type="id" />
+    <item name="btnSend" type="id" />
+    <item name="chatProgressBar" type="id" />
+    <item name="chip1" type="id" />
+    <item name="chip2" type="id" />
+    <item name="chip3" type="id" />
+
+    <!-- Running map ids kept stable for programmatic MapView creation -->
+    <item name="mapContainer" type="id" />
+    <item name="mapView" type="id" />
+</resources>

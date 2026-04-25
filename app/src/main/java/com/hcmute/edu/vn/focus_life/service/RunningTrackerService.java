@@ -460,7 +460,7 @@ public class RunningTrackerService extends Service implements SensorEventListene
 
     private synchronized void persistRunToLocalAndFirebase() {
         if (sessionSteps <= 0 && totalDistanceMeters < 30f) {
-            syncStatus = "Phiên chạy quá ngắn, chưa lưu";
+            syncStatus = "Phiên chạy quá ngắn nên không lưu";
             updateNotification();
             finishServiceSafely();
             return;

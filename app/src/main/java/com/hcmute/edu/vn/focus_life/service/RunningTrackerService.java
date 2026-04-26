@@ -34,6 +34,7 @@ import com.google.android.gms.location.Priority;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.common.AppExecutors;
@@ -462,17 +463,19 @@ public class RunningTrackerService extends Service implements SensorEventListene
         if (sessionSteps <= 0 && totalDistanceMeters < 30f) {
             syncStatus = "Phiên chạy quá ngắn nên không lưu";
             updateNotification();
+            resetSessionData();
             finishServiceSafely();
             return;
         }
 
         final long now = System.currentTimeMillis();
+        final String runId = "run_" + now;
         final StepRecordEntity entity = new StepRecordEntity();
         entity.date = DateUtils.todayKey();
         entity.timestamp = now;
         entity.steps = sessionSteps;
         entity.calories = estimatedCalories;
-        entity.source = "running_foreground_service";
+        entity.source = "mapbox_running";
         entity.synced = false;
 
         final float distanceMeters = totalDistanceMeters;
@@ -480,60 +483,129 @@ public class RunningTrackerService extends Service implements SensorEventListene
         final float calories = estimatedCalories;
         final int steps = sessionSteps;
         final int routePointCount = routePoints.size();
+        final List<Location> routeSnapshot = new ArrayList<>();
+        for (Location point : routePoints) {
+            routeSnapshot.add(new Location(point));
+        }
 
         new AppExecutors().diskIO().execute(() -> {
+            long localId = -1L;
             try {
-                FocusLifeApp.getInstance().getDatabase().stepDao().insert(entity);
+                localId = FocusLifeApp.getInstance().getDatabase().stepDao().insert(entity);
             } catch (Exception ignored) {
             }
 
-            syncStatus = "Đã lưu local, đang đồng bộ Firebase...";
+            syncStatus = "Đang lưu phiên chạy lên Firestore...";
             updateNotification();
 
             try {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user == null) {
-                    syncStatus = "Đã lưu local, chưa sync Firebase vì chưa đăng nhập";
+                    syncStatus = "Đã lưu local, chưa lưu Firestore vì chưa đăng nhập";
                     updateNotification();
+                    resetSessionData();
                     finishServiceSafely();
                     return;
                 }
 
+                String uid = user.getUid();
                 double avgSpeedKmh = calculateAverageSpeed(distanceMeters, durationMillis);
+                String durationText = formatDuration(durationMillis);
+                String paceText = formatPace(distanceMeters, durationMillis);
 
-                Map<String, Object> data = new HashMap<>();
-                data.put("date", entity.date);
-                data.put("timestamp", entity.timestamp);
-                data.put("steps", steps);
-                data.put("calories", calories);
-                data.put("source", entity.source);
-                data.put("distanceMeters", distanceMeters);
-                data.put("distanceKm", distanceMeters / 1000f);
-                data.put("durationMillis", durationMillis);
-                data.put("durationText", formatDuration(durationMillis));
-                data.put("paceText", formatPace(distanceMeters, durationMillis));
-                data.put("avgSpeedKmh", avgSpeedKmh);
-                data.put("routePointCount", routePointCount);
+                List<Map<String, Object>> routeData = new ArrayList<>();
+                for (Location point : routeSnapshot) {
+                    Map<String, Object> pointMap = new HashMap<>();
+                    pointMap.put("latitude", point.getLatitude());
+                    pointMap.put("longitude", point.getLongitude());
+                    pointMap.put("accuracy", point.hasAccuracy() ? point.getAccuracy() : 0f);
+                    pointMap.put("speed", point.hasSpeed() ? point.getSpeed() : 0f);
+                    pointMap.put("time", point.getTime());
+                    routeData.add(pointMap);
+                }
 
-                firestore.collection("users")
-                        .document(user.getUid())
-                        .collection("step_records")
-                        .document("run_" + now)
-                        .set(data)
+                Map<String, Object> runningSession = new HashMap<>();
+                runningSession.put("runId", runId);
+                runningSession.put("uid", uid);
+                runningSession.put("date", entity.date);
+                runningSession.put("startedAt", now - durationMillis);
+                runningSession.put("endedAt", now);
+                runningSession.put("timestamp", now);
+                runningSession.put("steps", steps);
+                runningSession.put("calories", calories);
+                runningSession.put("source", "mapbox_running");
+                runningSession.put("distanceMeters", distanceMeters);
+                runningSession.put("distanceKm", distanceMeters / 1000f);
+                runningSession.put("durationMillis", durationMillis);
+                runningSession.put("durationText", durationText);
+                runningSession.put("paceText", paceText);
+                runningSession.put("avgSpeedKmh", avgSpeedKmh);
+                runningSession.put("routePointCount", routePointCount);
+                runningSession.put("routePoints", routeData);
+                runningSession.put("createdAt", now);
+                runningSession.put("syncedAt", now);
+
+                Map<String, Object> stepRecord = new HashMap<>();
+                stepRecord.put("recordId", runId);
+                stepRecord.put("uid", uid);
+                stepRecord.put("date", entity.date);
+                stepRecord.put("timestamp", entity.timestamp);
+                stepRecord.put("steps", steps);
+                stepRecord.put("calories", calories);
+                stepRecord.put("source", "mapbox_running");
+                stepRecord.put("distanceMeters", distanceMeters);
+                stepRecord.put("distanceKm", distanceMeters / 1000f);
+                stepRecord.put("durationMillis", durationMillis);
+                stepRecord.put("durationText", durationText);
+                stepRecord.put("paceText", paceText);
+                stepRecord.put("avgSpeedKmh", avgSpeedKmh);
+                stepRecord.put("runningSessionId", runId);
+                stepRecord.put("syncedAt", now);
+
+                final long savedLocalId = localId;
+                WriteBatch batch = firestore.batch();
+                batch.set(
+                        firestore.collection("users")
+                                .document(uid)
+                                .collection("running_sessions")
+                                .document(runId),
+                        runningSession
+                );
+                batch.set(
+                        firestore.collection("users")
+                                .document(uid)
+                                .collection("step_records")
+                                .document(runId),
+                        stepRecord
+                );
+                batch.commit()
                         .addOnSuccessListener(unused -> {
-                            syncStatus = "Đã đồng bộ Firebase";
+                            if (savedLocalId > 0L) {
+                                new AppExecutors().diskIO().execute(() -> {
+                                    try {
+                                        List<Long> ids = new ArrayList<>();
+                                        ids.add(savedLocalId);
+                                        FocusLifeApp.getInstance().getDatabase().stepDao().markSynced(ids);
+                                    } catch (Exception ignored) {
+                                    }
+                                });
+                            }
+                            syncStatus = "Đã lưu phiên chạy";
                             updateNotification();
+                            resetSessionData();
                             finishServiceSafely();
                         })
                         .addOnFailureListener(e -> {
-                            syncStatus = "Lưu local OK, sync Firebase lỗi";
+                            syncStatus = "Lưu local OK, Firestore lỗi: " + (e.getMessage() == null ? "không rõ" : e.getMessage());
                             updateNotification();
+                            resetSessionData();
                             finishServiceSafely();
                         });
 
-            } catch (Exception ignored) {
-                syncStatus = "Lưu local OK, sync Firebase lỗi";
+            } catch (Exception e) {
+                syncStatus = "Lưu local OK, Firestore lỗi";
                 updateNotification();
+                resetSessionData();
                 finishServiceSafely();
             }
         });

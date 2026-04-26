@@ -84,12 +84,11 @@
 
         <TextView
             android:id="@+id/btnStyleToggle"
-            android:layout_width="40dp"
+            android:layout_width="44dp"
             android:layout_height="40dp"
-            android:visibility="gone"
             android:background="@drawable/bg_running_round_surface"
             android:gravity="center"
-            android:text="◫"
+            android:text="▦"
             android:textColor="@color/on_surface"
             android:textSize="18sp"
             android:textStyle="bold" />

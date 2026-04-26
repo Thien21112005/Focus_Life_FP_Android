@@ -52,4 +52,9 @@
     <color name="theme_rose_container">#481C2F</color>
     <color name="theme_amber">#FCD34D</color>
     <color name="theme_amber_container">#443313</color>
+
+    <color name="info_chip_bg">#15364A</color>
+    <color name="priority_high_bg">#4A1A24</color>
+    <color name="priority_medium_bg">#443313</color>
+    <color name="priority_low_bg">#143C2D</color>
 </resources>

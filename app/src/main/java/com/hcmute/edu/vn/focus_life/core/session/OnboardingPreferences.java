@@ -32,7 +32,7 @@ public class OnboardingPreferences {
     }
 
     public String getDisplayName() {
-        return preferences.getString(KEY_DISPLAY_NAME, "Minh");
+        return preferences.getString(KEY_DISPLAY_NAME, "");
     }
 
     public void setPrimaryGoal(String goal) {

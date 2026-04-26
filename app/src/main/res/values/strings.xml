@@ -143,4 +143,18 @@ Students of Ho Chi Minh City University of Technology and Education (HCMUTE).</s
     <string name="gender_other">Other</string>
     <string name="error_invalid_email">Please enter a valid email address.</string>
     <string name="error_phone_10_digits">Phone number must contain exactly 10 digits.</string>
+
+    <string name="motivation_reminder_title">Motivation reminders</string>
+    <string name="motivation_reminder_summary_placeholder">Set a daily reminder time and unlock-screen motivation</string>
+    <string name="motivation_reminder_summary_on">On at %1$s and when you unlock your phone</string>
+    <string name="motivation_reminder_summary_off">Off</string>
+    <string name="motivation_reminder_enable">Enable motivation notifications</string>
+    <string name="motivation_reminder_time_label">Daily reminder time</string>
+    <string name="motivation_permission_granted">Notifications are ready. Use the switch above to turn reminders on or off.</string>
+    <string name="motivation_permission_needed_switch">Turn on the switch to allow notifications and enable daily reminders.</string>
+    <string name="motivation_permission_request_hint">Please allow notifications to enable motivation reminders.</string>
+    <string name="motivation_permission_needed">Allow notifications so FocusLife can remind you at the selected time.</string>
+    <string name="motivation_permission_button">Allow notifications</string>
+    <string name="motivation_reminder_saved">Motivation reminder saved for %1$s.</string>
+    <string name="motivation_reminder_disabled">Motivation reminders are off.</string>
 </resources>

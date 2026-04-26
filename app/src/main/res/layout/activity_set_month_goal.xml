@@ -9,29 +9,162 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="24dp"
-        android:paddingTop="28dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="120dp">
+        android:paddingStart="22dp"
+        android:paddingTop="24dp"
+        android:paddingEnd="22dp"
+        android:paddingBottom="128dp">
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mục tiêu tháng" android:textColor="@color/on_surface" android:textSize="28sp" android:textStyle="bold" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Thiết lập mục tiêu phù hợp cho sức khỏe, vận động và tập trung." android:textColor="@color/on_surface_variant" android:textSize="14sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mục tiêu tháng"
+            android:textColor="@color/on_surface"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="20dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Focus" android:textColor="@color/primary" android:textStyle="bold" />
-            <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="14dp" android:background="@drawable/bg_input_surface" android:gravity="center_vertical" android:paddingStart="18dp" android:text="30 giờ tập trung trong tháng" android:textColor="@color/on_surface" android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tvGoalMonth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Thiết lập chỉ tiêu cá nhân cho tháng này"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card_white"
+            android:orientation="vertical"
+            android:padding="22dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chỉ tiêu chính"
+                android:textColor="@color/on_surface"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Nhập những mục tiêu bạn muốn theo dõi trong tháng. Mục nào chưa cần thì để trống. Lịch nhắc uống nước nằm trong phần Sức khỏe hằng ngày."
+                android:textColor="@color/on_surface_variant"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="Chạy bộ trong tháng (km)"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etGoalSteps"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_input_surface"
+                android:hint="Ví dụ: 30"
+                android:inputType="number"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/on_surface_variant" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Calo cuối trong tháng (kcal)"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etGoalCalories"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_input_surface"
+                android:hint="Calo nạp - calo tiêu thụ"
+                android:inputType="number"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/on_surface_variant" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Thời gian Focus trong tháng (phút)"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etGoalFocusMinutes"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_input_surface"
+                android:hint="Ví dụ: 900"
+                android:inputType="number"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/on_surface_variant" />
         </LinearLayout>
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="20dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vận động" android:textColor="@color/secondary" android:textStyle="bold" />
-            <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="14dp" android:background="@drawable/bg_input_surface" android:gravity="center_vertical" android:paddingStart="18dp" android:text="Đi bộ 180.000 bước" android:textColor="@color/on_surface" android:textSize="15sp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvGoalStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card_surface_low"
+            android:padding="16dp"
+            android:text="Bạn có thể lưu mục tiêu mới hoặc để trống các mục chưa cần theo dõi."
+            android:textColor="@color/on_surface_variant"
+            android:textSize="13sp" />
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="20dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nước uống" android:textColor="@color/tertiary" android:textStyle="bold" />
-            <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="14dp" android:background="@drawable/bg_input_surface" android:gravity="center_vertical" android:paddingStart="18dp" android:text="Uống đủ 2L nước mỗi ngày" android:textColor="@color/on_surface" android:textSize="15sp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/btnSaveMonthlyGoal"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_gradient_primary"
+            android:gravity="center"
+            android:text="Lưu mục tiêu"
+            android:textColor="@color/on_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        <TextView android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="24dp" android:background="@drawable/bg_gradient_primary" android:gravity="center" android:text="Lưu mục tiêu" android:textColor="@color/on_primary" android:textSize="16sp" android:textStyle="bold" />
+        <TextView
+            android:id="@+id/btnReloadMonthlyGoal"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card_surface_low"
+            android:gravity="center"
+            android:text="Tải lại mục tiêu"
+            android:textColor="@color/on_surface"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnDeleteMonthlyGoal"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card_surface_low"
+            android:gravity="center"
+            android:text="Xóa mục tiêu tháng"
+            android:textColor="@color/error"
+            android:textStyle="bold" />
     </LinearLayout>
 </ScrollView>

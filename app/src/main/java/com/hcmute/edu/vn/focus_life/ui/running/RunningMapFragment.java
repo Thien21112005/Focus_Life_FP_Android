@@ -14,9 +14,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -26,8 +23,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -50,9 +45,6 @@ public class RunningMapFragment extends Fragment {
     private MapView mapView;
     private MapboxMap mapboxMap;
     private Polyline routePolyline;
-    private Marker userLocationMarker;
-    private Location userMarkerLocation;
-    private FusedLocationProviderClient fusedLocationClient;
 
     private TextView btnBackRunning;
     private TextView tvRunState;
@@ -95,25 +87,9 @@ public class RunningMapFragment extends Fragment {
                 }
                 if (granted) {
                     startOrResumeRun();
-                    locateAndMarkUser(true);
+                    centerOnUser(true);
                 } else {
                     Toast.makeText(requireContext(), "Cần quyền vị trí và dữ liệu sức khỏe để ghi phiên chạy", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-    private final ActivityResultLauncher<String[]> locatePermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                boolean granted = true;
-                for (Boolean value : result.values()) {
-                    if (!Boolean.TRUE.equals(value)) {
-                        granted = false;
-                        break;
-                    }
-                }
-                if (granted) {
-                    locateAndMarkUser(true);
-                } else {
-                    Toast.makeText(requireContext(), "Cần quyền vị trí để định vị trên bản đồ", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -151,7 +127,6 @@ public class RunningMapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mapContainer = view.findViewById(R.id.mapContainer);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
         mapView = new MapView(requireContext());
         mapView.setId(R.id.mapView);
         mapContainer.addView(mapView, new FrameLayout.LayoutParams(
@@ -163,6 +138,7 @@ public class RunningMapFragment extends Fragment {
         btnStyleToggle = view.findViewById(R.id.btnStyleToggle);
         btnCenterMap = view.findViewById(R.id.btnCenterMap);
         tvFollowBadge = view.findViewById(R.id.tvFollowBadge);
+        if (btnStyleToggle != null) btnStyleToggle.setVisibility(android.view.View.GONE);
         if (tvFollowBadge != null) tvFollowBadge.setVisibility(android.view.View.GONE);
         tvDistance = view.findViewById(R.id.tvDistance);
         tvPace = view.findViewById(R.id.tvPace);
@@ -191,8 +167,8 @@ public class RunningMapFragment extends Fragment {
         btnCenterMap.setOnClickListener(v -> {
             followUser = true;
             updateFollowBadge();
-            if (ensureLocationPermissionForLocate(true)) {
-                locateAndMarkUser(true);
+            if (ensureRunPermissions(false)) {
+                centerOnUser(true);
             }
         });
 
@@ -217,9 +193,8 @@ public class RunningMapFragment extends Fragment {
         if (mapboxMap == null) return;
         String style = satelliteStyle ? Style.SATELLITE_STREETS : Style.MAPBOX_STREETS;
         mapboxMap.setStyle(style, loadedStyle -> {
-            if (btnStyleToggle != null) btnStyleToggle.setText(satelliteStyle ? "☀" : "▦");
+            btnStyleToggle.setText(satelliteStyle ? "☼" : "◫");
             renderRoute();
-            renderUserLocationMarker(false);
             centerOnUser(false);
         });
     }
@@ -244,80 +219,6 @@ public class RunningMapFragment extends Fragment {
             }
         } else {
             pauseRun();
-        }
-    }
-
-    private boolean ensureLocationPermissionForLocate(boolean requestIfMissing) {
-        Context context = getContext();
-        if (context == null) return false;
-
-        boolean granted = PermissionManager.hasPermissionType(context, PermissionManager.TYPE_LOCATION);
-        if (!granted && requestIfMissing) {
-            List<String> missing = new ArrayList<>();
-            for (String permission : PermissionManager.getLocationPermissions()) {
-                if (!PermissionManager.hasPermission(context, permission)) {
-                    missing.add(permission);
-                }
-            }
-            locatePermissionLauncher.launch(missing.toArray(new String[0]));
-        }
-        return granted;
-    }
-
-    @SuppressWarnings("MissingPermission")
-    private void locateAndMarkUser(boolean moveCamera) {
-        if (mapboxMap == null) return;
-
-        Location serviceLocation = runningService != null ? runningService.getLastKnownLocationSnapshot() : null;
-        if (serviceLocation != null) {
-            showUserLocationMarker(serviceLocation, moveCamera);
-            return;
-        }
-
-        if (fusedLocationClient == null || !ensureLocationPermissionForLocate(false)) {
-            Toast.makeText(requireContext(), "Chưa có quyền vị trí để định vị", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                .addOnSuccessListener(location -> {
-                    if (!isAdded()) return;
-                    if (location != null) {
-                        showUserLocationMarker(location, moveCamera);
-                    } else {
-                        Toast.makeText(requireContext(), "Chưa lấy được vị trí hiện tại", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(error -> {
-                    if (isAdded()) {
-                        Toast.makeText(requireContext(), "Không thể định vị lúc này", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void showUserLocationMarker(@NonNull Location location, boolean moveCamera) {
-        if (mapboxMap == null) return;
-
-        userMarkerLocation = new Location(location);
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-        if (userLocationMarker != null) {
-            mapboxMap.removeMarker(userLocationMarker);
-            userLocationMarker = null;
-        }
-
-        userLocationMarker = mapboxMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .title("Vị trí của bạn"));
-
-        if (moveCamera) {
-            mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.5), 700);
-        }
-    }
-
-    private void renderUserLocationMarker(boolean moveCamera) {
-        if (userMarkerLocation != null) {
-            showUserLocationMarker(userMarkerLocation, moveCamera);
         }
     }
 
@@ -377,22 +278,9 @@ public class RunningMapFragment extends Fragment {
 
         if (tooShortToSave) {
             Toast.makeText(requireContext(), "Phiên chạy quá ngắn nên không lưu.", Toast.LENGTH_LONG).show();
-            resetMapAfterFinish();
         } else {
-            Toast.makeText(requireContext(), "Đang lưu phiên chạy lên Firestore...", Toast.LENGTH_SHORT).show();
-            uiHandler.postDelayed(this::resetMapAfterFinish, 1800L);
+            Toast.makeText(requireContext(), "Đang kết thúc và lưu phiên chạy", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void resetMapAfterFinish() {
-        unbindRunningService();
-        runningService = null;
-        serviceBound = false;
-        if (routePolyline != null && mapboxMap != null) {
-            mapboxMap.removePolyline(routePolyline);
-            routePolyline = null;
-        }
-        renderIdleState();
     }
 
     private boolean isRunTooShortToSave(RunningSessionSnapshot snapshot) {
@@ -459,18 +347,14 @@ public class RunningMapFragment extends Fragment {
     }
 
     private void renderRoute() {
-        if (mapboxMap == null) return;
+        if (mapboxMap == null || runningService == null) return;
 
+        List<Location> points = runningService.getRoutePointsSnapshot();
         if (routePolyline != null) {
             mapboxMap.removePolyline(routePolyline);
             routePolyline = null;
         }
 
-        if (runningService == null) return;
-        RunningSessionSnapshot snapshot = runningService.getSnapshot();
-        if (snapshot == null || !snapshot.sessionStarted) return;
-
-        List<Location> points = runningService.getRoutePointsSnapshot();
         if (points.size() < 2) {
             return;
         }
@@ -492,10 +376,6 @@ public class RunningMapFragment extends Fragment {
 
         Location location = runningService.getLastKnownLocationSnapshot();
         if (location == null) return;
-
-        if (userLocationMarker != null) {
-            showUserLocationMarker(location, false);
-        }
 
         mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),

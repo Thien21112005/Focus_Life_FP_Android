@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.SetOptions;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.domain.model.FocusTask;
@@ -69,35 +68,6 @@ public class FocusTaskRepository {
                 .get()
                 .addOnSuccessListener(snapshot -> callback.onLoaded(FocusTask.fromSnapshot(snapshot)))
                 .addOnFailureListener(error -> callback.onLoaded(null));
-    }
-
-    @Nullable
-    public ListenerRegistration observeTask(@Nullable String uid,
-                                            @Nullable String taskId,
-                                            @NonNull TaskCallback callback) {
-        if (uid == null || uid.trim().isEmpty() || taskId == null || taskId.trim().isEmpty()) {
-            callback.onLoaded(null);
-            return null;
-        }
-
-        return collection(uid)
-                .document(taskId)
-                .addSnapshotListener((snapshot, error) -> {
-                    if (error != null) {
-                        callback.onLoaded(null);
-                        return;
-                    }
-                    if (snapshot == null || !snapshot.exists()) {
-                        callback.onLoaded(null);
-                        return;
-                    }
-                    FocusTask task = FocusTask.fromSnapshot(snapshot);
-                    if (task != null && !task.deleted) {
-                        callback.onLoaded(task);
-                    } else {
-                        callback.onLoaded(null);
-                    }
-                });
     }
 
     public void saveTask(@Nullable String uid, @NonNull FocusTask task, @Nullable ActionCallback callback) {

@@ -3,9 +3,12 @@ package com.hcmute.edu.vn.focus_life;
 import android.app.Application;
 
 import com.google.firebase.FirebaseApp;
+import com.hcmute.edu.vn.focus_life.core.motivation.MotivationNotificationHelper;
+import com.hcmute.edu.vn.focus_life.core.motivation.MotivationReminderScheduler;
 import com.hcmute.edu.vn.focus_life.core.session.AuthStatePreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SessionManager;
 import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
+import com.hcmute.edu.vn.focus_life.core.usage.AppUsageTracker;
 import com.hcmute.edu.vn.focus_life.core.utils.NotificationHelper;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.worker.SyncScheduler;
@@ -26,7 +29,10 @@ public class FocusLifeApp extends Application {
         authStatePreferences = new AuthStatePreferences(this);
         sessionManager = new SessionManager(authStatePreferences);
         NotificationHelper.createChannels(this);
+        MotivationNotificationHelper.createChannel(this);
+        MotivationReminderScheduler.scheduleConfiguredDailyReminder(this);
         SyncScheduler.schedule(this);
+        new AppUsageTracker().register(this);
     }
 
     public static FocusLifeApp getInstance() {

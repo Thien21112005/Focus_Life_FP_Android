@@ -1,13 +1,16 @@
 package com.hcmute.edu.vn.focus_life.ui.profile;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +24,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 
@@ -29,6 +34,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.exception.AppExceptionLogger;
+import com.hcmute.edu.vn.focus_life.core.motivation.MotivationPreferences;
+import com.hcmute.edu.vn.focus_life.core.motivation.MotivationReminderScheduler;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
@@ -36,17 +43,15 @@ import com.hcmute.edu.vn.focus_life.data.repository.AuthRepository;
 import com.hcmute.edu.vn.focus_life.data.repository.ProfileRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
 import com.hcmute.edu.vn.focus_life.ui.auth.LoginActivity;
-import com.hcmute.edu.vn.focus_life.ui.focus.FocusCategoryManager;
 import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroPreferences;
 import com.hcmute.edu.vn.focus_life.ui.focus.PomodoroSettingsActivity;
 
-import java.util.List;
 import java.util.Locale;
 
 public class ProfileFragment extends Fragment {
     private ProfileRepository profileRepository;
-    private FocusCategoryManager categoryManager;
     private SettingsPreferences settingsPreferences;
+    private MotivationPreferences motivationPreferences;
 
     private ImageView imgProfileAvatar;
     private TextView tvProfileInitial;
@@ -56,15 +61,16 @@ public class ProfileFragment extends Fragment {
     private TextView tvProviderBadge;
     private TextView tvProfileInfoSummary;
     private TextView tvPomodoroSettingSummary;
-    private TextView tvCategorySettingSummary;
     private TextView tvThemeSummary;
     private TextView tvLanguageSummary;
+    private TextView tvMotivationReminderSummary;
     private SwitchCompat switchDarkMode;
     private View rowEditProfile;
     private View rowPassword;
     private View rowDarkMode;
     private View rowTheme;
     private View rowLanguage;
+    private View rowMotivationReminder;
     private View rowAboutFocusLife;
     private View rowDeleteAccount;
 
@@ -83,15 +89,14 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         profileRepository = new ProfileRepository(requireActivity());
-        categoryManager = new FocusCategoryManager(requireContext());
         settingsPreferences = new SettingsPreferences(requireContext());
+        motivationPreferences = new MotivationPreferences(requireContext());
 
         bindViews(view);
         setupActions();
         bindAppearance();
         loadProfile();
         bindPomodoroSummary();
-        bindCategorySummary();
     }
 
     @Override
@@ -99,7 +104,6 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         loadProfile();
         bindPomodoroSummary();
-        bindCategorySummary();
         bindAppearance();
     }
 
@@ -112,28 +116,28 @@ public class ProfileFragment extends Fragment {
         tvProviderBadge = view.findViewById(R.id.tvProviderBadge);
         tvProfileInfoSummary = view.findViewById(R.id.tvProfileInfoSummary);
         tvPomodoroSettingSummary = view.findViewById(R.id.tvPomodoroSettingSummary);
-        tvCategorySettingSummary = view.findViewById(R.id.tvCategorySettingSummary);
         tvThemeSummary = view.findViewById(R.id.tvThemeSummary);
         tvLanguageSummary = view.findViewById(R.id.tvLanguageSummary);
+        tvMotivationReminderSummary = view.findViewById(R.id.tvMotivationReminderSummary);
         switchDarkMode = view.findViewById(R.id.switchDarkMode);
         rowEditProfile = view.findViewById(R.id.rowEditProfile);
         rowPassword = view.findViewById(R.id.rowPassword);
         rowDarkMode = view.findViewById(R.id.rowDarkMode);
         rowTheme = view.findViewById(R.id.rowTheme);
         rowLanguage = view.findViewById(R.id.rowLanguage);
+        rowMotivationReminder = view.findViewById(R.id.rowMotivationReminder);
         rowAboutFocusLife = view.findViewById(R.id.rowAboutFocusLife);
         rowDeleteAccount = view.findViewById(R.id.rowDeleteAccount);
     }
 
     private void setupActions() {
         View rowPomodoroSettings = requireView().findViewById(R.id.rowPomodoroSettings);
-        View rowCategorySettings = requireView().findViewById(R.id.rowCategorySettings);
         TextView btnLogout = requireView().findViewById(R.id.btnLogout);
 
         rowEditProfile.setOnClickListener(v -> startActivity(new Intent(requireContext(), EditProfileActivity.class)));
         rowPassword.setOnClickListener(v -> startActivity(new Intent(requireContext(), ChangePasswordActivity.class)));
+        if (rowMotivationReminder != null) rowMotivationReminder.setOnClickListener(v -> showMotivationReminderDialog());
         rowPomodoroSettings.setOnClickListener(v -> startActivity(new Intent(requireContext(), PomodoroSettingsActivity.class)));
-        rowCategorySettings.setOnClickListener(v -> showCategoryManagerDialog());
         rowTheme.setOnClickListener(v -> showThemeDialog());
         rowLanguage.setOnClickListener(v -> showLanguageDialog());
         rowAboutFocusLife.setOnClickListener(v -> startActivity(new Intent(requireContext(), AboutFocusLifeActivity.class)));
@@ -218,106 +222,6 @@ public class ProfileFragment extends Fragment {
         tvPomodoroSettingSummary.setText(summary);
     }
 
-    private void bindCategorySummary() {
-        if (categoryManager == null || tvCategorySettingSummary == null) return;
-        List<String> categories = categoryManager.getCategories();
-        StringBuilder builder = new StringBuilder();
-        int visibleCount = Math.min(3, categories.size());
-        for (int i = 0; i < visibleCount; i++) {
-            if (i > 0) builder.append(", ");
-            builder.append(categories.get(i));
-        }
-        if (categories.size() > visibleCount) {
-            builder.append(" +").append(categories.size() - visibleCount).append(" mục khác");
-        }
-        tvCategorySettingSummary.setText(builder.toString());
-    }
-
-    private void showCategoryManagerDialog() {
-        List<String> categories = categoryManager.getCategories();
-        String[] items = categories.toArray(new String[0]);
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Các Category")
-                .setItems(items, (dialog, which) -> showCategoryActionDialog(categories.get(which)))
-                .setPositiveButton("+ Thêm", (dialog, which) -> showCategoryInputDialog(null))
-                .setNegativeButton("Đóng", null)
-                .show();
-    }
-
-    private void showCategoryActionDialog(@NonNull String category) {
-        String[] actions = {"Đổi tên", "Xóa"};
-        new AlertDialog.Builder(requireContext())
-                .setTitle(category)
-                .setItems(actions, (dialog, which) -> {
-                    if (which == 0) {
-                        showCategoryInputDialog(category);
-                    } else {
-                        showDeleteCategoryDialog(category);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private void showCategoryInputDialog(@Nullable String oldCategory) {
-        EditText input = new EditText(requireContext());
-        input.setSingleLine(true);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        input.setHint("Ví dụ: Android, Reading, Fitness");
-        if (oldCategory != null) {
-            input.setText(oldCategory);
-            input.setSelection(oldCategory.length());
-        }
-
-        String title = oldCategory == null ? "Thêm category" : "Đổi tên category";
-        String positive = oldCategory == null ? "Thêm" : "Lưu";
-
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle(title)
-                .setView(input)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton(positive, null)
-                .create();
-
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String value = input.getText().toString().trim();
-            if (TextUtils.isEmpty(value)) {
-                input.setError("Nhập tên category");
-                return;
-            }
-
-            if (oldCategory == null) {
-                categoryManager.addCategory(value);
-                Toast.makeText(requireContext(), "Đã thêm category", Toast.LENGTH_SHORT).show();
-            } else {
-                categoryManager.renameCategory(oldCategory, value);
-                Toast.makeText(requireContext(), "Đã đổi tên category", Toast.LENGTH_SHORT).show();
-            }
-            bindCategorySummary();
-            dialog.dismiss();
-        }));
-        dialog.show();
-    }
-
-    private void showDeleteCategoryDialog(@NonNull String category) {
-        if (categoryManager.getCategories().size() <= 1) {
-            Toast.makeText(requireContext(), "Cần giữ lại ít nhất 1 category", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Xóa category?")
-                .setMessage("Category \"" + category + "\" sẽ không còn xuất hiện trong dropdown tạo task mới.")
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Xóa", (dialog, which) -> {
-                    categoryManager.deleteCategory(category);
-                    bindCategorySummary();
-                    Toast.makeText(requireContext(), "Đã xóa category", Toast.LENGTH_SHORT).show();
-                })
-                .show();
-    }
-
     private void bindAppearance() {
         if (settingsPreferences == null || switchDarkMode == null) return;
         syncingSwitch = true;
@@ -325,7 +229,136 @@ public class ProfileFragment extends Fragment {
         syncingSwitch = false;
         tvThemeSummary.setText(settingsPreferences.getThemeDisplayName(requireContext()));
         tvLanguageSummary.setText(settingsPreferences.getLanguageDisplayName(requireContext()));
+        bindMotivationReminderSummary();
         applyThemeAccent();
+    }
+
+
+    private void bindMotivationReminderSummary() {
+        if (tvMotivationReminderSummary == null || motivationPreferences == null) return;
+        if (motivationPreferences.isEnabled()) {
+            tvMotivationReminderSummary.setText(getString(R.string.motivation_reminder_summary_on, motivationPreferences.getReminderTimeText()));
+        } else {
+            tvMotivationReminderSummary.setText(R.string.motivation_reminder_summary_off);
+        }
+    }
+
+    private void showMotivationReminderDialog() {
+        if (motivationPreferences == null) {
+            motivationPreferences = new MotivationPreferences(requireContext());
+        }
+
+        final int[] selectedHour = {motivationPreferences.getHour()};
+        final int[] selectedMinute = {motivationPreferences.getMinute()};
+
+        LinearLayout form = createDialogForm();
+
+        SwitchCompat switchEnabled = new SwitchCompat(requireContext());
+        switchEnabled.setText(R.string.motivation_reminder_enable);
+        switchEnabled.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface));
+        switchEnabled.setTextSize(15f);
+        switchEnabled.setChecked(motivationPreferences.isEnabled() && hasNotificationPermission());
+        switchEnabled.setPadding(0, dp(6), 0, dp(10));
+        tintMotivationSwitch(switchEnabled);
+        form.addView(switchEnabled);
+        switchEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && !hasNotificationPermission()) {
+                requestNotificationPermissionIfNeeded();
+                Toast.makeText(requireContext(), R.string.motivation_permission_request_hint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        TextView timeLabel = new TextView(requireContext());
+        timeLabel.setText(R.string.motivation_reminder_time_label);
+        timeLabel.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
+        timeLabel.setTextSize(13f);
+        form.addView(timeLabel);
+
+        TextView timeValue = new TextView(requireContext());
+        timeValue.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour[0], selectedMinute[0]));
+        timeValue.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface));
+        timeValue.setTextSize(18f);
+        timeValue.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        timeValue.setTypeface(null, android.graphics.Typeface.BOLD);
+        timeValue.setPadding(dp(16), 0, dp(16), 0);
+        timeValue.setBackground(roundRect(ContextCompat.getColor(requireContext(), R.color.surface_container_low), dp(18)));
+        LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(54));
+        timeParams.setMargins(0, dp(8), 0, dp(14));
+        form.addView(timeValue, timeParams);
+        timeValue.setOnClickListener(v -> new TimePickerDialog(
+                requireContext(),
+                (view, hourOfDay, minute) -> {
+                    selectedHour[0] = hourOfDay;
+                    selectedMinute[0] = minute;
+                    timeValue.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour[0], selectedMinute[0]));
+                },
+                selectedHour[0],
+                selectedMinute[0],
+                true
+        ).show());
+
+        TextView permissionText = new TextView(requireContext());
+        permissionText.setText(hasNotificationPermission()
+                ? getString(R.string.motivation_permission_granted)
+                : getString(R.string.motivation_permission_needed_switch));
+        permissionText.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
+        permissionText.setTextSize(13f);
+        form.addView(permissionText);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.motivation_reminder_title)
+                .setView(form)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.save_changes, (dialog, which) -> {
+                    if (switchEnabled.isChecked() && !hasNotificationPermission()) {
+                        requestNotificationPermissionIfNeeded();
+                        Toast.makeText(requireContext(), R.string.motivation_permission_request_hint, Toast.LENGTH_SHORT).show();
+                        switchEnabled.setChecked(false);
+                        motivationPreferences.setEnabled(false);
+                        MotivationReminderScheduler.cancel(requireContext());
+                        bindMotivationReminderSummary();
+                        return;
+                    }
+
+                    motivationPreferences.setEnabled(switchEnabled.isChecked());
+                    motivationPreferences.setReminderTime(selectedHour[0], selectedMinute[0]);
+                    if (switchEnabled.isChecked()) {
+                        MotivationReminderScheduler.scheduleConfiguredDailyReminder(requireContext());
+                        Toast.makeText(requireContext(), getString(R.string.motivation_reminder_saved, motivationPreferences.getReminderTimeText()), Toast.LENGTH_LONG).show();
+                    } else {
+                        MotivationReminderScheduler.cancel(requireContext());
+                        Toast.makeText(requireContext(), R.string.motivation_reminder_disabled, Toast.LENGTH_SHORT).show();
+                    }
+                    bindMotivationReminderSummary();
+                })
+                .show();
+    }
+
+    private boolean hasNotificationPermission() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 8307);
+        }
+    }
+
+    private void tintMotivationSwitch(SwitchCompat switchCompat) {
+        int checkedColor = ContextCompat.getColor(requireContext(), R.color.secondary);
+        int uncheckedTrack = ContextCompat.getColor(requireContext(), R.color.surface_container_highest);
+        int thumbChecked = Color.WHITE;
+        int thumbUnchecked = ContextCompat.getColor(requireContext(), R.color.surface_container_lowest);
+        switchCompat.setThumbTintList(new ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
+                new int[]{thumbChecked, thumbUnchecked}
+        ));
+        switchCompat.setTrackTintList(new ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
+                new int[]{checkedColor, uncheckedTrack}
+        ));
     }
 
     private void showEditProfileDialog() {

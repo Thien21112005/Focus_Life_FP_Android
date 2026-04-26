@@ -9,8 +9,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hcmute.edu.vn.focus_life.R;
@@ -187,7 +185,6 @@ public class FocusTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             tvMeta.setText(buildMeta(task));
             tvSchedule.setText(buildSchedule(task));
             tvPriority.setText(buildPriorityText(task));
-            applyPriorityStyle(task.priority);
 
             cbComplete.setOnCheckedChangeListener(null);
             cbComplete.setChecked(task.completed);
@@ -208,8 +205,7 @@ public class FocusTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             boolean selected = selectedTaskIds.contains(task.id);
-            root.setBackgroundResource(selected ? R.drawable.bg_card_primary_soft : R.drawable.bg_focus_task_card);
-            tvSelection.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            root.setBackgroundResource(selected ? R.drawable.bg_card_primary_soft : R.drawable.bg_focus_task_card);            tvSelection.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
             tvSelection.setText(selected ? "Đã chọn" : "Chọn");
             tvSelection.setAlpha(selected ? 1f : 0.45f);
 
@@ -225,28 +221,6 @@ public class FocusTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 toggleSelection(task);
                 return true;
             });
-        }
-
-        private void applyPriorityStyle(@Nullable String priority) {
-            int backgroundRes;
-            int textColor;
-            String normalized = priority == null ? "medium" : priority.toLowerCase(Locale.ROOT);
-            switch (normalized) {
-                case "high":
-                    backgroundRes = R.drawable.bg_chip_priority_high;
-                    textColor = ContextCompat.getColor(itemView.getContext(), R.color.priority_high_text);
-                    break;
-                case "low":
-                    backgroundRes = R.drawable.bg_chip_priority_low;
-                    textColor = ContextCompat.getColor(itemView.getContext(), R.color.priority_low_text);
-                    break;
-                default:
-                    backgroundRes = R.drawable.bg_chip_priority_medium;
-                    textColor = ContextCompat.getColor(itemView.getContext(), R.color.priority_medium_text);
-                    break;
-            }
-            tvPriority.setBackgroundResource(backgroundRes);
-            tvPriority.setTextColor(textColor);
         }
 
         @NonNull

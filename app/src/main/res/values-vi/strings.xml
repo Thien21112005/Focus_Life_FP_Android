@@ -140,4 +140,18 @@ Sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).</stri
     <string name="gender_other">Khác</string>
     <string name="error_invalid_email">Vui lòng nhập email hợp lệ.</string>
     <string name="error_phone_10_digits">Số điện thoại phải gồm đúng 10 chữ số.</string>
+
+    <string name="motivation_reminder_title">Thông báo động lực</string>
+    <string name="motivation_reminder_summary_placeholder">Đặt giờ nhắc hằng ngày và nhắc khi mở khóa điện thoại</string>
+    <string name="motivation_reminder_summary_on">Bật lúc %1$s và khi mở khóa điện thoại</string>
+    <string name="motivation_reminder_summary_off">Đang tắt</string>
+    <string name="motivation_reminder_enable">Bật thông báo động lực</string>
+    <string name="motivation_reminder_time_label">Giờ nhắc mỗi ngày</string>
+    <string name="motivation_permission_granted">Thông báo đã sẵn sàng. Dùng nút gạt phía trên để bật hoặc tắt nhắc nhở.</string>
+    <string name="motivation_permission_needed_switch">Bật nút gạt để cấp quyền thông báo và kích hoạt nhắc nhở hằng ngày.</string>
+    <string name="motivation_permission_request_hint">Hãy cho phép thông báo để bật nhắc nhở động lực.</string>
+    <string name="motivation_permission_needed">Cho phép thông báo để FocusLife nhắc bạn đúng giờ đã chọn.</string>
+    <string name="motivation_permission_button">Cấp quyền thông báo</string>
+    <string name="motivation_reminder_saved">Đã lưu thông báo động lực lúc %1$s.</string>
+    <string name="motivation_reminder_disabled">Đã tắt thông báo động lực.</string>
 </resources>

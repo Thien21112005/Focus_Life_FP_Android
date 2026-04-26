@@ -20,8 +20,11 @@ import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.data.local.entity.PomodoroSessionEntity;
 import com.hcmute.edu.vn.focus_life.data.repository.FocusTaskRepository;
+import com.hcmute.edu.vn.focus_life.data.repository.HealthMetricsRepository;
 import com.hcmute.edu.vn.focus_life.service.PomodoroService;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class PomodoroTimerActivity extends AppCompatActivity {
@@ -183,6 +186,17 @@ public class PomodoroTimerActivity extends AppCompatActivity {
 
         AppDatabase database = FocusLifeApp.getInstance().getDatabase();
         executors.diskIO().execute(() -> database.pomodoroDao().insert(entity));
+
+        Map<String, Object> firestoreData = new HashMap<>();
+        firestoreData.put("sessionUuid", entity.sessionUuid);
+        firestoreData.put("taskName", entity.taskName);
+        firestoreData.put("sessionType", entity.sessionType);
+        firestoreData.put("durationMinutes", entity.durationMinutes);
+        firestoreData.put("startedAt", entity.startedAt);
+        firestoreData.put("endedAt", entity.endedAt);
+        firestoreData.put("completed", entity.completed);
+        firestoreData.put("updatedAt", System.currentTimeMillis());
+        new HealthMetricsRepository().savePomodoroSession(entity.sessionUuid, firestoreData);
 
         if (completed && taskId != null && !taskId.trim().isEmpty()) {
             String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();

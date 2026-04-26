@@ -20,8 +20,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-        <TextView android:layout_width="40dp" android:layout_height="40dp" android:gravity="center" android:text="←" android:textColor="@color/primary" android:textSize="18sp" />
-        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Health Tracker" android:textColor="@color/on_surface" android:textSize="20sp" android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sức khỏe"
+            android:textColor="@color/on_surface"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/healthProgressBar"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -37,97 +51,293 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="20dp"
-            android:paddingEnd="24dp"
-            android:paddingBottom="40dp">
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_card_white" android:gravity="center_vertical" android:orientation="horizontal" android:padding="22dp">
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bước chân" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="8.432" android:textColor="@color/on_surface" android:textSize="34sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mục tiêu: 10.000" android:textColor="@color/secondary" android:textSize="14sp" />
-                </LinearLayout>
-                <FrameLayout android:layout_width="96dp" android:layout_height="96dp">
-                    <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_circle_surface" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="🚶" android:textColor="@color/primary" android:textSize="28sp" />
-                </FrameLayout>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:orientation="horizontal">
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Calo" android:textColor="@color/on_surface_variant" android:textSize="10sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="428 kcal" android:textColor="@color/on_surface" android:textSize="24sp" android:textStyle="bold" />
-                    <FrameLayout android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="12dp" android:background="@drawable/bg_progress_track"><View android:layout_width="110dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill_tertiary" /></FrameLayout>
-                </LinearLayout>
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="14dp" android:layout_weight="1" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vận động" android:textColor="@color/on_surface_variant" android:textSize="10sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="42 phút" android:textColor="@color/on_surface" android:textSize="24sp" android:textStyle="bold" />
-                    <FrameLayout android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="12dp" android:background="@drawable/bg_progress_track"><View android:layout_width="120dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill_primary" /></FrameLayout>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/bg_card_white" android:orientation="vertical" android:padding="18dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tổng quan hôm nay" android:textColor="@color/on_surface" android:textSize="18sp" android:textStyle="bold" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Tiếp tục duy trì vận động nhẹ, uống đủ nước và cân bằng dinh dưỡng trong ngày." android:textColor="@color/on_surface_variant" android:textSize="14sp" />
-            </LinearLayout>
-
+            android:paddingStart="20dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="120dp">
 
             <LinearLayout
-                android:id="@+id/btnChatAI"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_white"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:id="@+id/tvHealthMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tháng này"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Tổng quan tháng"
+                    android:textColor="@color/on_surface"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvHealthInsight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Đang cập nhật chỉ số sức khỏe của bạn."
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:background="@drawable/bg_card_white"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_circle_primary_soft"
-                    android:gravity="center"
-                    android:text="AI"
-                    android:textColor="@color/primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                android:columnCount="2">
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content" android:minHeight="164dp"
+                    android:layout_columnWeight="1"
+                    android:layout_marginEnd="7dp"
+                    android:layout_marginBottom="14dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="18dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="AI Coach"
-                        android:textColor="@color/on_surface_variant"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="Tư vấn sức khỏe ngay"
-                        android:textColor="@color/primary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chạy bộ" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthSteps" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="0 km" android:textColor="@color/on_surface" android:textSize="28sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthStepsTarget" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Chưa đặt mục tiêu chạy" android:textColor="@color/on_surface_variant" android:textSize="12sp" />
+                    <ProgressBar android:id="@+id/progressHealthSteps" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="14dp" android:max="100" android:progress="0" />
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:minHeight="164dp"
+                    android:layout_columnWeight="1"
+                    android:layout_marginStart="7dp"
+                    android:layout_marginBottom="14dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Calo cuối" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthNetCalories" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="0 kcal" android:textColor="@color/on_surface" android:textSize="25sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthNetCaloriesTarget" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Nạp - tiêu thụ" android:textColor="@color/on_surface_variant" android:textSize="12sp" />
+                    <ProgressBar android:id="@+id/progressHealthCalories" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="14dp" android:max="100" android:progress="0" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:minHeight="164dp"
+                    android:layout_columnWeight="1"
+                    android:layout_marginEnd="7dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Focus" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthFocusMinutes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="0 phút" android:textColor="@color/on_surface" android:textSize="25sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvHealthAppUsage" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Hoạt động app: 0 phút" android:textColor="@color/on_surface_variant" android:textSize="12sp" />
+                    <ProgressBar android:id="@+id/progressHealthFocus" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="14dp" android:max="100" android:progress="0" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:minHeight="164dp"
+                    android:layout_columnWeight="1"
+                    android:layout_marginStart="7dp"
+                    android:background="@drawable/bg_card_white"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mục tiêu" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/btnOpenMonthlyGoal" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="12dp" android:background="@drawable/bg_card_surface_low" android:clickable="true" android:focusable="true" android:gravity="center" android:text="Chỉnh mục tiêu" android:textColor="@color/on_surface" android:textStyle="bold" />
+                    <TextView android:id="@+id/btnOpenMonthlyReport" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_card_surface_low" android:clickable="true" android:focusable="true" android:gravity="center" android:text="Xem báo cáo" android:textColor="@color/on_surface" android:textStyle="bold" />
+                </LinearLayout>
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_card_white"
+                android:orientation="vertical"
+                android:padding="22dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="→"
-                    android:textColor="@color/primary"
+                    android:text="Uống nước hôm nay"
+                    android:textColor="@color/on_surface"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Theo dõi lượng nước trong ngày và nhận nhắc nhở đúng giờ."
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card_surface_low"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đã uống" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/tvHealthWater" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="0/8 ly" android:textColor="@color/on_surface" android:textSize="24sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/tvHealthWaterTarget" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="0 ml hôm nay" android:textColor="@color/on_surface_variant" android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <Space android:layout_width="12dp" android:layout_height="1dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card_surface_low"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tiến độ" android:textColor="@color/on_surface_variant" android:textSize="11sp" android:textStyle="bold" />
+                        <ProgressBar android:id="@+id/progressHealthWater" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="8dp" android:layout_marginTop="20dp" android:max="100" android:progress="0" />
+                        <TextView android:id="@+id/tvWaterSchedule" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Lịch nhắc hôm nay" android:textColor="@color/on_surface_variant" android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_card_surface_low"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cài đặt giờ nhắc"
+                        android:textColor="@color/on_surface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="Mỗi ngày cố định 8 ly. Bạn có thể đổi giờ bắt đầu và kết thúc tùy lịch sinh hoạt hôm nay."
+                        android:textColor="@color/on_surface_variant"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="7dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Từ giờ"
+                                android:textColor="@color/primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/etWaterReminderStartHour"
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_input_surface"
+                                android:hint="08"
+                                android:inputType="number"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:textColor="@color/on_surface"
+                                android:textColorHint="@color/on_surface_variant" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="7dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Đến giờ"
+                                android:textColor="@color/primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/etWaterReminderEndHour"
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_input_surface"
+                                android:hint="22"
+                                android:inputType="number"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:textColor="@color/on_surface"
+                                android:textColorHint="@color/on_surface_variant" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btnSaveWaterReminderSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_card_white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="Lưu giờ nhắc"
+                        android:textColor="@color/on_surface"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <GridLayout
+                    android:id="@+id/gridWaterCups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:columnCount="4">
+
+                    <TextView android:id="@+id/tvWaterCup1" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 1\n08:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup2" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 2\n10:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup3" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 3\n12:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup4" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 4\n14:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup5" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 5\n16:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup6" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 6\n18:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup7" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 7\n20:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvWaterCup8" android:layout_width="0dp" android:layout_height="58dp" android:layout_columnWeight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_surface_low" android:gravity="center" android:text="Ly 8\n22:00" android:textAlignment="center" android:textColor="@color/on_surface" android:textSize="12sp" android:textStyle="bold" />
+                </GridLayout>
+
+                <TextView android:id="@+id/btnLogWater" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="18dp" android:background="@drawable/bg_gradient_primary" android:clickable="true" android:focusable="true" android:gravity="center" android:text="Đã uống 1 ly nước" android:textColor="@color/on_primary" android:textSize="15sp" android:textStyle="bold" />
+                <TextView android:id="@+id/btnWaterReminder" android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="10dp" android:background="@drawable/bg_card_surface_low" android:clickable="true" android:focusable="true" android:gravity="center" android:text="Bật lịch nhắc uống nước" android:textColor="@color/on_surface" android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -10,9 +10,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -22,6 +26,8 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -40,9 +46,13 @@ import java.util.Locale;
 
 public class RunningMapFragment extends Fragment {
 
+    private FrameLayout mapContainer;
     private MapView mapView;
     private MapboxMap mapboxMap;
     private Polyline routePolyline;
+    private Marker userLocationMarker;
+    private Location userMarkerLocation;
+    private FusedLocationProviderClient fusedLocationClient;
 
     private TextView btnBackRunning;
     private TextView tvRunState;
@@ -85,9 +95,25 @@ public class RunningMapFragment extends Fragment {
                 }
                 if (granted) {
                     startOrResumeRun();
-                    centerOnUser(true);
+                    locateAndMarkUser(true);
                 } else {
                     Toast.makeText(requireContext(), "Cần quyền vị trí và dữ liệu sức khỏe để ghi phiên chạy", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private final ActivityResultLauncher<String[]> locatePermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                boolean granted = true;
+                for (Boolean value : result.values()) {
+                    if (!Boolean.TRUE.equals(value)) {
+                        granted = false;
+                        break;
+                    }
+                }
+                if (granted) {
+                    locateAndMarkUser(true);
+                } else {
+                    Toast.makeText(requireContext(), "Cần quyền vị trí để định vị trên bản đồ", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -124,12 +150,20 @@ public class RunningMapFragment extends Fragment {
     public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mapView = view.findViewById(R.id.mapView);
+        mapContainer = view.findViewById(R.id.mapContainer);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        mapView = new MapView(requireContext());
+        mapView.setId(R.id.mapView);
+        mapContainer.addView(mapView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
         btnBackRunning = view.findViewById(R.id.btnBackRunning);
         tvRunState = view.findViewById(R.id.tvRunState);
         btnStyleToggle = view.findViewById(R.id.btnStyleToggle);
         btnCenterMap = view.findViewById(R.id.btnCenterMap);
         tvFollowBadge = view.findViewById(R.id.tvFollowBadge);
+        if (tvFollowBadge != null) tvFollowBadge.setVisibility(android.view.View.GONE);
         tvDistance = view.findViewById(R.id.tvDistance);
         tvPace = view.findViewById(R.id.tvPace);
         tvDuration = view.findViewById(R.id.tvDuration);
@@ -138,6 +172,7 @@ public class RunningMapFragment extends Fragment {
         tvCalories = view.findViewById(R.id.tvCalories);
         tvRunningHint = view.findViewById(R.id.tvRunningHint);
         tvSyncStatus = view.findViewById(R.id.tvSyncStatus);
+        if (tvSyncStatus != null) tvSyncStatus.setVisibility(android.view.View.GONE);
         btnSecondaryAction = view.findViewById(R.id.btnSecondaryAction);
         btnPrimaryAction = view.findViewById(R.id.btnPrimaryAction);
 
@@ -150,12 +185,14 @@ public class RunningMapFragment extends Fragment {
             }
         });
 
-        btnStyleToggle.setOnClickListener(v -> toggleMapStyle());
+        if (btnStyleToggle != null) {
+            btnStyleToggle.setOnClickListener(v -> toggleMapStyle());
+        }
         btnCenterMap.setOnClickListener(v -> {
             followUser = true;
             updateFollowBadge();
-            if (ensureRunPermissions(false)) {
-                centerOnUser(true);
+            if (ensureLocationPermissionForLocate(true)) {
+                locateAndMarkUser(true);
             }
         });
 
@@ -180,8 +217,9 @@ public class RunningMapFragment extends Fragment {
         if (mapboxMap == null) return;
         String style = satelliteStyle ? Style.SATELLITE_STREETS : Style.MAPBOX_STREETS;
         mapboxMap.setStyle(style, loadedStyle -> {
-            btnStyleToggle.setText(satelliteStyle ? "☼" : "◫");
+            if (btnStyleToggle != null) btnStyleToggle.setText(satelliteStyle ? "☀" : "▦");
             renderRoute();
+            renderUserLocationMarker(false);
             centerOnUser(false);
         });
     }
@@ -206,6 +244,80 @@ public class RunningMapFragment extends Fragment {
             }
         } else {
             pauseRun();
+        }
+    }
+
+    private boolean ensureLocationPermissionForLocate(boolean requestIfMissing) {
+        Context context = getContext();
+        if (context == null) return false;
+
+        boolean granted = PermissionManager.hasPermissionType(context, PermissionManager.TYPE_LOCATION);
+        if (!granted && requestIfMissing) {
+            List<String> missing = new ArrayList<>();
+            for (String permission : PermissionManager.getLocationPermissions()) {
+                if (!PermissionManager.hasPermission(context, permission)) {
+                    missing.add(permission);
+                }
+            }
+            locatePermissionLauncher.launch(missing.toArray(new String[0]));
+        }
+        return granted;
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void locateAndMarkUser(boolean moveCamera) {
+        if (mapboxMap == null) return;
+
+        Location serviceLocation = runningService != null ? runningService.getLastKnownLocationSnapshot() : null;
+        if (serviceLocation != null) {
+            showUserLocationMarker(serviceLocation, moveCamera);
+            return;
+        }
+
+        if (fusedLocationClient == null || !ensureLocationPermissionForLocate(false)) {
+            Toast.makeText(requireContext(), "Chưa có quyền vị trí để định vị", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(location -> {
+                    if (!isAdded()) return;
+                    if (location != null) {
+                        showUserLocationMarker(location, moveCamera);
+                    } else {
+                        Toast.makeText(requireContext(), "Chưa lấy được vị trí hiện tại", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(error -> {
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Không thể định vị lúc này", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void showUserLocationMarker(@NonNull Location location, boolean moveCamera) {
+        if (mapboxMap == null) return;
+
+        userMarkerLocation = new Location(location);
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        if (userLocationMarker != null) {
+            mapboxMap.removeMarker(userLocationMarker);
+            userLocationMarker = null;
+        }
+
+        userLocationMarker = mapboxMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("Vị trí của bạn"));
+
+        if (moveCamera) {
+            mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.5), 700);
+        }
+    }
+
+    private void renderUserLocationMarker(boolean moveCamera) {
+        if (userMarkerLocation != null) {
+            showUserLocationMarker(userMarkerLocation, moveCamera);
         }
     }
 
@@ -256,10 +368,36 @@ public class RunningMapFragment extends Fragment {
 
     private void stopRun() {
         if (getContext() == null) return;
+        RunningSessionSnapshot snapshot = runningService != null ? runningService.getSnapshot() : RunningSessionSnapshot.idle();
+        boolean tooShortToSave = isRunTooShortToSave(snapshot);
+
         Intent intent = new Intent(requireContext(), RunningTrackerService.class);
         intent.setAction(RunningTrackerService.ACTION_STOP);
         requireContext().startService(intent);
-        Toast.makeText(requireContext(), "Đang kết thúc và lưu phiên chạy", Toast.LENGTH_SHORT).show();
+
+        if (tooShortToSave) {
+            Toast.makeText(requireContext(), "Phiên chạy quá ngắn nên không lưu.", Toast.LENGTH_LONG).show();
+            resetMapAfterFinish();
+        } else {
+            Toast.makeText(requireContext(), "Đang lưu phiên chạy lên Firestore...", Toast.LENGTH_SHORT).show();
+            uiHandler.postDelayed(this::resetMapAfterFinish, 1800L);
+        }
+    }
+
+    private void resetMapAfterFinish() {
+        unbindRunningService();
+        runningService = null;
+        serviceBound = false;
+        if (routePolyline != null && mapboxMap != null) {
+            mapboxMap.removePolyline(routePolyline);
+            routePolyline = null;
+        }
+        renderIdleState();
+    }
+
+    private boolean isRunTooShortToSave(RunningSessionSnapshot snapshot) {
+        if (snapshot == null) return true;
+        return snapshot.steps <= 0 && snapshot.distanceMeters < 30f;
     }
 
     private void bindRunningService() {
@@ -287,9 +425,9 @@ public class RunningMapFragment extends Fragment {
             tvDistance.setText(String.format(Locale.getDefault(), "%.2f km", snapshot.distanceMeters / 1000f));
             tvPace.setText(snapshot.paceSecondsPerKm <= 0f ? "--'--\"" : formatPace(snapshot.paceSecondsPerKm));
             tvDuration.setText(formatDuration(snapshot.durationMillis));
-            tvSpeed.setText(String.format(Locale.getDefault(), "🚀 %.1f km/h", snapshot.avgSpeedKmh));
-            tvSteps.setText(String.format(Locale.getDefault(), "👟 %d bước", snapshot.steps));
-            tvCalories.setText(String.format(Locale.getDefault(), "⚡ %.0f kcal", snapshot.calories));
+            tvSpeed.setText(String.format(Locale.getDefault(), "%.1f km/h", snapshot.avgSpeedKmh));
+            tvSteps.setText(String.format(Locale.getDefault(), "%d bước", snapshot.steps));
+            tvCalories.setText(String.format(Locale.getDefault(), "%.0f kcal", snapshot.calories));
             tvRunningHint.setText(snapshot.gpsLocked
                     ? "GPS đang hoạt động, quãng đường sẽ được đo theo lộ trình thật."
                     : "Đang chờ GPS khóa vị trí chính xác hơn...");
@@ -308,9 +446,9 @@ public class RunningMapFragment extends Fragment {
         tvDistance.setText("0.00 km");
         tvPace.setText("--'--\"");
         tvDuration.setText("00:00");
-        tvSpeed.setText("🚀 0.0 km/h");
-        tvSteps.setText("👟 0 bước");
-        tvCalories.setText("⚡ 0 kcal");
+        tvSpeed.setText("0.0 km/h");
+        tvSteps.setText("0 bước");
+        tvCalories.setText("0 kcal");
         tvRunState.setText("Sẵn sàng bắt đầu");
         tvRunningHint.setText("Bấm Bắt đầu chạy để ghi lại GPS, quãng đường và số bước.");
         tvSyncStatus.setText(runningService != null ? runningService.getSyncStatus() : "Chưa có phiên chạy");
@@ -321,14 +459,18 @@ public class RunningMapFragment extends Fragment {
     }
 
     private void renderRoute() {
-        if (mapboxMap == null || runningService == null) return;
+        if (mapboxMap == null) return;
 
-        List<Location> points = runningService.getRoutePointsSnapshot();
         if (routePolyline != null) {
             mapboxMap.removePolyline(routePolyline);
             routePolyline = null;
         }
 
+        if (runningService == null) return;
+        RunningSessionSnapshot snapshot = runningService.getSnapshot();
+        if (snapshot == null || !snapshot.sessionStarted) return;
+
+        List<Location> points = runningService.getRoutePointsSnapshot();
         if (points.size() < 2) {
             return;
         }
@@ -350,6 +492,10 @@ public class RunningMapFragment extends Fragment {
 
         Location location = runningService.getLastKnownLocationSnapshot();
         if (location == null) return;
+
+        if (userLocationMarker != null) {
+            showUserLocationMarker(location, false);
+        }
 
         mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),
@@ -387,14 +533,14 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        mapView.onStart();
+        if (mapView != null) mapView.onStart();
         bindRunningService();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mapView.onResume();
+        if (mapView != null) mapView.onResume();
         uiHandler.removeCallbacks(snapshotUpdater);
         uiHandler.post(snapshotUpdater);
     }
@@ -402,13 +548,13 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onPause() {
         uiHandler.removeCallbacks(snapshotUpdater);
-        mapView.onPause();
+        if (mapView != null) mapView.onPause();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        mapView.onStop();
+        if (mapView != null) mapView.onStop();
         unbindRunningService();
         super.onStop();
     }
@@ -416,19 +562,19 @@ public class RunningMapFragment extends Fragment {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mapView.onLowMemory();
+        if (mapView != null) mapView.onLowMemory();
     }
 
     @Override
     public void onDestroyView() {
         uiHandler.removeCallbacks(snapshotUpdater);
-        mapView.onDestroy();
+        if (mapView != null) mapView.onDestroy();
         super.onDestroyView();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
+        if (mapView != null) mapView.onSaveInstanceState(outState);
     }
 }

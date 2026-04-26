@@ -2,6 +2,8 @@ package com.hcmute.edu.vn.focus_life.ui.onboarding;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -16,6 +18,7 @@ public class OnboardingProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        hideStatusBar();
         setContentView(R.layout.activity_onboarding_profile);
 
         OnboardingPreferences preferences = new OnboardingPreferences(this);
@@ -36,4 +39,17 @@ public class OnboardingProfileActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
     }
+
+    private void hideStatusBar() {
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        );
+    }
+
 }

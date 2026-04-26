@@ -9,7 +9,7 @@
         android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="72dp"
-        android:background="#B3FFFFFF"
+        android:background="@color/surface"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="24dp"
@@ -45,26 +45,25 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gemini Powered"
+                android:text="AI Coach"
                 android:textColor="@color/on_surface_variant"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:textSize="11sp" />
         </LinearLayout>
 
         <ProgressBar
             android:id="@+id/chatProgressBar"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:visibility="gone"
-            android:indeterminateTint="@color/primary" />
+            android:indeterminateTint="@color/primary"
+            android:visibility="gone" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
         android:clipToPadding="false"
+        android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/chips"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -86,9 +85,50 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <TextView android:id="@+id/chip1" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginEnd="10dp" android:background="@drawable/bg_surface_outline_round" android:gravity="center" android:paddingStart="18dp" android:paddingEnd="18dp" android:text="Gợi ý bài tập" android:textColor="@color/primary" android:textStyle="bold" android:clickable="true" android:focusable="true"/>
-            <TextView android:id="@+id/chip2" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginEnd="10dp" android:background="@drawable/bg_surface_outline_round" android:gravity="center" android:paddingStart="18dp" android:paddingEnd="18dp" android:text="Chế độ ăn hôm nay" android:textColor="@color/primary" android:textStyle="bold" android:clickable="true" android:focusable="true"/>
-            <TextView android:id="@+id/chip3" android:layout_width="wrap_content" android:layout_height="40dp" android:background="@drawable/bg_surface_outline_round" android:gravity="center" android:paddingStart="18dp" android:paddingEnd="18dp" android:text="Làm sao để tập trung?" android:textColor="@color/primary" android:textStyle="bold" android:clickable="true" android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/chip1"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_surface_outline_round"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="Gợi ý bài tập"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chip2"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_surface_outline_round"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="Chế độ ăn hôm nay"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chip3"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_surface_outline_round"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="Làm sao để tập trung?"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -115,15 +155,15 @@
                 android:id="@+id/etMessage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#00000000"
+                android:background="@android:color/transparent"
                 android:gravity="center_vertical"
                 android:hint="Nhắn tin cho AI Coach..."
+                android:imeOptions="actionSend"
+                android:inputType="textShortMessage|textAutoCorrect|textCapSentences"
                 android:paddingStart="18dp"
                 android:paddingEnd="18dp"
                 android:textColor="@color/on_surface"
-                android:textColorHint="@color/on_surface_variant"
-                android:inputType="textShortMessage|textAutoCorrect|textCapSentences"
-                android:imeOptions="actionSend" />
+                android:textColorHint="@color/on_surface_variant" />
         </FrameLayout>
 
         <TextView
@@ -132,13 +172,12 @@
             android:layout_height="56dp"
             android:layout_marginStart="12dp"
             android:background="@drawable/bg_gradient_primary"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:text="➤"
             android:textColor="@color/on_primary"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true" />
+            android:textStyle="bold" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

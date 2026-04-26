@@ -5,7 +5,11 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorError">@color/error</item>
         <item name="android:windowBackground">@color/background</item>
-        <item name="android:fontFamily">sans</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@color/surface_container_lowest</item>
     </style>

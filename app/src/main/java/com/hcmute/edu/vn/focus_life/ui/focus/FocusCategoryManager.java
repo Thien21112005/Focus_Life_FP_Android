@@ -27,6 +27,7 @@ public class FocusCategoryManager {
     public FocusCategoryManager(@NonNull Context context) {
         preferences = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         ensureDefaults();
+        migrateEnglishDefaultsIfNeeded();
     }
 
     @NonNull
@@ -36,14 +37,14 @@ public class FocusCategoryManager {
         if (raw != null && !raw.trim().isEmpty()) {
             String[] values = raw.split(SEPARATOR);
             for (String value : values) {
-                String normalized = normalize(migrateDefaultName(value));
+                String normalized = normalize(mapLegacyCategory(value));
                 if (!normalized.isEmpty()) result.add(normalized);
             }
         }
         if (result.isEmpty()) {
             for (String category : DEFAULT_CATEGORIES) result.add(category);
+            save(result);
         }
-        save(result);
         return new ArrayList<>(result);
     }
 
@@ -97,13 +98,24 @@ public class FocusCategoryManager {
     }
 
     private void ensureDefaults() {
-        if (preferences.contains(KEY_CATEGORIES)) {
-            getCategories();
-            return;
-        }
+        if (preferences.contains(KEY_CATEGORIES)) return;
         LinkedHashSet<String> categories = new LinkedHashSet<>();
         for (String category : DEFAULT_CATEGORIES) categories.add(category);
         save(categories);
+    }
+
+    private void migrateEnglishDefaultsIfNeeded() {
+        List<String> current = getCategories();
+        LinkedHashSet<String> migrated = new LinkedHashSet<>();
+        boolean changed = false;
+
+        for (String category : current) {
+            String mapped = mapLegacyCategory(category);
+            if (!mapped.equals(category)) changed = true;
+            migrated.add(mapped);
+        }
+
+        if (changed) save(migrated);
     }
 
     private void save(@NonNull Set<String> categories) {
@@ -118,24 +130,36 @@ public class FocusCategoryManager {
     }
 
     @NonNull
-    private String migrateDefaultName(@Nullable String value) {
-        String category = normalize(value);
-        if (category.equalsIgnoreCase("Study")) return "Học tập";
-        if (category.equalsIgnoreCase("Work")) return "Công việc";
-        if (category.equalsIgnoreCase("Design")) return "Thiết kế";
-        if (category.equalsIgnoreCase("Project")) return "Dự án";
-        if (category.equalsIgnoreCase("Personal")) return "Cá nhân";
-        if (category.equalsIgnoreCase("Health")) return "Sức khỏe";
-        if (category.equalsIgnoreCase("Shopping")) return "Mua sắm";
-        if (category.equalsIgnoreCase("Other")) return "Khác";
-        return category;
-    }
-
-    @NonNull
     private String normalize(@Nullable String value) {
         if (value == null) return "";
         String trimmed = value.trim().replace(JOIN_SEPARATOR, "");
         if (trimmed.isEmpty()) return "";
-        return trimmed.substring(0, 1).toUpperCase(Locale.ROOT) + trimmed.substring(1);
+        return trimmed.substring(0, 1).toUpperCase(new Locale("vi", "VN")) + trimmed.substring(1);
+    }
+
+    @NonNull
+    private String mapLegacyCategory(@Nullable String value) {
+        if (value == null) return "";
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        switch (normalized) {
+            case "study":
+                return "Học tập";
+            case "work":
+                return "Công việc";
+            case "project":
+                return "Dự án";
+            case "personal":
+                return "Cá nhân";
+            case "health":
+                return "Sức khỏe";
+            case "design":
+                return "Thiết kế";
+            case "shopping":
+                return "Mua sắm";
+            case "other":
+                return "Khác";
+            default:
+                return value.trim();
+        }
     }
 }

@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="#F0F9FF"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="22dp"
+        android:paddingTop="24dp"
+        android:paddingEnd="22dp"
+        android:paddingBottom="28dp">
 
         <TextView
             android:id="@+id/tvFocusEditorTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:text="Tạo task mới"
-            android:textColor="@color/on_surface"
+            android:textColor="#0F172A"
             android:textSize="30sp"
             android:textStyle="bold" />
 
@@ -24,96 +29,214 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Lưu task lên Firebase với các field cần cho schedule, priority và Pomodoro."
-            android:textColor="@color/on_surface_variant" />
+            android:text="Điền thông tin task và chọn thời gian phù hợp."
+            android:textColor="#475569"
+            android:textSize="14sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card_white"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_editor_card_blue"
             android:orientation="vertical"
             android:padding="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Tên task"
+                android:textColor="#0F172A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etFocusTaskTitle"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_input_surface"
-                android:hint="Tên task"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_editor_input_blue"
+                android:fontFamily="sans-serif"
+                android:hint="Ví dụ: Hoàn thiện giao diện Focus"
+                android:imeOptions="actionNext"
+                android:inputType="textCapSentences|textAutoCorrect"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/on_surface" />
+                android:singleLine="true"
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Mô tả"
+                android:textColor="#0F172A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etFocusTaskDescription"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input_surface"
-                android:gravity="top"
-                android:hint="Mô tả chi tiết"
+                android:layout_height="118dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_editor_input_blue"
+                android:fontFamily="sans-serif"
+                android:gravity="top|start"
+                android:hint="Ghi chú thêm cho task"
+                android:imeOptions="actionNext"
+                android:inputType="textMultiLine|textCapSentences|textAutoCorrect"
+                android:minLines="4"
                 android:padding="16dp"
-                android:textColor="@color/on_surface" />
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
 
-            <EditText
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Category"
+                android:textColor="#0F172A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <AutoCompleteTextView
                 android:id="@+id/etFocusTaskCategory"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input_surface"
-                android:hint="Category (ví dụ: Design, Study, Work)"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_editor_input_blue"
+                android:clickable="true"
+                android:completionThreshold="0"
+                android:drawableEnd="@drawable/ic_dropdown_blue"
+                android:drawablePadding="10dp"
+                android:dropDownVerticalOffset="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:focusable="false"
+                android:hint="Chọn category"
+                android:inputType="none"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/on_surface" />
+                android:popupBackground="@drawable/bg_dropdown_popup_blue"
+                android:singleLine="true"
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
 
-            <EditText
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Mức ưu tiên"
+                android:textColor="#0F172A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <AutoCompleteTextView
                 android:id="@+id/etFocusTaskPriority"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input_surface"
-                android:hint="Priority: low / medium / high"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_editor_input_blue"
+                android:clickable="true"
+                android:completionThreshold="0"
+                android:drawableEnd="@drawable/ic_dropdown_blue"
+                android:drawablePadding="10dp"
+                android:dropDownVerticalOffset="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:focusable="false"
+                android:hint="Chọn mức ưu tiên"
+                android:inputType="none"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/on_surface" />
+                android:popupBackground="@drawable/bg_dropdown_popup_blue"
+                android:singleLine="true"
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Số Pomodoro dự kiến"
+                android:textColor="#0F172A"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etFocusTaskPomodoros"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input_surface"
-                android:hint="Số Pomodoro dự kiến"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_editor_input_blue"
+                android:fontFamily="sans-serif"
+                android:hint="Ví dụ: 2"
+                android:imeOptions="actionDone"
                 android:inputType="number"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/on_surface" />
+                android:singleLine="true"
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="15sp" />
 
             <LinearLayout
                 android:id="@+id/cardFocusTaskStart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card_surface_low"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_date_row_blue"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:paddingStart="16dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="14dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Bắt đầu"
-                    android:textColor="@color/on_surface"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Bắt đầu"
+                        android:textColor="#0F172A"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Chọn ngày và giờ bắt đầu"
+                        android:textColor="#64748B"
+                        android:textSize="11sp" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvFocusTaskStartValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="end"
+                    android:maxWidth="170dp"
+                    android:maxLines="1"
                     android:text="--"
-                    android:textColor="@color/primary" />
+                    android:textColor="#0284C7"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -121,25 +244,51 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card_surface_low"
+                android:background="@drawable/bg_date_row_blue"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:paddingStart="16dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="14dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Deadline"
-                    android:textColor="@color/on_surface"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Kết thúc"
+                        android:textColor="#0F172A"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Luôn phải sau thời gian bắt đầu"
+                        android:textColor="#64748B"
+                        android:textSize="11sp" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvFocusTaskDueValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="end"
+                    android:maxWidth="170dp"
+                    android:maxLines="1"
                     android:text="--"
-                    android:textColor="@color/primary" />
+                    android:textColor="#0284C7"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -155,7 +304,14 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
-                android:text="Hủy" />
+                android:fontFamily="sans-serif-medium"
+                android:text="Hủy"
+                android:textAllCaps="false"
+                android:textColor="#0284C7"
+                android:textSize="14sp"
+                app:cornerRadius="28dp"
+                app:strokeColor="#0284C7"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveTask"
@@ -164,16 +320,25 @@
                 android:layout_height="56dp"
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
-                android:text="Lưu task" />
+                android:fontFamily="sans-serif-medium"
+                android:text="Lưu task"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                app:backgroundTint="#0284C7"
+                app:cornerRadius="28dp" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDeleteTaskDraft"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="52dp"
             android:layout_marginTop="8dp"
-            android:text="Xóa task này" />
+            android:fontFamily="sans-serif-medium"
+            android:text="Xóa task này"
+            android:textAllCaps="false"
+            android:textColor="#0284C7" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

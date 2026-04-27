@@ -38,6 +38,7 @@ import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.common.AppExecutors;
 import com.hcmute.edu.vn.focus_life.core.utils.DateUtils;
+import com.hcmute.edu.vn.focus_life.data.repository.AppNotificationRepository;
 import com.hcmute.edu.vn.focus_life.data.local.entity.StepRecordEntity;
 import com.hcmute.edu.vn.focus_life.ui.running.RunningMapActivity;
 import com.hcmute.edu.vn.focus_life.ui.running.RunningSessionSnapshot;
@@ -55,7 +56,9 @@ public class RunningTrackerService extends Service implements SensorEventListene
     public static final String ACTION_STOP = "com.hcmute.edu.vn.focus_life.action.STOP";
 
     private static final String CHANNEL_ID = "running_tracker_channel";
+    private static final String COMPLETION_CHANNEL_ID = "running_completion_channel";
     private static final int NOTIFICATION_ID = 4102;
+    private static final int COMPLETION_NOTIFICATION_ID = 4103;
 
     private static final long LOCATION_INTERVAL_MS = 1500L;
     private static final float MIN_DISTANCE_TO_ACCEPT_METERS = 2.5f;
@@ -541,6 +544,7 @@ public class RunningTrackerService extends Service implements SensorEventListene
                         .addOnSuccessListener(unused -> {
                             syncStatus = "Đã lưu phiên chạy";
                             updateNotification();
+                            notifyRunCompleted(distanceMeters, durationMillis, calories, steps);
                             finishServiceSafely();
                         })
                         .addOnFailureListener(e -> {
@@ -637,6 +641,47 @@ public class RunningTrackerService extends Service implements SensorEventListene
         return String.format(Locale.getDefault(), "%d'%02d\"", minutes, seconds);
     }
 
+    private void notifyRunCompleted(float distanceMeters, long durationMillis, float calories, int steps) {
+        String distanceText = formatDistance(distanceMeters);
+        String durationText = formatDuration(durationMillis);
+        String caloriesText = String.format(Locale.getDefault(), "%.1f kcal", calories);
+        String message = "Bạn đã hoàn thành " + distanceText + " trong " + durationText
+                + ", tiêu thụ khoảng " + caloriesText + " và ghi nhận " + steps + " bước.";
+
+        AppNotificationRepository.log(
+                AppNotificationRepository.TYPE_RUNNING,
+                "Đã lưu phiên chạy",
+                message,
+                COMPLETION_CHANNEL_ID
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Intent openIntent = new Intent(this, RunningMapActivity.class);
+        openIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                this,
+                904,
+                openIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        Notification notification = new NotificationCompat.Builder(this, COMPLETION_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Đã lưu phiên chạy")
+                .setContentText(message)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build();
+
+        NotificationManagerCompat.from(this).notify(COMPLETION_NOTIFICATION_ID, notification);
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
@@ -650,6 +695,14 @@ public class RunningTrackerService extends Service implements SensorEventListene
         );
         channel.setDescription("Theo dõi phiên chạy nền");
         manager.createNotificationChannel(channel);
+
+        NotificationChannel completionChannel = new NotificationChannel(
+                COMPLETION_CHANNEL_ID,
+                "Hoàn thành chạy bộ",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        completionChannel.setDescription("Thông báo sau khi lưu phiên chạy bộ");
+        manager.createNotificationChannel(completionChannel);
     }
 
     @Override

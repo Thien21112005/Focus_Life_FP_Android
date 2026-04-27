@@ -11,7 +11,7 @@
     <string name="nav_ai_coach">AI Coach</string>
     <string name="nav_notification">Notifications</string>
     <string name="nav_report">Reports</string>
-    <string name="nav_statistic">Stats</string>
+    <string name="nav_statistic">History</string>
     <string name="nav_target">Goals</string>
     <string name="nav_profile">Profile</string>
 

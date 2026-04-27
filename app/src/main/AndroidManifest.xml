@@ -118,6 +118,16 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.hcmute.edu.vn.focus_life.action.WATER_REMIND" />
+                <action android:name="com.hcmute.edu.vn.focus_life.action.WATER_RESCHEDULE" />
+                <action android:name="com.hcmute.edu.vn.focus_life.action.WATER_ACTIVATE_DEFAULT" />
+                <action android:name="com.hcmute.edu.vn.focus_life.action.LOG_WATER_FROM_REMINDER" />
             </intent-filter>
         </receiver>
 
@@ -127,6 +137,12 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="android.intent.action.USER_PRESENT" />
                 <action android:name="com.hcmute.edu.vn.focus_life.action.MOTIVATION_REMINDER" />
                 <action android:name="com.hcmute.edu.vn.focus_life.action.MOTIVATION_BOOT_RESCHEDULE" />
@@ -134,21 +150,21 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receiver.PomodoroAlarmReceiver"
+            android:exported="false" />
+
         <service
             android:name=".service.RunningTrackerService"
             android:exported="false"
             android:foregroundServiceType="location|health" />
-
         <service
             android:name=".service.PomodoroService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
-
         <service
             android:name=".service.StepCounterService"
             android:exported="false"
             android:foregroundServiceType="health" />
-
     </application>
-
 </manifest>

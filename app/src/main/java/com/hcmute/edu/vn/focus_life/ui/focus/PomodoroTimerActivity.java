@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.common.AppExecutors;
+import com.hcmute.edu.vn.focus_life.core.focus.PomodoroAlarmScheduler;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.data.local.entity.PomodoroSessionEntity;
@@ -121,6 +122,7 @@ public class PomodoroTimerActivity extends AppCompatActivity {
         startedAt = System.currentTimeMillis();
         sessionSaved = false;
         startForegroundServiceCompat(buildServiceIntent(PomodoroService.ACTION_START));
+        PomodoroAlarmScheduler.scheduleCompletion(this, taskTitle, config.focusMinutes, remainingMillis);
         startCountdown(remainingMillis);
     }
 
@@ -128,12 +130,14 @@ public class PomodoroTimerActivity extends AppCompatActivity {
         running = false;
         paused = true;
         cancelTimer();
+        PomodoroAlarmScheduler.cancel(this);
         btnPauseResume.setText("▶");
     }
 
     private void resumeSession() {
         running = true;
         paused = false;
+        PomodoroAlarmScheduler.scheduleCompletion(this, taskTitle, config.focusMinutes, remainingMillis);
         startCountdown(remainingMillis);
     }
 
@@ -160,6 +164,7 @@ public class PomodoroTimerActivity extends AppCompatActivity {
 
     private void finishSession(boolean completed) {
         cancelTimer();
+        PomodoroAlarmScheduler.cancel(this);
         running = false;
         paused = false;
         stopService(buildServiceIntent(PomodoroService.ACTION_STOP));
@@ -265,6 +270,7 @@ public class PomodoroTimerActivity extends AppCompatActivity {
         super.onDestroy();
         cancelTimer();
         if (isFinishing() && !sessionSaved) {
+            PomodoroAlarmScheduler.cancel(this);
             stopService(buildServiceIntent(PomodoroService.ACTION_STOP));
         }
     }

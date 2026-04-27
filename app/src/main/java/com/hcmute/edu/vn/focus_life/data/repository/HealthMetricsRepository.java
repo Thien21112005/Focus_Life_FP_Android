@@ -31,12 +31,20 @@ public class HealthMetricsRepository {
         void onResult(@NonNull MonthlyReport report, @Nullable Exception error);
     }
 
+    public interface DailyCallback {
+        void onResult(@NonNull DailyReport report, @Nullable Exception error);
+    }
+
     public interface BasicCallback {
         void onResult(boolean success, @NonNull String message);
     }
 
     public interface IntCallback {
         void onResult(int value, @Nullable Exception error);
+    }
+
+    public interface LifetimeCallback {
+        void onResult(@NonNull LifetimeReport report, @Nullable Exception error);
     }
 
     public static class MonthlyGoal {
@@ -67,6 +75,14 @@ public class HealthMetricsRepository {
             goal.reminderIntervalHours = 2;
             return goal;
         }
+    }
+
+    public static class LifetimeReport {
+        public float totalRunningKm;
+        public int totalSteps;
+        public int focusMinutes;
+        public int waterGlasses;
+        public long appActiveMillis;
     }
 
     public static class MonthlyReport {
@@ -112,6 +128,19 @@ public class HealthMetricsRepository {
         public int monthlyWaterPercent() {
             return percent(monthlyWaterGlasses, monthlyWaterTarget());
         }
+    }
+
+    public static class DailyReport {
+        public String dateKey;
+        public int totalSteps;
+        public float runningDistanceKm;
+        public int nutritionCalories;
+        public int burnedCalories;
+        public int netCalories;
+        public int focusMinutes;
+        public long appActiveMillis;
+        public int waterGlasses;
+        public int waterMl;
     }
 
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
@@ -196,6 +225,69 @@ public class HealthMetricsRepository {
                     callback.onResult(report, null);
                 })
                 .addOnFailureListener(e -> callback.onResult(emptyReport(monthKey), e));
+    }
+
+
+    public void loadDailyReport(@NonNull String dateKey, @NonNull DailyCallback callback) {
+        String uid = requireUid(callback);
+        if (uid == null) return;
+        String safeDate = (dateKey == null || dateKey.trim().isEmpty()) ? todayKey() : dateKey.trim();
+
+        Task<QuerySnapshot> stepTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection(Constants.FIRESTORE_STEP_RECORDS).get();
+        Task<QuerySnapshot> nutritionTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection(Constants.FIRESTORE_NUTRITION_ENTRIES).get();
+        Task<QuerySnapshot> focusTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("pomodoro_sessions").get();
+        Task<QuerySnapshot> usageTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("app_usage_records").get();
+        Task<QuerySnapshot> waterTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("water_records").get();
+        Task<QuerySnapshot> runningTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("running_sessions").get();
+
+        Tasks.whenAllComplete(stepTask, nutritionTask, focusTask, usageTask, waterTask, runningTask)
+                .addOnSuccessListener(tasks -> {
+                    DailyReport report = new DailyReport();
+                    report.dateKey = safeDate;
+                    aggregateDailySteps(report, stepTask, safeDate);
+                    aggregateDailyRunning(report, runningTask, safeDate);
+                    aggregateDailyNutrition(report, nutritionTask, safeDate);
+                    aggregateDailyFocus(report, focusTask, safeDate);
+                    aggregateDailyUsage(report, usageTask, safeDate);
+                    aggregateDailyWater(report, waterTask, safeDate);
+                    report.netCalories = Math.max(0, report.nutritionCalories - report.burnedCalories);
+                    callback.onResult(report, null);
+                })
+                .addOnFailureListener(e -> callback.onResult(emptyDailyReport(safeDate), e));
+    }
+
+
+    public void loadLifetimeReport(@NonNull LifetimeCallback callback) {
+        String uid = requireUid(callback);
+        if (uid == null) return;
+        Task<QuerySnapshot> stepTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection(Constants.FIRESTORE_STEP_RECORDS).get();
+        Task<QuerySnapshot> focusTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("pomodoro_sessions").get();
+        Task<QuerySnapshot> usageTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("app_usage_records").get();
+        Task<QuerySnapshot> waterTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("water_records").get();
+        Task<QuerySnapshot> runningTask = firestore.collection(Constants.FIRESTORE_USERS)
+                .document(uid).collection("running_sessions").get();
+
+        Tasks.whenAllComplete(stepTask, focusTask, usageTask, waterTask, runningTask)
+                .addOnSuccessListener(tasks -> {
+                    LifetimeReport report = new LifetimeReport();
+                    aggregateLifetimeSteps(report, stepTask);
+                    aggregateLifetimeRunning(report, runningTask);
+                    aggregateLifetimeFocus(report, focusTask);
+                    aggregateLifetimeUsage(report, usageTask);
+                    aggregateLifetimeWater(report, waterTask);
+                    callback.onResult(report, null);
+                })
+                .addOnFailureListener(e -> callback.onResult(new LifetimeReport(), e));
     }
 
 
@@ -326,6 +418,70 @@ public class HealthMetricsRepository {
                 .set(data, com.google.firebase.firestore.SetOptions.merge());
     }
 
+    private void aggregateDailySteps(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String date = stringValue(doc.get("date"));
+            if (date.trim().isEmpty()) date = doc.getId();
+            if (!dateKey.equals(date)) continue;
+            report.totalSteps += intValue(doc.get("steps"));
+            report.burnedCalories += Math.round(floatValue(doc.get("calories")));
+        }
+    }
+
+    private void aggregateDailyRunning(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String date = stringValue(doc.get("date"));
+            if (!dateKey.equals(date)) continue;
+            float km = floatValue(doc.get("distanceKm"));
+            if (km <= 0f) km = floatValue(doc.get("distanceMeters")) / 1000f;
+            report.runningDistanceKm += Math.max(0f, km);
+        }
+    }
+
+    private void aggregateDailyNutrition(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String date = stringValue(doc.get("entryDate"));
+            if (!dateKey.equals(date)) continue;
+            Object deleted = doc.get("deleted");
+            if (deleted instanceof Boolean && (Boolean) deleted) continue;
+            report.nutritionCalories += intValue(doc.get("calories"));
+        }
+    }
+
+    private void aggregateDailyFocus(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            long endedAt = longValue(doc.get("endedAt"));
+            if (!dateKey.equals(dateKeyFromMillis(endedAt))) continue;
+            Object completed = doc.get("completed");
+            if (completed instanceof Boolean && !(Boolean) completed) continue;
+            report.focusMinutes += intValue(doc.get("durationMinutes"));
+        }
+    }
+
+    private void aggregateDailyUsage(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String date = stringValue(doc.get("date"));
+            if (!dateKey.equals(date)) continue;
+            report.appActiveMillis += longValue(doc.get("totalActiveMillis"));
+        }
+    }
+
+    private void aggregateDailyWater(DailyReport report, Task<QuerySnapshot> task, String dateKey) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            String date = stringValue(doc.get("date"));
+            if (date.trim().isEmpty()) date = doc.getId();
+            if (!dateKey.equals(date)) continue;
+            report.waterGlasses += Math.max(0, intValue(doc.get("glasses")));
+            report.waterMl += Math.max(0, intValue(doc.get("milliliters")));
+        }
+    }
+
     private void aggregateSteps(MonthlyReport report, Task<QuerySnapshot> task, String monthKey) {
         if (!task.isSuccessful() || task.getResult() == null) return;
         for (QueryDocumentSnapshot doc : task.getResult()) {
@@ -400,6 +556,52 @@ public class HealthMetricsRepository {
         }
     }
 
+
+    private void aggregateLifetimeSteps(LifetimeReport report, Task<QuerySnapshot> task) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            report.totalSteps += intValue(doc.get("steps"));
+        }
+    }
+
+    private void aggregateLifetimeRunning(LifetimeReport report, Task<QuerySnapshot> task) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            float km = floatValue(doc.get("distanceKm"));
+            if (km <= 0f) km = floatValue(doc.get("distanceMeters")) / 1000f;
+            report.totalRunningKm += Math.max(0f, km);
+        }
+    }
+
+    private void aggregateLifetimeFocus(LifetimeReport report, Task<QuerySnapshot> task) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            Object completed = doc.get("completed");
+            if (completed instanceof Boolean && !(Boolean) completed) continue;
+            report.focusMinutes += intValue(doc.get("durationMinutes"));
+        }
+    }
+
+    private void aggregateLifetimeUsage(LifetimeReport report, Task<QuerySnapshot> task) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            report.appActiveMillis += longValue(doc.get("totalActiveMillis"));
+        }
+    }
+
+    private void aggregateLifetimeWater(LifetimeReport report, Task<QuerySnapshot> task) {
+        if (!task.isSuccessful() || task.getResult() == null) return;
+        for (QueryDocumentSnapshot doc : task.getResult()) {
+            report.waterGlasses += Math.max(0, intValue(doc.get("glasses")));
+        }
+    }
+
+    private DailyReport emptyDailyReport(String dateKey) {
+        DailyReport report = new DailyReport();
+        report.dateKey = dateKey;
+        return report;
+    }
+
     private MonthlyReport emptyReport(String monthKey) {
         MonthlyReport report = new MonthlyReport();
         report.monthKey = monthKey;
@@ -463,6 +665,15 @@ public class HealthMetricsRepository {
         return user.getUid();
     }
 
+    private String requireUid(DailyCallback callback) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user == null) {
+            callback.onResult(emptyDailyReport(todayKey()), new IllegalStateException("Bạn cần đăng nhập để xem sức khỏe"));
+            return null;
+        }
+        return user.getUid();
+    }
+
     private String requireUid(BasicCallback callback) {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user == null) {
@@ -470,6 +681,20 @@ public class HealthMetricsRepository {
             return null;
         }
         return user.getUid();
+    }
+
+    private String requireUid(LifetimeCallback callback) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user == null) {
+            callback.onResult(new LifetimeReport(), new IllegalStateException("Bạn cần đăng nhập để xem lịch sử"));
+            return null;
+        }
+        return user.getUid();
+    }
+
+    private static String dateKeyFromMillis(long millis) {
+        if (millis <= 0L) return "";
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(millis));
     }
 
     public static String currentMonthKey() {

@@ -1,6 +1,7 @@
 package com.hcmute.edu.vn.focus_life.ui;
 
 import android.Manifest;
+import android.app.TimePickerDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,9 +22,16 @@ import androidx.fragment.app.Fragment;
 
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.water.WaterReminderScheduler;
+import com.hcmute.edu.vn.focus_life.core.utils.PermissionManager;
+import com.hcmute.edu.vn.focus_life.data.repository.AppNotificationRepository;
 import com.hcmute.edu.vn.focus_life.data.repository.HealthMetricsRepository;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class DashboardScreenFragment extends Fragment {
@@ -34,6 +43,7 @@ public class DashboardScreenFragment extends Fragment {
 
     private HealthMetricsRepository healthRepository;
     private int todayWaterGlassesCache = 0;
+    private String selectedHealthDate = HealthMetricsRepository.todayKey();
 
     public static DashboardScreenFragment newInstance(int layoutRes) {
         DashboardScreenFragment fragment = new DashboardScreenFragment();
@@ -76,14 +86,141 @@ public class DashboardScreenFragment extends Fragment {
             bindMonthlyGoal(view);
         } else if (layoutRes == R.layout.activity_monthly_report) {
             bindMonthlyReport(view);
+        } else if (layoutRes == R.layout.activity_notification_center) {
+            bindNotificationCenter(view);
+        } else if (layoutRes == R.layout.activity_activity_history) {
+            bindLifetimeHistory(view);
         }
     }
 
+
+    private void bindNotificationCenter(View view) {
+        View refresh = view.findViewById(R.id.btnRefreshNotifications);
+        if (refresh != null) refresh.setOnClickListener(v -> loadNotifications(view, "all"));
+        setChipClick(view, R.id.chipNotificationAll, "all");
+        setChipClick(view, R.id.chipNotificationWater, AppNotificationRepository.TYPE_WATER);
+        setChipClick(view, R.id.chipNotificationMotivation, AppNotificationRepository.TYPE_MOTIVATION);
+        setChipClick(view, R.id.chipNotificationRunning, AppNotificationRepository.TYPE_RUNNING);
+        setChipClick(view, R.id.chipNotificationFocus, AppNotificationRepository.TYPE_FOCUS);
+        loadNotifications(view, "all");
+    }
+
+    private void setChipClick(View root, int id, String type) {
+        View chip = root.findViewById(id);
+        if (chip != null) chip.setOnClickListener(v -> loadNotifications(root, type));
+    }
+
+    private void updateNotificationChipState(View root, String selectedType) {
+        styleNotificationChip(root, R.id.chipNotificationAll, "all".equals(selectedType));
+        styleNotificationChip(root, R.id.chipNotificationWater, AppNotificationRepository.TYPE_WATER.equals(selectedType));
+        styleNotificationChip(root, R.id.chipNotificationMotivation, AppNotificationRepository.TYPE_MOTIVATION.equals(selectedType));
+        styleNotificationChip(root, R.id.chipNotificationRunning, AppNotificationRepository.TYPE_RUNNING.equals(selectedType));
+        styleNotificationChip(root, R.id.chipNotificationFocus, AppNotificationRepository.TYPE_FOCUS.equals(selectedType));
+    }
+
+    private void styleNotificationChip(View root, int id, boolean selected) {
+        TextView chip = root.findViewById(id);
+        if (chip == null || !isAdded()) return;
+        chip.setBackgroundResource(selected ? R.drawable.bg_chip_primary : R.drawable.bg_chip_unselected);
+        chip.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.on_primary : R.color.on_surface_variant));
+        chip.setTypeface(chip.getTypeface(), selected ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+    }
+
+    private void loadNotifications(View root, String typeFilter) {
+        updateNotificationChipState(root, typeFilter);
+        LinearLayout list = root.findViewById(R.id.notificationList);
+        TextView empty = root.findViewById(R.id.tvNotificationEmpty);
+        if (list != null) list.removeAllViews();
+        if (empty != null) empty.setVisibility(View.GONE);
+        AppNotificationRepository.loadRecent((notifications, error) -> {
+            if (!isAdded()) return;
+            if (list == null) return;
+            list.removeAllViews();
+            int count = 0;
+            for (AppNotificationRepository.AppNotification item : notifications) {
+                if (!"all".equals(typeFilter) && !typeFilter.equals(item.type)) continue;
+                list.addView(createNotificationCard(item));
+                count++;
+            }
+            if (count == 0 && empty != null) {
+                empty.setVisibility(View.VISIBLE);
+                empty.setText("Chưa có thông báo nào trong mục này. Khi FocusLife nhắc uống nước, động lực, chạy bộ hoặc focus, thông báo sẽ được lưu tại đây.");
+            }
+        });
+    }
+
+    private View createNotificationCard(AppNotificationRepository.AppNotification item) {
+        LinearLayout card = new LinearLayout(requireContext());
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setBackgroundResource(R.drawable.bg_card_white);
+        int pad = dp(18);
+        card.setPadding(pad, pad, pad, pad);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(0, dp(12), 0, 0);
+        card.setLayoutParams(lp);
+
+        TextView type = new TextView(requireContext());
+        type.setText(item.typeLabel());
+        type.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary));
+        type.setTextSize(12);
+        type.setTypeface(type.getTypeface(), android.graphics.Typeface.BOLD);
+        card.addView(type);
+
+        TextView title = new TextView(requireContext());
+        title.setText(item.title);
+        title.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface));
+        title.setTextSize(16);
+        title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+        title.setPadding(0, dp(6), 0, 0);
+        card.addView(title);
+
+        TextView message = new TextView(requireContext());
+        message.setText(item.message);
+        message.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
+        message.setTextSize(14);
+        message.setPadding(0, dp(6), 0, 0);
+        card.addView(message);
+
+        TextView time = new TextView(requireContext());
+        time.setText(formatTime(item.createdAt));
+        time.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
+        time.setTextSize(12);
+        time.setPadding(0, dp(10), 0, 0);
+        card.addView(time);
+        return card;
+    }
+
+    private void bindLifetimeHistory(View view) {
+        View refresh = view.findViewById(R.id.btnRefreshLifetimeHistory);
+        if (refresh != null) refresh.setOnClickListener(v -> loadLifetimeHistory(view));
+        loadLifetimeHistory(view);
+    }
+
+    private void loadLifetimeHistory(View view) {
+        healthRepository.loadLifetimeReport((report, error) -> {
+            if (!isAdded()) return;
+            setText(view, R.id.tvLifetimeDistance, formatKm(report.totalRunningKm));
+            setText(view, R.id.tvLifetimeSteps, formatNumber(report.totalSteps) + " bước");
+            setText(view, R.id.tvLifetimeFocus, formatFocus(report.focusMinutes));
+            setText(view, R.id.tvLifetimeWater, formatNumber(report.waterGlasses) + " ly");
+            setText(view, R.id.tvLifetimeAppUsage, formatMillis(report.appActiveMillis));
+            setText(view, R.id.tvLifetimeSummary, buildLifetimeSummary(report));
+        });
+    }
+
+    private String buildLifetimeSummary(HealthMetricsRepository.LifetimeReport report) {
+        if (report.totalRunningKm <= 0f && report.totalSteps <= 0 && report.focusMinutes <= 0 && report.waterGlasses <= 0) {
+            return "Khi bạn bắt đầu chạy bộ, focus và uống nước, lịch sử tổng sẽ tự cập nhật tại đây.";
+        }
+        return "Tổng hợp toàn bộ dữ liệu từ trước đến nay của bạn trên FocusLife.";
+    }
+
     private void bindHealthTracker(View view) {
-        View btnTarget = view.findViewById(R.id.btnOpenMonthlyGoal);
-        if (btnTarget != null) btnTarget.setOnClickListener(v -> openTab(MainActivity.TAB_TARGET));
-        View btnReport = view.findViewById(R.id.btnOpenMonthlyReport);
-        if (btnReport != null) btnReport.setOnClickListener(v -> openTab(MainActivity.TAB_REPORT));
+        selectedHealthDate = HealthMetricsRepository.todayKey();
+        bindHealthDateControls(view);
 
         View btnWater = view.findViewById(R.id.btnLogWater);
         if (btnWater != null) {
@@ -99,6 +236,24 @@ public class DashboardScreenFragment extends Fragment {
         updateReminderButton(view);
         updateWaterScheduleText(view);
         loadHealthReport(view);
+    }
+
+    private void bindHealthDateControls(View view) {
+        View prev = view.findViewById(R.id.btnHealthPrevDay);
+        View next = view.findViewById(R.id.btnHealthNextDay);
+        View today = view.findViewById(R.id.tvHealthDate);
+        if (prev != null) prev.setOnClickListener(v -> {
+            selectedHealthDate = shiftDate(selectedHealthDate, -1);
+            loadHealthReport(view);
+        });
+        if (next != null) next.setOnClickListener(v -> {
+            selectedHealthDate = shiftDate(selectedHealthDate, 1);
+            loadHealthReport(view);
+        });
+        if (today != null) today.setOnClickListener(v -> {
+            selectedHealthDate = HealthMetricsRepository.todayKey();
+            loadHealthReport(view);
+        });
     }
 
     private void bindMonthlyGoal(View view) {
@@ -151,31 +306,36 @@ public class DashboardScreenFragment extends Fragment {
 
     private void loadHealthReport(View view) {
         setLoading(view, true);
-        healthRepository.loadMonthlyReport((report, error) -> {
+        healthRepository.loadDailyReport(selectedHealthDate, (report, error) -> {
             if (!isAdded()) return;
             setLoading(view, false);
-            setText(view, R.id.tvHealthMonth, formatMonth(report.monthKey));
-            setText(view, R.id.tvHealthSteps, runningGoalMainText(report));
-            setText(view, R.id.tvHealthStepsTarget, runningGoalProgressText(report));
-            setProgress(view, R.id.progressHealthSteps, report.runningDistancePercent());
+            setText(view, R.id.tvHealthMonth, dayLabel(report.dateKey));
+            setText(view, R.id.tvHealthDate, dayShortLabel(report.dateKey));
+            setText(view, R.id.tvHealthSteps, formatKm(report.runningDistanceKm));
+            setText(view, R.id.tvHealthStepsTarget, formatNumber(report.totalSteps) + " bước trong ngày");
+            setProgress(view, R.id.progressHealthSteps, Math.min(100, Math.round(report.runningDistanceKm * 20f)));
 
             setText(view, R.id.tvHealthNetCalories, formatNumber(report.netCalories) + " kcal");
-            String calorieText = caloriesGoalProgressText(report);
-            setText(view, R.id.tvHealthNetCaloriesTarget, calorieText);
-            setProgress(view, R.id.progressHealthCalories, report.netCaloriePercent());
+            setText(view, R.id.tvHealthNetCaloriesTarget, "Nạp " + formatNumber(report.nutritionCalories) + " - tiêu thụ " + formatNumber(report.burnedCalories) + " kcal");
+            setProgress(view, R.id.progressHealthCalories, report.nutritionCalories <= 0 ? 0 : HealthMetricsRepository.percent(report.netCalories, Math.max(1, report.nutritionCalories)));
 
             setText(view, R.id.tvHealthFocusMinutes, formatFocus(report.focusMinutes));
-            setText(view, R.id.tvHealthAppUsage, focusGoalProgressText(report) + " · Hoạt động app: " + formatMillis(report.appActiveMillis));
-            setProgress(view, R.id.progressHealthFocus, report.focusPercent());
+            setText(view, R.id.tvHealthAppUsage, "Focus trong ngày");
+            setProgress(view, R.id.progressHealthFocus, Math.min(100, Math.round(report.focusMinutes * 100f / 120f)));
 
-            int waterTarget = effectiveWaterTarget(report.goal);
-            todayWaterGlassesCache = Math.max(0, report.todayWaterGlasses);
-            setText(view, R.id.tvHealthWater, report.todayWaterGlasses + "/" + waterTarget + " ly");
-            setText(view, R.id.tvHealthWaterTarget, report.todayWaterMl + " ml hôm nay");
-            setProgress(view, R.id.progressHealthWater, HealthMetricsRepository.percent(report.todayWaterGlasses, waterTarget));
+            setText(view, R.id.tvHealthDailyAppUsageValue, formatMillis(report.appActiveMillis));
+            setProgress(view, R.id.progressHealthDailyAppUsage, Math.min(100, Math.round((report.appActiveMillis / 60000f) * 100f / 120f)));
 
-            setText(view, R.id.tvHealthInsight, buildHealthInsight(report));
-            updateWaterScheduleCards(view, currentWaterStartHour(), currentWaterEndHour(), waterTarget, report.todayWaterGlasses);
+            int waterTarget = DEFAULT_WATER_GLASSES;
+            if (HealthMetricsRepository.todayKey().equals(report.dateKey)) {
+                todayWaterGlassesCache = Math.max(0, report.waterGlasses);
+            }
+            setText(view, R.id.tvHealthWater, report.waterGlasses + "/" + waterTarget + " ly");
+            setText(view, R.id.tvHealthWaterTarget, report.waterMl + " ml trong ngày");
+            setProgress(view, R.id.progressHealthWater, HealthMetricsRepository.percent(report.waterGlasses, waterTarget));
+
+            setText(view, R.id.tvHealthInsight, buildDailyHealthInsight(report));
+            updateWaterScheduleCards(view, currentWaterStartHour(), currentWaterEndHour(), waterTarget, report.waterGlasses);
             renderWaterReminderLockState(view, todayWaterGlassesCache);
             setText(view, R.id.tvWaterSchedule, waterScheduleStatusText(todayWaterGlassesCache));
         });
@@ -216,13 +376,17 @@ public class DashboardScreenFragment extends Fragment {
     private void bindWaterReminderSettings(View view) {
         EditText etStart = view.findViewById(R.id.etWaterReminderStartHour);
         EditText etEnd = view.findViewById(R.id.etWaterReminderEndHour);
-        if (etStart != null) etStart.setFilters(new InputFilter[]{new InputFilter.LengthFilter(2)});
-        if (etEnd != null) etEnd.setFilters(new InputFilter[]{new InputFilter.LengthFilter(2)});
 
         int savedStart = WaterReminderScheduler.isEnabled(requireContext()) ? WaterReminderScheduler.startHour(requireContext()) : DEFAULT_WATER_START;
         int savedEnd = WaterReminderScheduler.isEnabled(requireContext()) ? WaterReminderScheduler.endHour(requireContext()) : DEFAULT_WATER_END;
-        if (etStart != null) etStart.setText(String.valueOf(savedStart));
-        if (etEnd != null) etEnd.setText(String.valueOf(savedEnd));
+        if (etStart != null) {
+            etStart.setText(formatHour(savedStart));
+            etStart.setOnClickListener(v -> showHourPicker(etStart, savedStart));
+        }
+        if (etEnd != null) {
+            etEnd.setText(formatHour(savedEnd));
+            etEnd.setOnClickListener(v -> showHourPicker(etEnd, savedEnd));
+        }
 
         View btnSave = view.findViewById(R.id.btnSaveWaterReminderSettings);
         if (btnSave != null) {
@@ -239,18 +403,18 @@ public class DashboardScreenFragment extends Fragment {
         healthRepository.loadTodayWaterGlasses((glasses, error) -> {
             if (!isAdded()) return;
             todayWaterGlassesCache = Math.max(0, glasses);
-            if (todayWaterGlassesCache > 0) {
+            if (todayWaterGlassesCache > 0 || WaterReminderScheduler.isLockedForToday(requireContext())) {
                 blockWaterReminderChange(view, todayWaterGlassesCache);
                 return;
             }
-            int start = clamp(readInt(etStart, DEFAULT_WATER_START), 0, 23);
-            int end = clamp(readInt(etEnd, DEFAULT_WATER_END), 0, 23);
-            requestNotificationPermissionIfNeeded();
+            int start = clamp(readHour(etStart, DEFAULT_WATER_START), 0, 23);
+            int end = clamp(readHour(etEnd, DEFAULT_WATER_END), 0, 23);
+            if (!ensureReminderPermissionsForScheduling()) return;
             WaterReminderScheduler.scheduleDailyCups(requireContext(), start, end, DEFAULT_WATER_GLASSES);
             healthRepository.saveWaterReminderSettings(true, start, end, DEFAULT_WATER_GLASSES);
             Toast.makeText(requireContext(), "Đã lưu lịch nhắc uống nước", Toast.LENGTH_SHORT).show();
-            if (etStart != null) etStart.setText(String.valueOf(start));
-            if (etEnd != null) etEnd.setText(String.valueOf(end));
+            if (etStart != null) etStart.setText(formatHour(start));
+            if (etEnd != null) etEnd.setText(formatHour(end));
             updateReminderButton(view);
             updateWaterScheduleText(view);
         });
@@ -260,23 +424,23 @@ public class DashboardScreenFragment extends Fragment {
         healthRepository.loadTodayWaterGlasses((glasses, error) -> {
             if (!isAdded()) return;
             todayWaterGlassesCache = Math.max(0, glasses);
-            if (todayWaterGlassesCache > 0) {
+            if (todayWaterGlassesCache > 0 || WaterReminderScheduler.isLockedForToday(requireContext())) {
                 blockWaterReminderChange(view, todayWaterGlassesCache);
                 return;
             }
-            int start = clamp(readInt(etStart, DEFAULT_WATER_START), 0, 23);
-            int end = clamp(readInt(etEnd, DEFAULT_WATER_END), 0, 23);
+            int start = clamp(readHour(etStart, DEFAULT_WATER_START), 0, 23);
+            int end = clamp(readHour(etEnd, DEFAULT_WATER_END), 0, 23);
             if (WaterReminderScheduler.isEnabled(requireContext())) {
                 WaterReminderScheduler.cancel(requireContext());
                 healthRepository.saveWaterReminderSettings(false, start, end, DEFAULT_WATER_GLASSES);
                 Toast.makeText(requireContext(), "Đã tắt nhắc uống nước", Toast.LENGTH_SHORT).show();
             } else {
-                requestNotificationPermissionIfNeeded();
+                if (!ensureReminderPermissionsForScheduling()) return;
                 WaterReminderScheduler.scheduleDailyCups(requireContext(), start, end, DEFAULT_WATER_GLASSES);
                 healthRepository.saveWaterReminderSettings(true, start, end, DEFAULT_WATER_GLASSES);
                 Toast.makeText(requireContext(), "Đã bật lịch nhắc uống nước", Toast.LENGTH_SHORT).show();
-                if (etStart != null) etStart.setText(String.valueOf(start));
-                if (etEnd != null) etEnd.setText(String.valueOf(end));
+                if (etStart != null) etStart.setText(formatHour(start));
+                if (etEnd != null) etEnd.setText(formatHour(end));
             }
             updateReminderButton(view);
             updateWaterScheduleText(view);
@@ -284,7 +448,9 @@ public class DashboardScreenFragment extends Fragment {
     }
 
     private void blockWaterReminderChange(View view, int glasses) {
-        String message = "Hôm nay bạn đã uống " + glasses + "/8 ly nên giờ nhắc đã được khóa. Bạn có thể đổi lịch vào ngày mai.";
+        String message = glasses > 0
+                ? "Hôm nay bạn đã uống " + glasses + "/8 ly nên giờ nhắc đã được khóa. Bạn có thể đổi lịch vào ngày mai."
+                : "Đã qua 08:00 nên hôm nay dùng lịch mặc định 08:00-22:00. Bạn có thể đổi giờ vào ngày mai.";
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
         setText(view, R.id.tvWaterSchedule, message);
         renderWaterReminderLockState(view, glasses);
@@ -292,7 +458,7 @@ public class DashboardScreenFragment extends Fragment {
 
 
     private void renderWaterReminderLockState(View view, int glasses) {
-        boolean locked = glasses > 0;
+        boolean locked = glasses > 0 || WaterReminderScheduler.isLockedForToday(requireContext());
         EditText etStart = view.findViewById(R.id.etWaterReminderStartHour);
         EditText etEnd = view.findViewById(R.id.etWaterReminderEndHour);
         TextView btnSave = view.findViewById(R.id.btnSaveWaterReminderSettings);
@@ -318,6 +484,9 @@ public class DashboardScreenFragment extends Fragment {
         if (glasses > 0) {
             return "Hôm nay đã uống " + glasses + "/8 ly. Giờ nhắc đã khóa đến ngày mai.";
         }
+        if (WaterReminderScheduler.isLockedForToday(requireContext())) {
+            return "Đã qua 08:00 nên FocusLife dùng lịch mặc định 08:00-22:00 cho hôm nay. Bạn có thể đổi giờ vào ngày mai.";
+        }
         return WaterReminderScheduler.isEnabled(requireContext())
                 ? "Đang bật nhắc uống nước. Bạn có thể đổi giờ khi hôm nay chưa uống ly nào."
                 : "Chưa bật nhắc uống nước. Mặc định 8 ly/ngày.";
@@ -339,10 +508,25 @@ public class DashboardScreenFragment extends Fragment {
         setText(view, R.id.tvWaterSchedule, waterScheduleStatusText(todayWaterGlassesCache));
     }
 
+    private boolean ensureReminderPermissionsForScheduling() {
+        if (!isAdded()) return false;
+        if (!PermissionManager.hasNotificationPermission(requireContext())) {
+            PermissionManager.openNotificationSettings(requireContext());
+            Toast.makeText(requireContext(), "Hãy bật quyền thông báo cho FocusLife rồi quay lại lưu lịch nhắc.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        if (!PermissionManager.hasExactAlarmPermission(requireContext())) {
+            PermissionManager.openExactAlarmSettings(requireContext());
+            Toast.makeText(requireContext(), "Hãy bật quyền Báo thức & lời nhắc để FocusLife nhắc đúng giờ.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
+    }
+
     private void requestNotificationPermissionIfNeeded() {
         if (!isAdded()) return;
-        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7208);
+        if (!PermissionManager.hasNotificationPermission(requireContext())) {
+            PermissionManager.openNotificationSettings(requireContext());
         }
     }
 
@@ -350,6 +534,80 @@ public class DashboardScreenFragment extends Fragment {
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).openTab(tab);
         }
+    }
+
+    private void showHourPicker(EditText target, int fallbackHour) {
+        if (!isAdded() || target == null || !target.isEnabled()) return;
+        int current = readHour(target, fallbackHour);
+        TimePickerDialog dialog = new TimePickerDialog(requireContext(), (view, hourOfDay, minute) -> {
+            target.setText(formatHour(hourOfDay));
+        }, current, 0, true);
+        dialog.show();
+    }
+
+    private int readHour(EditText editText, int fallback) {
+        if (editText == null || editText.getText() == null) return fallback;
+        String text = editText.getText().toString().trim();
+        if (text.contains(":")) text = text.substring(0, text.indexOf(':'));
+        try {
+            int value = Integer.parseInt(text);
+            return clamp(value, 0, 23);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private String formatHour(int hour) {
+        return String.format(Locale.getDefault(), "%02d:00", clamp(hour, 0, 23));
+    }
+
+    private String shiftDate(String dateKey, int days) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dateKey);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date == null ? new Date() : date);
+            calendar.add(Calendar.DAY_OF_YEAR, days);
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
+        } catch (ParseException e) {
+            return HealthMetricsRepository.todayKey();
+        }
+    }
+
+    private String dayShortLabel(String dateKey) {
+        String today = HealthMetricsRepository.todayKey();
+        if (today.equals(dateKey)) return "Hôm nay";
+        if (shiftDate(today, -1).equals(dateKey)) return "Hôm qua";
+        if (shiftDate(today, 1).equals(dateKey)) return "Ngày mai";
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dateKey);
+            return new SimpleDateFormat("dd/MM", Locale.getDefault()).format(date == null ? new Date() : date);
+        } catch (Exception e) {
+            return dateKey;
+        }
+    }
+
+    private String dayLabel(String dateKey) {
+        String shortLabel = dayShortLabel(dateKey);
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dateKey);
+            String formatted = new SimpleDateFormat("EEEE, dd/MM/yyyy", Locale.getDefault()).format(date == null ? new Date() : date);
+            return shortLabel + " · " + formatted;
+        } catch (Exception e) {
+            return shortLabel;
+        }
+    }
+
+    private String buildDailyHealthInsight(HealthMetricsRepository.DailyReport report) {
+        if (report.runningDistanceKm <= 0f && report.focusMinutes <= 0 && report.nutritionCalories <= 0 && report.waterGlasses <= 0) {
+            return "Ngày này chưa có dữ liệu. Khi bạn chạy bộ, focus, ăn uống hoặc ghi nhận nước, tổng quan sẽ tự cập nhật.";
+        }
+        if (report.waterGlasses < DEFAULT_WATER_GLASSES) {
+            return "Bạn đã uống " + report.waterGlasses + "/8 ly trong ngày này. Hãy chia đều nước uống để cơ thể tỉnh táo hơn.";
+        }
+        if (report.focusMinutes > 0) {
+            return "Bạn đã có " + formatFocus(report.focusMinutes) + " tập trung. Duy trì từng phiên nhỏ sẽ giúp tiến bộ đều hơn.";
+        }
+        return "Một ngày tốt bắt đầu từ vận động nhẹ, uống đủ nước và dành vài phút tập trung cho điều quan trọng.";
     }
 
     private String buildHealthInsight(HealthMetricsRepository.MonthlyReport report) {
@@ -470,6 +728,15 @@ public class DashboardScreenFragment extends Fragment {
                 tv.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface));
             }
         }
+    }
+
+    private String formatTime(long millis) {
+        if (millis <= 0L) return "Vừa xong";
+        return new SimpleDateFormat("HH:mm · dd/MM/yyyy", Locale.getDefault()).format(new Date(millis));
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void setLoading(View root, boolean loading) {

@@ -39,6 +39,7 @@ import com.hcmute.edu.vn.focus_life.core.motivation.MotivationReminderScheduler;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
+import com.hcmute.edu.vn.focus_life.core.utils.PermissionManager;
 import com.hcmute.edu.vn.focus_life.data.repository.AuthRepository;
 import com.hcmute.edu.vn.focus_life.data.repository.ProfileRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
@@ -257,16 +258,11 @@ public class ProfileFragment extends Fragment {
         switchEnabled.setText(R.string.motivation_reminder_enable);
         switchEnabled.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface));
         switchEnabled.setTextSize(15f);
-        switchEnabled.setChecked(motivationPreferences.isEnabled() && hasNotificationPermission());
+        switchEnabled.setChecked(motivationPreferences.isEnabled() && hasNotificationPermission() && hasExactAlarmPermission());
         switchEnabled.setPadding(0, dp(6), 0, dp(10));
         tintMotivationSwitch(switchEnabled);
         form.addView(switchEnabled);
-        switchEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked && !hasNotificationPermission()) {
-                requestNotificationPermissionIfNeeded();
-                Toast.makeText(requireContext(), R.string.motivation_permission_request_hint, Toast.LENGTH_SHORT).show();
-            }
-        });
+
 
         TextView timeLabel = new TextView(requireContext());
         timeLabel.setText(R.string.motivation_reminder_time_label);
@@ -298,25 +294,29 @@ public class ProfileFragment extends Fragment {
         ).show());
 
         TextView permissionText = new TextView(requireContext());
-        permissionText.setText(hasNotificationPermission()
-                ? getString(R.string.motivation_permission_granted)
-                : getString(R.string.motivation_permission_needed_switch));
         permissionText.setTextColor(ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
         permissionText.setTextSize(13f);
+        updateMotivationPermissionText(permissionText);
         form.addView(permissionText);
+
+        switchEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && !ensureMotivationReminderPermissions()) {
+                switchEnabled.setChecked(false);
+                updateMotivationPermissionText(permissionText);
+            }
+        });
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.motivation_reminder_title)
                 .setView(form)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.save_changes, (dialog, which) -> {
-                    if (switchEnabled.isChecked() && !hasNotificationPermission()) {
-                        requestNotificationPermissionIfNeeded();
-                        Toast.makeText(requireContext(), R.string.motivation_permission_request_hint, Toast.LENGTH_SHORT).show();
+                    if (switchEnabled.isChecked() && !ensureMotivationReminderPermissions()) {
                         switchEnabled.setChecked(false);
                         motivationPreferences.setEnabled(false);
                         MotivationReminderScheduler.cancel(requireContext());
                         bindMotivationReminderSummary();
+                        updateMotivationPermissionText(permissionText);
                         return;
                     }
 
@@ -335,14 +335,41 @@ public class ProfileFragment extends Fragment {
     }
 
     private boolean hasNotificationPermission() {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-                || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        return PermissionManager.hasNotificationPermission(requireContext());
+    }
+
+    private boolean hasExactAlarmPermission() {
+        return PermissionManager.hasExactAlarmPermission(requireContext());
+    }
+
+    private boolean ensureMotivationReminderPermissions() {
+        if (!hasNotificationPermission()) {
+            PermissionManager.openNotificationSettings(requireContext());
+            Toast.makeText(requireContext(), "Hãy bật quyền thông báo cho FocusLife rồi quay lại bật nhắc nhở.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        if (!hasExactAlarmPermission()) {
+            PermissionManager.openExactAlarmSettings(requireContext());
+            Toast.makeText(requireContext(), "Hãy bật quyền Báo thức & lời nhắc để FocusLife nhắc đúng giờ.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
+    }
+
+    private void updateMotivationPermissionText(TextView target) {
+        if (target == null) return;
+        if (!hasNotificationPermission()) {
+            target.setText("Chưa có quyền thông báo. Bật công tắc để mở cài đặt thông báo.");
+        } else if (!hasExactAlarmPermission()) {
+            target.setText("Chưa có quyền Báo thức & lời nhắc. Bật công tắc để mở cài đặt quyền này.");
+        } else {
+            target.setText(getString(R.string.motivation_permission_granted));
+        }
     }
 
     private void requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 8307);
+        if (!hasNotificationPermission()) {
+            PermissionManager.openNotificationSettings(requireContext());
         }
     }
 

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
@@ -37,6 +38,8 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
 
     private final FocusTaskRepository repository = new FocusTaskRepository();
     private final List<FocusTask> allTasks = new ArrayList<>();
+
+    private ListenerRegistration tasksRegistration;
 
     private FocusTaskAdapter adapter;
     private TextView tvStatsPrimary;
@@ -87,9 +90,18 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        loadTasks();
+    public void onStart() {
+        super.onStart();
+        observeTasks();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (tasksRegistration != null) {
+            tasksRegistration.remove();
+            tasksRegistration = null;
+        }
     }
 
     private void setFilter(int filter) {
@@ -105,9 +117,25 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
 
     private void updateButton(@NonNull MaterialButton button, boolean selected) {
         button.setBackgroundResource(selected ? R.drawable.bg_focus_tab_selected : R.drawable.bg_focus_tab_unselected);
-        button.setTextColor(requireContext().getColor(selected ? R.color.focus_ocean : R.color.on_surface_variant));
+        button.setTextColor(requireContext().getColor(selected ? R.color.secondary : R.color.on_surface_variant));
         button.setElevation(0f);
         button.setStrokeWidth(0);
+    }
+
+    private void observeTasks() {
+        if (tasksRegistration != null) {
+            tasksRegistration.remove();
+        }
+
+        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+        tasksRegistration = repository.observeTasks(uid, tasks -> {
+            allTasks.clear();
+            allTasks.addAll(tasks);
+            Collections.sort(allTasks, Comparator.comparingLong(FocusTask::resolveAnchorTime));
+            if (isAdded()) {
+                renderTasks();
+            }
+        });
     }
 
     private void loadTasks() {

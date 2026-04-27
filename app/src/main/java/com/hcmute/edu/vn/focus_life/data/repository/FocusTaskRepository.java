@@ -72,6 +72,32 @@ public class FocusTaskRepository {
     }
 
     @Nullable
+    public ListenerRegistration observeTasks(@Nullable String uid, @NonNull TasksCallback callback) {
+        if (uid == null || uid.trim().isEmpty()) {
+            callback.onLoaded(new ArrayList<>());
+            return null;
+        }
+
+        return collection(uid)
+                .orderBy("dueAt")
+                .addSnapshotListener((result, error) -> {
+                    if (error != null || result == null) {
+                        callback.onLoaded(new ArrayList<>());
+                        return;
+                    }
+
+                    List<FocusTask> tasks = new ArrayList<>();
+                    for (com.google.firebase.firestore.DocumentSnapshot snapshot : result.getDocuments()) {
+                        FocusTask task = FocusTask.fromSnapshot(snapshot);
+                        if (task != null && !task.deleted) {
+                            tasks.add(task);
+                        }
+                    }
+                    callback.onLoaded(tasks);
+                });
+    }
+
+    @Nullable
     public ListenerRegistration observeTask(@Nullable String uid,
                                             @Nullable String taskId,
                                             @NonNull TaskCallback callback) {
@@ -89,7 +115,11 @@ public class FocusTaskRepository {
                     }
 
                     FocusTask task = FocusTask.fromSnapshot(snapshot);
-                    callback.onLoaded(task == null || task.deleted ? null : task);
+                    if (task != null && !task.deleted) {
+                        callback.onLoaded(task);
+                    } else {
+                        callback.onLoaded(null);
+                    }
                 });
     }
 

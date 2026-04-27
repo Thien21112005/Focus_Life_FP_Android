@@ -105,7 +105,7 @@ public class FocusFragment extends Fragment implements FocusTaskAdapter.Listener
 
     private void updateButton(@NonNull MaterialButton button, boolean selected) {
         button.setBackgroundResource(selected ? R.drawable.bg_focus_tab_selected : R.drawable.bg_focus_tab_unselected);
-        button.setTextColor(requireContext().getColor(selected ? R.color.secondary : R.color.on_surface_variant));
+        button.setTextColor(requireContext().getColor(selected ? R.color.focus_ocean : R.color.on_surface_variant));
         button.setElevation(0f);
         button.setStrokeWidth(0);
     }

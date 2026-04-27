@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "997531936411-vcdm1nv204f55os4ffqq7cg21djmqljj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hcmute.edu.vn.focus_life",
+            "certificate_hash": "cf3b5a0379377749ebb30fddd46d7d054cc2e63d"
+          }
+        },
+        {
           "client_id": "997531936411-3qohal553jq71go40k39itlq2h2v9lc9.apps.googleusercontent.com",
           "client_type": 3
         }

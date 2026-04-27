@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.core.focus.FocusTaskStartReminderScheduler;
 import com.hcmute.edu.vn.focus_life.data.repository.FocusTaskRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.FocusTask;
 
@@ -228,6 +229,7 @@ public class FocusTaskEditorActivity extends AppCompatActivity {
         String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
         repository.saveTask(uid, currentTask, (success, error) -> {
             if (success) {
+                FocusTaskStartReminderScheduler.scheduleTaskStartReminder(this, currentTask);
                 Toast.makeText(this, "Đã lưu task", Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK);
                 finish();
@@ -245,6 +247,7 @@ public class FocusTaskEditorActivity extends AppCompatActivity {
         String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
         repository.deleteTask(uid, currentTask.id, (success, error) -> {
             if (success) {
+                FocusTaskStartReminderScheduler.cancelTaskStartReminder(this, currentTask.id);
                 Toast.makeText(this, "Đã xóa task", Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK);
                 finish();

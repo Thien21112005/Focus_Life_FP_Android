@@ -15,6 +15,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.core.focus.FocusTaskStartReminderScheduler;
 import com.hcmute.edu.vn.focus_life.data.repository.FocusTaskRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.FocusTask;
 
@@ -132,7 +133,14 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
         if (currentTask == null) return;
         boolean next = cbCompleted.isChecked();
         repository.updateCompleted(uid, currentTask.id, next, (success, error) -> runOnUiThread(() -> {
-            if (!success) {
+            if (success) {
+                currentTask.completed = next;
+                if (next) {
+                    FocusTaskStartReminderScheduler.cancelTaskStartReminder(this, currentTask.id);
+                } else {
+                    FocusTaskStartReminderScheduler.scheduleTaskStartReminder(this, currentTask);
+                }
+            } else {
                 cbCompleted.setChecked(!next);
                 Toast.makeText(this, "Không thể cập nhật trạng thái", Toast.LENGTH_SHORT).show();
             }
@@ -143,6 +151,7 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
         if (currentTask == null) return;
         repository.deleteTask(uid, currentTask.id, (success, error) -> runOnUiThread(() -> {
             if (success) {
+                FocusTaskStartReminderScheduler.cancelTaskStartReminder(this, currentTask.id);
                 Toast.makeText(this, "Đã xóa task", Toast.LENGTH_SHORT).show();
                 finish();
             } else {

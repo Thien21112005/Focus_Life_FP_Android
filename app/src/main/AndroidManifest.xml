@@ -154,6 +154,10 @@
             android:name=".receiver.PomodoroAlarmReceiver"
             android:exported="false" />
 
+        <receiver
+            android:name=".receiver.FocusTaskStartReminderReceiver"
+            android:exported="false" />
+
         <service
             android:name=".service.RunningTrackerService"
             android:exported="false"

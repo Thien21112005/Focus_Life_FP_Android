@@ -9,8 +9,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.data.repository.FocusTaskRepository;
@@ -28,11 +30,14 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("EEE, dd/MM/yyyy · HH:mm", new Locale("vi", "VN"));
 
     private String taskId;
+    private String uid;
     private FocusTask currentTask;
+    private ListenerRegistration taskRegistration;
     private TextView tvTitle;
     private TextView tvDescription;
     private TextView tvStatus;
-    private TextView tvSchedule;
+    private TextView tvStartAt;
+    private TextView tvDueAt;
     private TextView tvCategory;
     private TextView tvPriority;
     private TextView tvPomodoroStats;
@@ -49,10 +54,13 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
             return;
         }
 
+        uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+
         tvTitle = findViewById(R.id.tvDetailTaskTitle);
         tvDescription = findViewById(R.id.tvDetailTaskDescription);
         tvStatus = findViewById(R.id.tvDetailTaskStatus);
-        tvSchedule = findViewById(R.id.tvDetailTaskSchedule);
+        tvStartAt = findViewById(R.id.tvDetailTaskStartValue);
+        tvDueAt = findViewById(R.id.tvDetailTaskDueValue);
         tvCategory = findViewById(R.id.tvDetailTaskCategory);
         tvPriority = findViewById(R.id.tvDetailTaskPriority);
         tvPomodoroStats = findViewById(R.id.tvDetailTaskPomodoroStats);
@@ -75,14 +83,26 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        loadTask();
+    protected void onStart() {
+        super.onStart();
+        observeTask();
     }
 
-    private void loadTask() {
-        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
-        repository.getTask(uid, taskId, task -> {
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (taskRegistration != null) {
+            taskRegistration.remove();
+            taskRegistration = null;
+        }
+    }
+
+    private void observeTask() {
+        if (taskRegistration != null) {
+            taskRegistration.remove();
+        }
+
+        taskRegistration = repository.observeTask(uid, taskId, task -> runOnUiThread(() -> {
             if (task == null) {
                 Toast.makeText(this, "Task không còn tồn tại", Toast.LENGTH_SHORT).show();
                 finish();
@@ -90,7 +110,7 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
             }
             currentTask = task;
             bindTask(task);
-        });
+        }));
     }
 
     private void bindTask(@NonNull FocusTask task) {
@@ -99,38 +119,36 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
                 ? "Task này chưa có ghi chú chi tiết."
                 : task.description);
         tvStatus.setText(resolveStatus(task));
-        tvSchedule.setText(buildSchedule(task));
-        tvCategory.setText(task.category);
+        tvStartAt.setText(formatDate(task.startAt));
+        tvDueAt.setText(formatDate(task.dueAt));
+        tvCategory.setText(task.category == null || task.category.trim().isEmpty() ? "Chưa phân loại" : task.category);
         tvPriority.setText(resolvePriority(task.priority));
+        applyPriorityStyle(task.priority, tvPriority);
         tvPomodoroStats.setText(task.completedPomodoros + "/" + Math.max(1, task.estimatedPomodoros) + " phiên đã hoàn thành");
         cbCompleted.setChecked(task.completed);
     }
 
     private void toggleCompleted() {
         if (currentTask == null) return;
-        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
         boolean next = cbCompleted.isChecked();
-        repository.updateCompleted(uid, currentTask.id, next, (success, error) -> {
-            if (success) {
-                loadTask();
-            } else {
+        repository.updateCompleted(uid, currentTask.id, next, (success, error) -> runOnUiThread(() -> {
+            if (!success) {
                 cbCompleted.setChecked(!next);
                 Toast.makeText(this, "Không thể cập nhật trạng thái", Toast.LENGTH_SHORT).show();
             }
-        });
+        }));
     }
 
     private void deleteTask() {
         if (currentTask == null) return;
-        String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
-        repository.deleteTask(uid, currentTask.id, (success, error) -> {
+        repository.deleteTask(uid, currentTask.id, (success, error) -> runOnUiThread(() -> {
             if (success) {
                 Toast.makeText(this, "Đã xóa task", Toast.LENGTH_SHORT).show();
                 finish();
             } else {
                 Toast.makeText(this, "Xóa task thất bại", Toast.LENGTH_SHORT).show();
             }
-        });
+        }));
     }
 
     private void startPomodoro() {
@@ -142,11 +160,11 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private String buildSchedule(@NonNull FocusTask task) {
-        if (task.startAt > 0 && task.dueAt > 0) {
-            return dateTimeFormat.format(new Date(task.startAt)) + " → " + dateTimeFormat.format(new Date(task.dueAt));
+    private String formatDate(long timeMillis) {
+        if (timeMillis <= 0L) {
+            return "--";
         }
-        return dateTimeFormat.format(new Date(task.resolveAnchorTime()));
+        return dateTimeFormat.format(new Date(timeMillis));
     }
 
     @NonNull
@@ -175,5 +193,29 @@ public class FocusTaskDetailActivity extends AppCompatActivity {
             default:
                 return "Ưu tiên vừa";
         }
+    }
+
+    private void applyPriorityStyle(@Nullable String priority, @NonNull TextView textView) {
+        int backgroundRes;
+        int textColor;
+
+        String normalized = priority == null ? "medium" : priority.toLowerCase(Locale.ROOT);
+        switch (normalized) {
+            case "high":
+                backgroundRes = R.drawable.bg_chip_priority_high;
+                textColor = ContextCompat.getColor(this, R.color.priority_high_text);
+                break;
+            case "low":
+                backgroundRes = R.drawable.bg_chip_priority_low;
+                textColor = ContextCompat.getColor(this, R.color.priority_low_text);
+                break;
+            default:
+                backgroundRes = R.drawable.bg_chip_priority_medium;
+                textColor = ContextCompat.getColor(this, R.color.priority_medium_text);
+                break;
+        }
+
+        textView.setBackgroundResource(backgroundRes);
+        textView.setTextColor(textColor);
     }
 }

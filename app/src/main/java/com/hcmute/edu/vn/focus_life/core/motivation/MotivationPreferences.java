@@ -3,6 +3,8 @@ package com.hcmute.edu.vn.focus_life.core.motivation;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 public class MotivationPreferences {
@@ -11,6 +13,7 @@ public class MotivationPreferences {
     private static final String KEY_HOUR = "motivation_hour";
     private static final String KEY_MINUTE = "motivation_minute";
     private static final String KEY_QUOTE_CURSOR = "motivation_quote_cursor";
+    private static final String KEY_LAST_NOTIFIED_PREFIX = "last_notified_at_slot_";
 
     private final SharedPreferences preferences;
 
@@ -55,5 +58,28 @@ public class MotivationPreferences {
         int next = (getQuoteCursor() + 1) % count;
         preferences.edit().putInt(KEY_QUOTE_CURSOR, next).apply();
         return next;
+    }
+
+    public boolean wasRecentlyNotified(int slot, long duplicateWindowMillis) {
+        long last = preferences.getLong(KEY_LAST_NOTIFIED_PREFIX + slot, 0L);
+        return last > 0L && System.currentTimeMillis() - last < Math.max(1L, duplicateWindowMillis);
+    }
+
+    public void markSlotNotifiedNow(int slot) {
+        preferences.edit().putLong(KEY_LAST_NOTIFIED_PREFIX + slot, System.currentTimeMillis()).apply();
+    }
+
+    // Kept for older code paths. New receiver uses the short duplicate window above so
+    // changing test time within the same day is not blocked.
+    public boolean wasDailySlotNotifiedToday(int slot) {
+        return preferences.getBoolean("daily_notified_" + todayKey() + "_" + slot, false);
+    }
+
+    public void markDailySlotNotifiedToday(int slot) {
+        preferences.edit().putBoolean("daily_notified_" + todayKey() + "_" + slot, true).apply();
+    }
+
+    private String todayKey() {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
     }
 }

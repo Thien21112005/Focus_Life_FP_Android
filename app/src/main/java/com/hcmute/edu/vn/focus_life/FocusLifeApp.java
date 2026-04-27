@@ -10,6 +10,7 @@ import com.hcmute.edu.vn.focus_life.core.session.SessionManager;
 import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
 import com.hcmute.edu.vn.focus_life.core.usage.AppUsageTracker;
 import com.hcmute.edu.vn.focus_life.core.utils.NotificationHelper;
+import com.hcmute.edu.vn.focus_life.core.water.WaterReminderScheduler;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.worker.SyncScheduler;
 
@@ -31,6 +32,7 @@ public class FocusLifeApp extends Application {
         NotificationHelper.createChannels(this);
         MotivationNotificationHelper.createChannel(this);
         MotivationReminderScheduler.scheduleConfiguredDailyReminder(this);
+        WaterReminderScheduler.ensureDailyDefaultIfNeeded(this);
         SyncScheduler.schedule(this);
         new AppUsageTracker().register(this);
     }

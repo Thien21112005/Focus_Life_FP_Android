@@ -18,6 +18,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
+import com.hcmute.edu.vn.focus_life.data.repository.AppNotificationRepository;
 import com.hcmute.edu.vn.focus_life.ui.MainActivity;
 
 public final class MotivationNotificationHelper {
@@ -38,10 +39,11 @@ public final class MotivationNotificationHelper {
         );
 
         String displayName = new OnboardingPreferences(context).getDisplayName();
+        String title = MotivationRepository.getNotificationTitle(displayName);
         Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(MotivationRepository.getNotificationTitle(displayName))
+                .setContentTitle(title)
                 .setContentText(quote.getText())
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(quote.getText()))
                 .setContentIntent(openPendingIntent)
@@ -57,7 +59,12 @@ public final class MotivationNotificationHelper {
             return;
         }
 
-        NotificationManagerCompat.from(context).notify(8300, builder.build());
+        AppNotificationRepository.log(AppNotificationRepository.TYPE_MOTIVATION, title, quote.getText(), CHANNEL_ID);
+        try {
+            NotificationManagerCompat.from(context).notify(8300, builder.build());
+        } catch (SecurityException ignored) {
+            // Android 13+ can block notifications when the permission is revoked.
+        }
     }
 
     public static void createChannel(Context context) {

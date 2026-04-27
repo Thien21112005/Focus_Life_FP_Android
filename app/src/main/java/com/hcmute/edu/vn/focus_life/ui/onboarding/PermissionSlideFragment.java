@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -29,9 +30,11 @@ public class PermissionSlideFragment extends Fragment {
     private LinearLayout cardPermissionHealth;
     private LinearLayout cardPermissionLocation;
     private LinearLayout cardPermissionNotification;
+    private LinearLayout cardPermissionExactAlarm;
     private Switch switchHealth;
     private Switch switchLocation;
     private Switch switchNotification;
+    private Switch switchExactAlarm;
     private String pendingPermissionType;
 
     private final ActivityResultLauncher<String[]> permissionLauncher =
@@ -51,19 +54,23 @@ public class PermissionSlideFragment extends Fragment {
         cardPermissionHealth = view.findViewById(R.id.cardPermissionHealth);
         cardPermissionLocation = view.findViewById(R.id.cardPermissionLocation);
         cardPermissionNotification = view.findViewById(R.id.cardPermissionNotification);
+        cardPermissionExactAlarm = view.findViewById(R.id.cardPermissionExactAlarm);
         switchHealth = view.findViewById(R.id.switchHealth);
         switchLocation = view.findViewById(R.id.switchLocation);
         switchNotification = view.findViewById(R.id.switchNotification);
+        switchExactAlarm = view.findViewById(R.id.switchExactAlarm);
         MaterialButton btnContinue = view.findViewById(R.id.btnPermissionContinue);
         TextView btnSkip = view.findViewById(R.id.btnSkip);
 
         switchHealth.setClickable(false);
         switchLocation.setClickable(false);
         switchNotification.setClickable(false);
+        switchExactAlarm.setClickable(false);
 
         cardPermissionHealth.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_HEALTH));
         cardPermissionLocation.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_LOCATION));
         cardPermissionNotification.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_NOTIFICATION));
+        cardPermissionExactAlarm.setOnClickListener(v -> requestPermission(PermissionManager.TYPE_EXACT_ALARM));
 
         btnContinue.setOnClickListener(v -> completeOnboarding());
         btnSkip.setOnClickListener(v -> completeOnboarding());
@@ -81,6 +88,11 @@ public class PermissionSlideFragment extends Fragment {
         if (PermissionManager.hasPermissionType(requireContext(), type)) {
             Toast.makeText(requireContext(), "Quyền này đã được cấp rồi", Toast.LENGTH_SHORT).show();
             syncPermissionStates();
+            return;
+        }
+
+        if (PermissionManager.TYPE_EXACT_ALARM.equals(type)) {
+            showExactAlarmPermissionDialog();
             return;
         }
 
@@ -110,14 +122,26 @@ public class PermissionSlideFragment extends Fragment {
         boolean healthGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_HEALTH);
         boolean locationGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_LOCATION);
         boolean notificationGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_NOTIFICATION);
+        boolean exactAlarmGranted = PermissionManager.hasPermissionType(requireContext(), PermissionManager.TYPE_EXACT_ALARM);
 
         switchHealth.setChecked(healthGranted);
         switchLocation.setChecked(locationGranted);
         switchNotification.setChecked(notificationGranted);
+        switchExactAlarm.setChecked(exactAlarmGranted);
 
         cardPermissionHealth.setAlpha(healthGranted ? 1f : 0.95f);
         cardPermissionLocation.setAlpha(locationGranted ? 1f : 0.95f);
         cardPermissionNotification.setAlpha(notificationGranted ? 1f : 0.95f);
+        cardPermissionExactAlarm.setAlpha(exactAlarmGranted ? 1f : 0.95f);
+    }
+
+    private void showExactAlarmPermissionDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Bật Báo thức & lời nhắc")
+                .setMessage("Quyền này giúp FocusLife đặt lịch nhắc uống nước, động lực và Focus đúng giờ ngay cả khi bạn đã thoát app.")
+                .setNegativeButton("Để sau", null)
+                .setPositiveButton("Mở cài đặt", (dialog, which) -> PermissionManager.openExactAlarmSettings(requireContext()))
+                .show();
     }
 
     private void completeOnboarding() {

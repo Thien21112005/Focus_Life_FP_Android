@@ -1,5 +1,6 @@
 package com.hcmute.edu.vn.focus_life.receiver;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -14,6 +16,7 @@ import android.os.Build;
 import android.os.PowerManager;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,6 +25,7 @@ import com.google.firebase.firestore.SetOptions;
 import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.core.water.WaterReminderScheduler;
+import com.hcmute.edu.vn.focus_life.data.repository.AppNotificationRepository;
 import com.hcmute.edu.vn.focus_life.ui.MainActivity;
 
 import java.util.HashMap;
@@ -38,8 +42,13 @@ public class WaterReminderReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent == null ? "" : intent.getAction();
-        if (ACTION_BOOT_COMPLETED.equals(action)) {
-            WaterReminderScheduler.rescheduleSavedPlan(context);
+        if (isRescheduleAction(action)) {
+            WaterReminderScheduler.ensureDailyDefaultIfNeeded(context);
+            return;
+        }
+
+        if (WaterReminderScheduler.ACTION_ACTIVATE_DEFAULT.equals(action)) {
+            WaterReminderScheduler.ensureDailyDefaultIfNeeded(context);
             return;
         }
 
@@ -53,6 +62,8 @@ public class WaterReminderReceiver extends BroadcastReceiver {
 
         if (!WaterReminderScheduler.shouldNotifyNow(context)) return;
         int cupIndex = readCupIndex(intent);
+        if (WaterReminderScheduler.isCupNotified(context, cupIndex)) return;
+
         int cupTotal = intent == null ? WaterReminderScheduler.targetGlasses(context) : intent.getIntExtra(WaterReminderScheduler.EXTRA_CUP_TOTAL, WaterReminderScheduler.targetGlasses(context));
         int hour = intent == null ? 8 : intent.getIntExtra(WaterReminderScheduler.EXTRA_HOUR, 8);
         int minute = intent == null ? 0 : intent.getIntExtra(WaterReminderScheduler.EXTRA_MINUTE, 0);
@@ -65,14 +76,33 @@ public class WaterReminderReceiver extends BroadcastReceiver {
         wakeScreenBriefly(context);
         ensureChannel(context);
         showReminderNotification(context, cupIndex, cupTotal, hour, minute);
+        WaterReminderScheduler.markCupNotified(context, cupIndex);
+        WaterReminderScheduler.lockForToday(context);
         WaterReminderScheduler.scheduleNextDayForCup(context, cupIndex, cupTotal, hour, minute);
+    }
+
+    private boolean isRescheduleAction(String action) {
+        return ACTION_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)
+                || Intent.ACTION_TIME_CHANGED.equals(action)
+                || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
+                || WaterReminderScheduler.ACTION_RESCHEDULE.equals(action)
+                || "android.intent.action.QUICKBOOT_POWERON".equals(action)
+                || "com.htc.intent.action.QUICKBOOT_POWERON".equals(action);
+    }
+
+    private boolean hasNotificationPermission(Context context) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void showReminderNotification(Context context, int cupIndex, int cupTotal, int hour, int minute) {
         PendingIntent openIntent = openHealthPendingIntent(context, 7209);
         PendingIntent logIntent = logWaterPendingIntent(context, cupIndex);
-        String title = "Đến giờ uống ly nước thứ " + cupIndex;
-        String text = String.format(Locale.getDefault(), "%02d:%02d · Hôm nay cần %d ly. Uống một ly nước để giữ năng lượng ổn định nhé.", hour, minute, cupTotal);
+        String title = randomWaterTitle(cupIndex);
+        String text = randomWaterText(hour, minute, cupTotal);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -90,8 +120,36 @@ public class WaterReminderReceiver extends BroadcastReceiver {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setFullScreenIntent(openIntent, true);
 
+        AppNotificationRepository.log(AppNotificationRepository.TYPE_WATER, title, text, CHANNEL_ID);
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager != null) manager.notify(NOTIFICATION_ID + cupIndex, builder.build());
+        if (manager != null && hasNotificationPermission(context)) {
+            try {
+                manager.notify(NOTIFICATION_ID + cupIndex, builder.build());
+            } catch (SecurityException ignored) {
+                // Android 13+ can block notifications when the permission is revoked.
+            }
+        }
+    }
+
+    private String randomWaterTitle(int cupIndex) {
+        String[] titles = new String[]{
+                "Tới giờ nạp nước rồi nè",
+                "Ly nước thứ " + cupIndex + " đang chờ bạn",
+                "Nhắc nhẹ: uống nước thôi",
+                "Giữ năng lượng bằng một ly nước nhé"
+        };
+        return titles[(int) (System.currentTimeMillis() % titles.length)];
+    }
+
+    private String randomWaterText(int hour, int minute, int cupTotal) {
+        String time = String.format(Locale.getDefault(), "%02d:%02d", hour, minute);
+        String[] texts = new String[]{
+                time + " · Uống một ly nước để cơ thể tỉnh táo hơn nhé.",
+                time + " · Hôm nay mục tiêu " + cupTotal + " ly. Mình uống thêm một ly nào.",
+                time + " · Một ngụm nước nhỏ cũng giúp bạn tập trung tốt hơn đó.",
+                time + " · Đừng để cơ thể thiếu nước nha, uống một ly nhẹ thôi."
+        };
+        return texts[(int) ((System.currentTimeMillis() / 1000L) % texts.length)];
     }
 
     private void showLoggedNotification(Context context, int cupIndex) {
@@ -103,8 +161,15 @@ public class WaterReminderReceiver extends BroadcastReceiver {
                 .setContentIntent(openHealthPendingIntent(context, 7210))
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        AppNotificationRepository.log(AppNotificationRepository.TYPE_WATER, "Đã ghi nhận nước", "FocusLife đã lưu ly nước thứ " + cupIndex + " hôm nay.", CHANNEL_ID);
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager != null) manager.notify(NOTIFICATION_ID + 100 + cupIndex, builder.build());
+        if (manager != null && hasNotificationPermission(context)) {
+            try {
+                manager.notify(NOTIFICATION_ID + 100 + cupIndex, builder.build());
+            } catch (SecurityException ignored) {
+                // Android 13+ can block notifications when the permission is revoked.
+            }
+        }
     }
 
     private void logWaterCup(Context context, int cupIndex, boolean fromNotification) {

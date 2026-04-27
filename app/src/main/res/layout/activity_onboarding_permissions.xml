@@ -1,42 +1,323 @@
-<?xml version='1.0' encoding='utf-8'?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/background">
-    <androidx.core.widget.NestedScrollView android:layout_width="0dp" android:layout_height="0dp" android:fillViewport="true" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="28dp" android:paddingTop="28dp" android:paddingEnd="28dp" android:paddingBottom="28dp">
-            <TextView android:layout_width="80dp" android:layout_height="80dp" android:background="@drawable/bg_card_surface_high" android:gravity="center" android:text="✦" android:textColor="@color/primary" android:textSize="28sp" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:text="FocusLife hoạt động tốt nhất với các quyền này" android:textColor="@color/on_surface" android:textSize="30sp" android:textStyle="bold" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="Chạm trực tiếp vào từng mục để xin quyền ngay. Nếu không cho phép thì công tắc sẽ vẫn tắt đúng theo trạng thái thật của máy." android:textColor="@color/on_surface_variant" android:textSize="16sp" />
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:orientation="vertical">
-                <LinearLayout android:id="@+id/cardPermissionHealth" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_glass_panel" android:clickable="true" android:focusable="true" android:foreground="?attr/selectableItemBackground" android:gravity="center_vertical" android:orientation="horizontal" android:padding="20dp">
-                    <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_tertiary_soft" android:gravity="center" android:text="♥" android:textColor="@color/tertiary" android:textSize="18sp" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dữ liệu sức khỏe" android:textColor="@color/on_surface" android:textSize="18sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Số bước, vận động và các chỉ số liên quan." android:textColor="@color/on_surface_variant" android:textSize="13sp" />
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="28dp">
+
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@drawable/bg_card_surface_high"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/app_name"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/app_brand_logo" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="FocusLife hoạt động tốt nhất với các quyền này"
+                android:textColor="@color/on_surface"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Chạm trực tiếp vào từng mục để xin quyền ngay. Nếu không cho phép thì công tắc sẽ vẫn tắt đúng theo trạng thái thật của máy."
+                android:textColor="@color/on_surface_variant"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/cardPermissionHealth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_glass_panel"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle_tertiary_soft"
+                        android:gravity="center"
+                        android:text="♥"
+                        android:textColor="@color/tertiary"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dữ liệu sức khỏe"
+                            android:textColor="@color/on_surface"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Số bước, vận động và các chỉ số liên quan."
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="13sp" />
                     </LinearLayout>
-                    <Switch android:id="@+id/switchHealth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:focusable="false" />
+
+                    <Switch
+                        android:id="@+id/switchHealth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
                 </LinearLayout>
-                <LinearLayout android:id="@+id/cardPermissionLocation" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:background="@drawable/bg_glass_panel" android:clickable="true" android:focusable="true" android:foreground="?attr/selectableItemBackground" android:gravity="center_vertical" android:orientation="horizontal" android:padding="20dp">
-                    <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_primary_soft" android:gravity="center" android:text="⌖" android:textColor="@color/primary" android:textSize="18sp" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vị trí" android:textColor="@color/on_surface" android:textSize="18sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dùng cho chạy bộ, đi bộ và gợi ý tuyến đường." android:textColor="@color/on_surface_variant" android:textSize="13sp" />
+
+                <LinearLayout
+                    android:id="@+id/cardPermissionLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_glass_panel"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle_primary_soft"
+                        android:gravity="center"
+                        android:text="⌖"
+                        android:textColor="@color/primary"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vị trí"
+                            android:textColor="@color/on_surface"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dùng cho chạy bộ, đi bộ và gợi ý tuyến đường."
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="13sp" />
                     </LinearLayout>
-                    <Switch android:id="@+id/switchLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:focusable="false" />
+
+                    <Switch
+                        android:id="@+id/switchLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
                 </LinearLayout>
-                <LinearLayout android:id="@+id/cardPermissionNotification" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:background="@drawable/bg_glass_panel" android:clickable="true" android:focusable="true" android:foreground="?attr/selectableItemBackground" android:gravity="center_vertical" android:orientation="horizontal" android:padding="20dp">
-                    <TextView android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_circle_secondary_soft" android:gravity="center" android:text="🔔" android:textColor="@color/secondary" android:textSize="18sp" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thông báo" android:textColor="@color/on_surface" android:textSize="18sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lời nhắc focus, nhắc uống nước và thành tích." android:textColor="@color/on_surface_variant" android:textSize="13sp" />
+
+                <LinearLayout
+                    android:id="@+id/cardPermissionNotification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_glass_panel"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle_secondary_soft"
+                        android:gravity="center"
+                        android:text="🔔"
+                        android:textColor="@color/secondary"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thông báo"
+                            android:textColor="@color/on_surface"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lời nhắc focus, nhắc uống nước và thông báo động lực."
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="13sp" />
                     </LinearLayout>
-                    <Switch android:id="@+id/switchNotification" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:focusable="false" />
+
+                    <Switch
+                        android:id="@+id/switchNotification"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/cardPermissionExactAlarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_glass_panel"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle_primary_soft"
+                        android:gravity="center"
+                        android:text="⏰"
+                        android:textColor="@color/primary"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Báo thức &amp; lời nhắc"
+                            android:textColor="@color/on_surface"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cho phép đặt lịch đúng giờ khi app đã thoát."
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <Switch
+                        android:id="@+id/switchExactAlarm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
                 </LinearLayout>
             </LinearLayout>
-            <com.google.android.material.button.MaterialButton android:id="@+id/btnPermissionContinue" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="44dp" android:backgroundTint="@color/primary" android:text="Tiếp tục tới đăng nhập" android:textAllCaps="false" android:textColor="@color/on_primary" android:textSize="16sp" android:textStyle="bold" />
-            <TextView android:id="@+id/btnSkip" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:gravity="center" android:text="Bỏ qua lúc này" android:textColor="@color/on_surface_variant" android:textSize="14sp" android:textStyle="bold" />
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="28dp" android:orientation="horizontal">
-                <View android:layout_width="6dp" android:layout_height="6dp" android:background="@drawable/bg_circle_surface" />
-                <View android:layout_width="6dp" android:layout_height="6dp" android:layout_marginStart="10dp" android:background="@drawable/bg_circle_surface" />
-                <View android:layout_width="24dp" android:layout_height="6dp" android:layout_marginStart="10dp" android:background="@drawable/bg_progress_fill_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPermissionContinue"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="44dp"
+                android:backgroundTint="@color/primary"
+                android:text="Tiếp tục tới đăng nhập"
+                android:textAllCaps="false"
+                android:textColor="@color/on_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnSkip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Bỏ qua lúc này"
+                android:textColor="@color/on_surface_variant"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="28dp"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/bg_circle_surface" />
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_circle_surface" />
+
+                <View
+                    android:layout_width="24dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_progress_fill_primary" />
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

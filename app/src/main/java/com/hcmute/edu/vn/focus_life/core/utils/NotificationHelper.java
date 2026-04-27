@@ -9,6 +9,7 @@ public class NotificationHelper {
     public static final String REMINDER_CHANNEL = "focuslife_reminders";
     public static final String RUNNING_CHANNEL = "focuslife_running";
     public static final String FOCUS_CHANNEL = "focuslife_focus";
+    public static final String FOCUS_REMINDER_CHANNEL = "focuslife_focus_reminder";
 
     public static void createChannels(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
@@ -39,5 +40,14 @@ public class NotificationHelper {
         );
         focusChannel.setDescription("Giữ phiên Pomodoro hoạt động ở nền");
         manager.createNotificationChannel(focusChannel);
+
+        NotificationChannel focusReminderChannel = new NotificationChannel(
+                FOCUS_REMINDER_CHANNEL,
+                "FocusLife Focus Reminder",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        focusReminderChannel.setDescription("Thông báo khi phiên Focus/Pomodoro hoàn thành");
+        focusReminderChannel.enableVibration(true);
+        manager.createNotificationChannel(focusReminderChannel);
     }
 }

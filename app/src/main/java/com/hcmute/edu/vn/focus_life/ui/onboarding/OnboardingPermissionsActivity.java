@@ -2,11 +2,9 @@ package com.hcmute.edu.vn.focus_life.ui.onboarding;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.provider.Settings;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -34,10 +32,12 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
     private LinearLayout cardPermissionHealth;
     private LinearLayout cardPermissionLocation;
     private LinearLayout cardPermissionNotification;
+    private LinearLayout cardPermissionExactAlarm;
 
     private Switch switchHealth;
     private Switch switchLocation;
     private Switch switchNotification;
+    private Switch switchExactAlarm;
 
     private MaterialButton btnContinue;
     private TextView btnSkip;
@@ -74,10 +74,12 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         cardPermissionHealth = findViewById(R.id.cardPermissionHealth);
         cardPermissionLocation = findViewById(R.id.cardPermissionLocation);
         cardPermissionNotification = findViewById(R.id.cardPermissionNotification);
+        cardPermissionExactAlarm = findViewById(R.id.cardPermissionExactAlarm);
 
         switchHealth = findViewById(R.id.switchHealth);
         switchLocation = findViewById(R.id.switchLocation);
         switchNotification = findViewById(R.id.switchNotification);
+        switchExactAlarm = findViewById(R.id.switchExactAlarm);
 
         btnContinue = findViewById(R.id.btnPermissionContinue);
         btnSkip = findViewById(R.id.btnSkip);
@@ -90,10 +92,13 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         switchLocation.setFocusable(false);
         switchNotification.setClickable(false);
         switchNotification.setFocusable(false);
+        switchExactAlarm.setClickable(false);
+        switchExactAlarm.setFocusable(false);
 
         cardPermissionHealth.setOnClickListener(v -> handlePermissionTap(PermissionManager.TYPE_HEALTH));
         cardPermissionLocation.setOnClickListener(v -> handlePermissionTap(PermissionManager.TYPE_LOCATION));
         cardPermissionNotification.setOnClickListener(v -> handlePermissionTap(PermissionManager.TYPE_NOTIFICATION));
+        cardPermissionExactAlarm.setOnClickListener(v -> handlePermissionTap(PermissionManager.TYPE_EXACT_ALARM));
 
         btnContinue.setOnClickListener(v -> completeOnboarding());
         btnSkip.setOnClickListener(v -> completeOnboarding());
@@ -103,6 +108,11 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         if (PermissionManager.hasPermissionType(this, type)) {
             Toast.makeText(this, "Quyền này đã được cấp rồi", Toast.LENGTH_SHORT).show();
             syncPermissionStates();
+            return;
+        }
+
+        if (PermissionManager.TYPE_EXACT_ALARM.equals(type)) {
+            showExactAlarmPermissionDialog();
             return;
         }
 
@@ -155,14 +165,17 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
         boolean healthGranted = PermissionManager.hasPermissionType(this, PermissionManager.TYPE_HEALTH);
         boolean locationGranted = PermissionManager.hasPermissionType(this, PermissionManager.TYPE_LOCATION);
         boolean notificationGranted = PermissionManager.hasPermissionType(this, PermissionManager.TYPE_NOTIFICATION);
+        boolean exactAlarmGranted = PermissionManager.hasPermissionType(this, PermissionManager.TYPE_EXACT_ALARM);
 
         switchHealth.setChecked(healthGranted);
         switchLocation.setChecked(locationGranted);
         switchNotification.setChecked(notificationGranted);
+        switchExactAlarm.setChecked(exactAlarmGranted);
 
         updateCardState(cardPermissionHealth, healthGranted);
         updateCardState(cardPermissionLocation, locationGranted);
         updateCardState(cardPermissionNotification, notificationGranted);
+        updateCardState(cardPermissionExactAlarm, exactAlarmGranted);
     }
 
     private void updateCardState(View card, boolean granted) {
@@ -183,14 +196,31 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
                 .setTitle("Bật quyền trong cài đặt")
                 .setMessage("Android hiện không hiện lại hộp thoại cho " + label + ". Bạn mở Cài đặt ứng dụng để bật quyền này nhé.")
                 .setNegativeButton("Để sau", null)
-                .setPositiveButton("Mở cài đặt", (dialog, which) -> openAppSettings())
+                .setPositiveButton("Mở cài đặt", (dialog, which) -> openSettingsForType(type))
                 .show();
     }
 
+    private void showExactAlarmPermissionDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Bật Báo thức & lời nhắc")
+                .setMessage("Quyền này giúp FocusLife đặt lịch nhắc uống nước, động lực và Focus đúng giờ ngay cả khi bạn đã thoát app. Hãy bật quyền Cho phép đặt báo thức và lời nhắc cho FocusLife.")
+                .setNegativeButton("Để sau", null)
+                .setPositiveButton("Mở cài đặt", (dialog, which) -> PermissionManager.openExactAlarmSettings(this))
+                .show();
+    }
+
+    private void openSettingsForType(String type) {
+        if (PermissionManager.TYPE_NOTIFICATION.equals(type)) {
+            PermissionManager.openNotificationSettings(this);
+        } else if (PermissionManager.TYPE_EXACT_ALARM.equals(type)) {
+            PermissionManager.openExactAlarmSettings(this);
+        } else {
+            PermissionManager.openAppDetailsSettings(this);
+        }
+    }
+
     private void openAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.fromParts("package", getPackageName(), null));
-        startActivity(intent);
+        PermissionManager.openAppDetailsSettings(this);
     }
 
     private String getPermissionLabel(String type) {
@@ -201,6 +231,8 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
                 return "quyền vị trí";
             case PermissionManager.TYPE_NOTIFICATION:
                 return "quyền thông báo";
+            case PermissionManager.TYPE_EXACT_ALARM:
+                return "quyền Báo thức & lời nhắc";
             default:
                 return "quyền truy cập";
         }

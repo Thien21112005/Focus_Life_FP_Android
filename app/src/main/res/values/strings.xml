@@ -157,4 +157,5 @@ Students of Ho Chi Minh City University of Technology and Education (HCMUTE).</s
     <string name="motivation_permission_button">Allow notifications</string>
     <string name="motivation_reminder_saved">Motivation reminder saved for %1$s.</string>
     <string name="motivation_reminder_disabled">Motivation reminders are off.</string>
+    <string name="profile_avatar">Profile picture</string>
 </resources>

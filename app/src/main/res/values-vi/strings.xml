@@ -154,4 +154,5 @@ Sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).</stri
     <string name="motivation_permission_button">Cấp quyền thông báo</string>
     <string name="motivation_reminder_saved">Đã lưu thông báo động lực lúc %1$s.</string>
     <string name="motivation_reminder_disabled">Đã tắt thông báo động lực.</string>
+    <string name="profile_avatar">Ảnh đại diện</string>
 </resources>

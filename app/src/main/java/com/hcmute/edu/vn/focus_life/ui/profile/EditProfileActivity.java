@@ -2,18 +2,26 @@ package com.hcmute.edu.vn.focus_life.ui.profile;
 
 import android.app.DatePickerDialog;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
@@ -21,6 +29,7 @@ import com.hcmute.edu.vn.focus_life.R;
 import com.hcmute.edu.vn.focus_life.core.exception.AppExceptionLogger;
 import com.hcmute.edu.vn.focus_life.core.session.OnboardingPreferences;
 import com.hcmute.edu.vn.focus_life.core.session.SettingsPreferences;
+import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.data.repository.ProfileRepository;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
 
@@ -41,13 +50,31 @@ public class EditProfileActivity extends AppCompatActivity {
     private EditText edtHeight;
     private EditText edtWeight;
     private EditText edtGoal;
+    private FrameLayout frameAvatarPicker;
+    private ImageView imgEditAvatar;
+    private TextView tvEditAvatarInitial;
+    private TextView tvAvatarAction;
+    private TextView tvAvatarHint;
 
     private String[] genderValues;
 
     private boolean nameLockedByGoogle;
     private boolean emailLockedByGoogle;
+    private boolean avatarLockedByGoogle;
     private String lockedGoogleName = "";
     private String lockedGoogleEmail = "";
+    private Uri selectedAvatarUri;
+
+    private final ActivityResultLauncher<String> avatarPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri == null) return;
+                selectedAvatarUri = uri;
+                showAvatar(uri, safe(valueOf(edtName), "FocusLife"));
+                tvAvatarAction.setText("Đã chọn ảnh mới");
+                tvAvatarHint.setText("Ảnh sẽ được lưu khi bạn bấm Lưu thay đổi.");
+            }
+    );
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,6 +100,11 @@ public class EditProfileActivity extends AppCompatActivity {
         edtHeight = findViewById(R.id.edtHeight);
         edtWeight = findViewById(R.id.edtWeight);
         edtGoal = findViewById(R.id.edtGoal);
+        frameAvatarPicker = findViewById(R.id.frameAvatarPicker);
+        imgEditAvatar = findViewById(R.id.imgEditAvatar);
+        tvEditAvatarInitial = findViewById(R.id.tvEditAvatarInitial);
+        tvAvatarAction = findViewById(R.id.tvAvatarAction);
+        tvAvatarHint = findViewById(R.id.tvAvatarHint);
     }
 
     private void setupGenderDropdown() {
@@ -91,6 +123,7 @@ public class EditProfileActivity extends AppCompatActivity {
         edtPhone.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
         edtDob.setOnClickListener(v -> showDatePicker());
         btnSaveProfile.setOnClickListener(v -> saveProfile());
+        frameAvatarPicker.setOnClickListener(v -> chooseAvatar());
     }
 
     private void loadProfile() {
@@ -105,9 +138,13 @@ public class EditProfileActivity extends AppCompatActivity {
         boolean googleUser = isGoogleUser(firebaseUser, profile);
         String firebaseName = firebaseUser != null ? safeNullable(firebaseUser.getDisplayName()) : "";
         String firebaseEmail = firebaseUser != null ? safeNullable(firebaseUser.getEmail()) : "";
+        String firebasePhoto = firebaseUser != null && firebaseUser.getPhotoUrl() != null
+                ? firebaseUser.getPhotoUrl().toString()
+                : "";
 
         nameLockedByGoogle = googleUser && !firebaseName.isEmpty();
         emailLockedByGoogle = googleUser && !firebaseEmail.isEmpty();
+        avatarLockedByGoogle = googleUser && !firebasePhoto.isEmpty();
         lockedGoogleName = nameLockedByGoogle ? firebaseName : "";
         lockedGoogleEmail = emailLockedByGoogle ? firebaseEmail : "";
 
@@ -123,12 +160,65 @@ public class EditProfileActivity extends AppCompatActivity {
         applyGoogleFieldLock(edtName, nameLockedByGoogle);
         applyGoogleFieldLock(edtEmail, emailLockedByGoogle);
 
+        String avatarUrl = avatarLockedByGoogle ? firebasePhoto : safe(profile.avatarUrl, Constants.DEFAULT_APP_AVATAR_URL);
+        showAvatar(avatarUrl, displayName);
+        bindAvatarLockState();
+
         edtPhone.setText(safe(profile.phone, ""));
         edtDob.setText(safe(profile.dateOfBirth, ""));
         setGenderSelection(safe(profile.gender, getString(R.string.gender_male)));
         edtHeight.setText(formatNumber(profile.heightCm));
         edtWeight.setText(formatNumber(profile.weightKg));
         edtGoal.setText(safe(profile.primaryGoal, new OnboardingPreferences(this).getPrimaryGoal()));
+    }
+
+    private void chooseAvatar() {
+        if (avatarLockedByGoogle) {
+            Toast.makeText(this, "Ảnh đại diện đang đồng bộ từ Google nên không thể đổi trong app.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        avatarPickerLauncher.launch("image/*");
+    }
+
+    private void bindAvatarLockState() {
+        frameAvatarPicker.setEnabled(!avatarLockedByGoogle);
+        frameAvatarPicker.setAlpha(1f);
+        if (avatarLockedByGoogle) {
+            tvAvatarAction.setText("Ảnh đại diện từ Google");
+            tvAvatarHint.setText("Ảnh này được đồng bộ từ tài khoản Google và không thể chỉnh sửa trong FocusLife.");
+        } else {
+            tvAvatarAction.setText("Thay ảnh đại diện");
+            tvAvatarHint.setText("Chạm vào ảnh để chọn ảnh mới từ thư viện.");
+        }
+    }
+
+    private void showAvatar(Uri uri, String displayName) {
+        imgEditAvatar.setVisibility(View.VISIBLE);
+        tvEditAvatarInitial.setVisibility(View.GONE);
+        Glide.with(this)
+                .load(uri)
+                .circleCrop()
+                .placeholder(R.drawable.bg_circle_primary)
+                .error(R.drawable.bg_circle_primary)
+                .into(imgEditAvatar);
+    }
+
+    private void showAvatar(String avatarUrl, String displayName) {
+        String initial = safe(displayName, "F").substring(0, 1).toUpperCase(Locale.getDefault());
+        tvEditAvatarInitial.setText(initial);
+        if (avatarUrl == null || avatarUrl.trim().isEmpty()) {
+            imgEditAvatar.setVisibility(View.GONE);
+            tvEditAvatarInitial.setVisibility(View.VISIBLE);
+            return;
+        }
+        imgEditAvatar.setVisibility(View.VISIBLE);
+        tvEditAvatarInitial.setVisibility(View.GONE);
+        Glide.with(this)
+                .load(avatarUrl)
+                .circleCrop()
+                .placeholder(R.drawable.bg_circle_primary)
+                .error(R.drawable.bg_circle_primary)
+                .into(imgEditAvatar);
     }
 
     private void saveProfile() {
@@ -155,6 +245,9 @@ public class EditProfileActivity extends AppCompatActivity {
         edited.dateOfBirth = valueOf(edtDob);
         edited.gender = spinnerGender.getSelectedItem() == null ? "" : spinnerGender.getSelectedItem().toString();
         edited.primaryGoal = valueOf(edtGoal);
+        if (selectedAvatarUri != null && !avatarLockedByGoogle) {
+            edited.pendingAvatarUri = selectedAvatarUri.toString();
+        }
 
         Float height = parseOptionalFloat(edtHeight, getString(R.string.profile_height));
         if (height == null) return;
@@ -163,13 +256,21 @@ public class EditProfileActivity extends AppCompatActivity {
         edited.heightCm = height;
         edited.weightKg = weight;
 
+        setSaving(true);
         profileRepository.updateProfile(edited, (success, message, updatedProfile) -> {
+            setSaving(false);
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             if (success) {
                 setResult(RESULT_OK);
                 finish();
             }
         });
+    }
+
+    private void setSaving(boolean saving) {
+        btnSaveProfile.setEnabled(!saving);
+        btnSaveProfile.setAlpha(saving ? 0.65f : 1f);
+        btnSaveProfile.setText(saving ? "Đang lưu..." : getString(R.string.save_changes));
     }
 
     private void showDatePicker() {
@@ -287,7 +388,7 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private String safe(String value, String fallback) {
-        return value == null || value.trim().isEmpty() ? fallback : value;
+        return value == null || value.trim().isEmpty() ? fallback : value.trim();
     }
 
     private String safeNullable(String value) {

@@ -107,6 +107,71 @@ public class CloudinaryImageUploader {
         }
     }
 
+    @NonNull
+    public UploadResult uploadAvatarImage(@NonNull Context context,
+                                          @NonNull Uri uri,
+                                          @NonNull String uid) throws UserFacingException {
+        if (!isConfigured()) {
+            throw new UserFacingException("Cloudinary chưa được cấu hình upload_preset hợp lệ cho Android.");
+        }
+
+        String boundary = "----FocusLifeBoundary" + System.currentTimeMillis();
+        String folder = "focuslife/avatars/" + sanitize(uid);
+        String publicId = "avatar_" + System.currentTimeMillis();
+        HttpURLConnection connection = null;
+
+        try {
+            URL url = new URL(String.format(Locale.US,
+                    "https://api.cloudinary.com/v1_1/%s/image/upload",
+                    BuildConfig.CLOUDINARY_CLOUD_NAME));
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            connection.setConnectTimeout(20000);
+            connection.setReadTimeout(30000);
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+            try (OutputStream outputStream = new BufferedOutputStream(connection.getOutputStream())) {
+                writeTextPart(outputStream, boundary, "upload_preset", BuildConfig.CLOUDINARY_UPLOAD_PRESET);
+                writeTextPart(outputStream, boundary, "folder", folder);
+                writeTextPart(outputStream, boundary, "public_id", publicId);
+                writeTextPart(outputStream, boundary, "tags", "focuslife,profile,avatar");
+                writeTextPart(outputStream, boundary, "context", "app=FocusLife|module=profile_avatar|uid=" + sanitize(uid));
+                writeFilePart(context, outputStream, boundary, uri);
+                outputStream.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            }
+
+            int responseCode = connection.getResponseCode();
+            String responseBody = readFully(responseCode >= 200 && responseCode < 300
+                    ? connection.getInputStream()
+                    : connection.getErrorStream());
+
+            if (responseCode < 200 || responseCode >= 300) {
+                String errorMessage = extractCloudinaryError(responseBody);
+                throw new UserFacingException("Upload ảnh đại diện thất bại: " + errorMessage);
+            }
+
+            JSONObject jsonObject = new JSONObject(responseBody);
+            String secureUrl = jsonObject.optString("secure_url", "");
+            String uploadedPublicId = jsonObject.optString("public_id", publicId);
+            if (TextUtils.isEmpty(secureUrl)) {
+                throw new UserFacingException("Cloudinary không trả về secure_url sau khi upload ảnh đại diện.");
+            }
+            return new UploadResult(secureUrl, uploadedPublicId);
+        } catch (UserFacingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new UserFacingException("Không thể upload ảnh đại diện lên Cloudinary.", e);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
     private void writeTextPart(@NonNull OutputStream outputStream,
                                @NonNull String boundary,
                                @NonNull String name,

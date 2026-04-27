@@ -1,6 +1,7 @@
 package com.hcmute.edu.vn.focus_life.data.repository;
 
 import android.app.Activity;
+import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
@@ -21,7 +22,9 @@ import com.hcmute.edu.vn.focus_life.core.utils.Constants;
 import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
 import com.hcmute.edu.vn.focus_life.data.local.entity.ProfileEntity;
 import com.hcmute.edu.vn.focus_life.data.remote.firestore.UserRemoteDataSource;
+import com.hcmute.edu.vn.focus_life.data.remote.cloudinary.CloudinaryImageUploader;
 import com.hcmute.edu.vn.focus_life.domain.model.UserProfile;
+import com.hcmute.edu.vn.focus_life.core.exception.UserFacingException;
 
 import java.util.concurrent.Executors;
 
@@ -117,30 +120,30 @@ public class ProfileRepository {
         editedProfile.uid = firebaseUser.getUid();
         editedProfile.email = requestedEmail;
         editedProfile.authProvider = provider;
-        editedProfile.avatarUrl = googleUser && firebaseUser.getPhotoUrl() != null
-                ? firebaseUser.getPhotoUrl().toString()
-                : safe(editedProfile.avatarUrl, Constants.DEFAULT_APP_AVATAR_URL);
+
+        boolean hasPendingAvatar = editedProfile.pendingAvatarUri != null
+                && !editedProfile.pendingAvatarUri.trim().isEmpty();
+        boolean googleAvatarLocked = googleUser && firebaseUser.getPhotoUrl() != null;
+
+        if (googleAvatarLocked && hasPendingAvatar) {
+            callback.onComplete(false, "Ảnh đại diện Google đã được đồng bộ từ tài khoản Google nên không thể thay đổi trong app.", editedProfile);
+            return;
+        }
+
+        if (googleAvatarLocked) {
+            editedProfile.avatarUrl = firebaseUser.getPhotoUrl().toString();
+        } else {
+            editedProfile.avatarUrl = safe(editedProfile.avatarUrl, Constants.DEFAULT_APP_AVATAR_URL);
+        }
+
         if (editedProfile.createdAt == 0L) editedProfile.createdAt = System.currentTimeMillis();
         editedProfile.updatedAt = System.currentTimeMillis();
 
-        if (!googleUser) {
-            UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
-                    .setDisplayName(editedProfile.displayName)
-                    .build();
-            firebaseUser.updateProfile(request).addOnFailureListener(error ->
-                    AppExceptionLogger.log("profile_update_auth_display_name", toException(error)));
-        }
-
-        Runnable persist = () -> saveProfileLocallyAndRemotely(editedProfile, callback);
-        if (!googleUser && !requestedEmail.equalsIgnoreCase(currentEmail)) {
-            firebaseUser.updateEmail(requestedEmail)
-                    .addOnSuccessListener(unused -> persist.run())
-                    .addOnFailureListener(error -> {
-                        AppExceptionLogger.log("profile_update_email", toException(error));
-                        callback.onComplete(false, FirebaseExceptionMapper.toUserMessage(toException(error)), editedProfile);
-                    });
+        Runnable continueUpdate = () -> continueProfileUpdate(firebaseUser, editedProfile, googleUser, requestedEmail, currentEmail, callback);
+        if (hasPendingAvatar) {
+            uploadAvatarThenContinue(editedProfile, callback, continueUpdate);
         } else {
-            persist.run();
+            continueUpdate.run();
         }
     }
 
@@ -230,7 +233,57 @@ public class ProfileRepository {
     }
 
     public void updateAvatar(UpdateCallback callback) {
-        getCurrentProfile(profile -> callback.onComplete(false, FirebaseExceptionMapper.toUserMessage(new IllegalStateException("Đổi avatar đã được tắt cho bản hiện tại")), profile));
+        getCurrentProfile(profile -> callback.onComplete(false, "Bạn hãy vào Chỉnh sửa hồ sơ để chọn ảnh đại diện mới.", profile));
+    }
+
+    private void uploadAvatarThenContinue(UserProfile editedProfile, UpdateCallback callback, Runnable continueUpdate) {
+        final String pendingUri = editedProfile.pendingAvatarUri;
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                CloudinaryImageUploader.UploadResult uploadResult = new CloudinaryImageUploader()
+                        .uploadAvatarImage(activity, Uri.parse(pendingUri), editedProfile.uid);
+                editedProfile.avatarUrl = uploadResult.secureUrl;
+                editedProfile.pendingAvatarUri = null;
+                activity.runOnUiThread(continueUpdate);
+            } catch (UserFacingException e) {
+                AppExceptionLogger.log("profile_avatar_upload", e);
+                activity.runOnUiThread(() -> callback.onComplete(false, e.getUserMessage(), editedProfile));
+            } catch (Exception e) {
+                AppExceptionLogger.log("profile_avatar_upload", e);
+                activity.runOnUiThread(() -> callback.onComplete(false, FirebaseExceptionMapper.toUserMessage(e), editedProfile));
+            }
+        });
+    }
+
+    private void continueProfileUpdate(FirebaseUser firebaseUser,
+                                       UserProfile editedProfile,
+                                       boolean googleUser,
+                                       String requestedEmail,
+                                       String currentEmail,
+                                       UpdateCallback callback) {
+        if (!googleUser || (firebaseUser.getPhotoUrl() == null && editedProfile.avatarUrl != null && !editedProfile.avatarUrl.trim().isEmpty())) {
+            UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder();
+            if (!googleUser) {
+                builder.setDisplayName(editedProfile.displayName);
+            }
+            if (editedProfile.avatarUrl != null && !editedProfile.avatarUrl.trim().isEmpty()) {
+                builder.setPhotoUri(Uri.parse(editedProfile.avatarUrl));
+            }
+            firebaseUser.updateProfile(builder.build()).addOnFailureListener(error ->
+                    AppExceptionLogger.log("profile_update_auth_profile", toException(error)));
+        }
+
+        Runnable persist = () -> saveProfileLocallyAndRemotely(editedProfile, callback);
+        if (!googleUser && !requestedEmail.equalsIgnoreCase(currentEmail)) {
+            firebaseUser.updateEmail(requestedEmail)
+                    .addOnSuccessListener(unused -> persist.run())
+                    .addOnFailureListener(error -> {
+                        AppExceptionLogger.log("profile_update_email", toException(error));
+                        callback.onComplete(false, FirebaseExceptionMapper.toUserMessage(toException(error)), editedProfile);
+                    });
+        } else {
+            persist.run();
+        }
     }
 
     private void performDeleteAccount(FirebaseUser firebaseUser, SimpleCallback callback) {

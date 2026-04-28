@@ -257,3 +257,4 @@ public class OnboardingPermissionsActivity extends AppCompatActivity {
     }
 
 }
+

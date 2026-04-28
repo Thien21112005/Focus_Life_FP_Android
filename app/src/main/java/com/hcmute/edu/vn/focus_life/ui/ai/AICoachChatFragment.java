@@ -16,7 +16,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.hcmute.edu.vn.focus_life.FocusLifeApp;
 import com.hcmute.edu.vn.focus_life.R;
+import com.hcmute.edu.vn.focus_life.core.utils.DateUtils;
+import com.hcmute.edu.vn.focus_life.data.local.db.AppDatabase;
+import com.hcmute.edu.vn.focus_life.data.local.entity.DailySummaryEntity;
+import com.hcmute.edu.vn.focus_life.data.local.entity.ProfileEntity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,6 +39,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class AICoachChatFragment extends Fragment {
 
+    private static final String TAG = "AICoachChat";
     private RecyclerView rvChat;
     private AICoachAdapter adapter;
     private List<ChatMessage> messageList;
@@ -41,11 +47,9 @@ public class AICoachChatFragment extends Fragment {
     private View btnSend;
     private ProgressBar chatProgressBar;
 
-    // 1. KIỂM TRA LẠI KEY NÀY: Hãy thử tạo một Key mới hoàn toàn trên AI Studio nếu vẫn lỗi
-    private static final String GEMINI_API_KEY = "AIzaSyCMA1ara-xoC6dk2AUZBcuA3KlInaP6MLk";
-
-    // 2. URL CHUẨN: v1beta + gemini-1.5-flash
+    private static final String GEMINI_API_KEY = "AIzaSyBi_ChxpeGNM6wCQQPuoACYflQWxvRBtpc";
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_API_KEY;
+
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -64,12 +68,8 @@ public class AICoachChatFragment extends Fragment {
         btnSend = view.findViewById(R.id.btnSend);
         chatProgressBar = view.findViewById(R.id.chatProgressBar);
 
-        if (rvChat == null || etMessage == null || btnSend == null || chatProgressBar == null) {
-            throw new IllegalStateException("activity_ai_coach_chat.xml is missing required AI Coach views: rvChat, etMessage, btnSend or chatProgressBar");
-        }
-
         messageList = new ArrayList<>();
-        messageList.add(new ChatMessage("Chào bạn! Tôi là FocusLife AI. Bạn cần tư vấn gì về sức khỏe hôm nay?", ChatMessage.TYPE_AI));
+        messageList.add(new ChatMessage("Chào bạn! Tôi là FocusLife AI. Tôi đã sẵn sàng tư vấn dựa trên thể trạng và mục tiêu của bạn.", ChatMessage.TYPE_AI));
 
         adapter = new AICoachAdapter(messageList);
         rvChat.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -81,11 +81,11 @@ public class AICoachChatFragment extends Fragment {
 
     private void setupChips(View view) {
         if(view.findViewById(R.id.chip1) != null)
-            view.findViewById(R.id.chip1).setOnClickListener(v -> { etMessage.setText("Gợi ý bài tập sức khỏe."); sendMessage(); });
+            view.findViewById(R.id.chip1).setOnClickListener(v -> { etMessage.setText("Dựa trên BMI của tôi, tôi nên tập gì?"); sendMessage(); });
         if(view.findViewById(R.id.chip2) != null)
-            view.findViewById(R.id.chip2).setOnClickListener(v -> { etMessage.setText("Thực đơn ăn uống lành mạnh."); sendMessage(); });
+            view.findViewById(R.id.chip2).setOnClickListener(v -> { etMessage.setText("Tôi đã gần đạt mục tiêu hôm nay chưa?"); sendMessage(); });
         if(view.findViewById(R.id.chip3) != null)
-            view.findViewById(R.id.chip3).setOnClickListener(v -> { etMessage.setText("Mẹo để tập trung làm việc."); sendMessage(); });
+            view.findViewById(R.id.chip3).setOnClickListener(v -> { etMessage.setText("Lời khuyên để hoàn thành mục tiêu?"); sendMessage(); });
     }
 
     private void sendMessage() {
@@ -94,86 +94,116 @@ public class AICoachChatFragment extends Fragment {
 
         addMessage(new ChatMessage(query, ChatMessage.TYPE_USER));
         etMessage.setText("");
-        callGeminiAPI(query);
+
+        fetchContextAndCallAI(query);
+    }
+
+    private void fetchContextAndCallAI(String userText) {
+        chatProgressBar.setVisibility(View.VISIBLE);
+
+        executorService.execute(() -> {
+            StringBuilder contextBuilder = new StringBuilder();
+            try {
+                AppDatabase db = AppDatabase.getInstance(requireContext());
+                String uid = FocusLifeApp.getInstance().getSessionManager().requireUid();
+
+                // 1. Lấy thông tin Profile (BMI, Mục tiêu)
+                ProfileEntity profile = db.profileDao().getByUid(uid);
+                if (profile != null) {
+                    float heightM = profile.heightCm / 100;
+                    float bmi = (heightM > 0) ? profile.weightKg / (heightM * heightM) : 0;
+                    contextBuilder.append(String.format("Người dùng tên: %s. Thể trạng: Cao %.0fcm, Nặng %.1fkg, BMI: %.1f. Mục tiêu chính: %s. ",
+                            profile.displayName, profile.heightCm, profile.weightKg, bmi, profile.primaryGoal));
+                }
+
+                // 2. Lấy dữ liệu vận động hôm nay
+                String today = DateUtils.todayKey();
+                DailySummaryEntity summary = db.dailySummaryDao().getByDate(today);
+                if (summary != null) {
+                    contextBuilder.append(String.format("Hôm nay đã đi: %d bước, Nạp: %d kcal, Tiêu thụ: %.1f kcal, Nước: %d ml.",
+                            summary.steps, summary.nutritionCalories, summary.calories, summary.waterMl));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi lấy dữ liệu ngữ cảnh", e);
+            }
+
+            callGeminiAPI(userText, contextBuilder.toString());
+        });
+    }
+
+    private void callGeminiAPI(String userText, String healthContext) {
+        String responseText = "";
+        try {
+            URL url = new URL(GEMINI_URL);
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(15000);
+            conn.setDoOutput(true);
+
+            JSONObject jsonBody = new JSONObject();
+            JSONArray contentsArray = new JSONArray();
+            JSONObject contentObj = new JSONObject();
+            JSONArray partsArray = new JSONArray();
+            JSONObject partObj = new JSONObject();
+
+            String prompt = "Bạn là chuyên gia sức khỏe FocusLife AI. Ngữ cảnh người dùng: " + healthContext +
+                    "\nHãy trả lời câu hỏi sau bằng tiếng Việt, gọi tên người dùng nếu có, tư vấn bám sát thể trạng và mục tiêu của họ: " + userText;
+
+            partObj.put("text", prompt);
+            partsArray.put(partObj);
+            contentObj.put("parts", partsArray);
+            contentsArray.put(contentObj);
+            jsonBody.put("contents", contentsArray);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonBody.toString().getBytes("UTF-8"));
+            os.flush();
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+
+                JSONObject responseJson = new JSONObject(sb.toString());
+                responseText = responseJson.getJSONArray("candidates")
+                        .getJSONObject(0)
+                        .getJSONObject("content")
+                        .getJSONArray("parts")
+                        .getJSONObject(0)
+                        .getString("text");
+            } else {
+                // Đọc lỗi chi tiết từ Server
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                br.close();
+                Log.e(TAG, "API Error (" + responseCode + "): " + sb.toString());
+                responseText = "AI Coach đang bận phân tích dữ liệu (Lỗi " + responseCode + "), bạn thử lại sau nhé.";
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Connection Error", e);
+            responseText = "Lỗi kết nối: " + e.getMessage();
+        }
+
+        final String finalResponse = responseText;
+        mainHandler.post(() -> {
+            if (isAdded()) {
+                chatProgressBar.setVisibility(View.GONE);
+                addMessage(new ChatMessage(finalResponse, ChatMessage.TYPE_AI));
+            }
+        });
     }
 
     private void addMessage(ChatMessage message) {
         messageList.add(message);
         adapter.notifyItemInserted(messageList.size() - 1);
         rvChat.scrollToPosition(messageList.size() - 1);
-    }
-
-    private void callGeminiAPI(String userText) {
-        chatProgressBar.setVisibility(View.VISIBLE);
-
-        executorService.execute(() -> {
-            String responseText = "";
-            try {
-                URL url = new URL(GEMINI_URL);
-                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-
-                // Body JSON
-                JSONObject jsonBody = new JSONObject();
-                JSONArray contentsArray = new JSONArray();
-                JSONObject contentObj = new JSONObject();
-                JSONArray partsArray = new JSONArray();
-                JSONObject partObj = new JSONObject();
-                partObj.put("text", "Bạn là huấn luyện viên sức khỏe. Trả lời ngắn gọn: " + userText);
-                partsArray.put(partObj);
-                contentObj.put("parts", partsArray);
-                contentsArray.put(contentObj);
-                jsonBody.put("contents", contentsArray);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonBody.toString().getBytes("UTF-8"));
-                os.flush();
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpsURLConnection.HTTP_OK) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    br.close();
-
-                    JSONObject responseJson = new JSONObject(sb.toString());
-                    responseText = responseJson.getJSONArray("candidates")
-                            .getJSONObject(0)
-                            .getJSONObject("content")
-                            .getJSONArray("parts")
-                            .getJSONObject(0)
-                            .getString("text");
-                } else {
-                    // ĐỌC LỖI CHI TIẾT TỪ SERVER
-                    InputStreamReader isr = new InputStreamReader(conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream());
-                    BufferedReader br = new BufferedReader(isr);
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) sb.append(line);
-                    br.close();
-                    String errorBody = sb.toString();
-                    Log.e("AICoach", "Gemini API error " + responseCode + ": " + errorBody);
-                    if (responseCode == 403 || errorBody.contains("PERMISSION_DENIED") || errorBody.contains("API key")) {
-                        responseText = "AI Coach hiện chưa thể phản hồi. Vui lòng kiểm tra lại API key Gemini hoặc thử lại sau.";
-                    } else {
-                        responseText = "AI Coach đang gặp lỗi kết nối. Bạn thử lại sau nhé.";
-                    }
-                }
-            } catch (Exception e) {
-                responseText = "Lỗi kết nối App: " + e.getMessage();
-            }
-
-            final String finalResponse = responseText;
-            mainHandler.post(() -> {
-                if (isAdded()) {
-                    chatProgressBar.setVisibility(View.GONE);
-                    addMessage(new ChatMessage(finalResponse, ChatMessage.TYPE_AI));
-                }
-            });
-        });
     }
 }

@@ -39,3 +39,4 @@ public class AuthStatePreferences {
         return preferences.getString(KEY_EMAIL, null);
     }
 }
+

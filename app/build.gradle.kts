@@ -1,20 +1,36 @@
 import java.util.Properties
-import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
 }
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localProperties.load(FileInputStream(localPropertiesFile))
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { input ->
+            load(input)
+        }
+    }
 }
-val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
-val mapboxToken = providers.gradleProperty("MAPBOX_ACCESS_TOKEN").orElse("").get()
-val cloudinaryCloudName = providers.gradleProperty("CLOUDINARY_CLOUD_NAME").orElse("").get()
-val cloudinaryUploadPreset = providers.gradleProperty("CLOUDINARY_UPLOAD_PRESET").orElse("").get()
-val cloudinaryApiKey = providers.gradleProperty("CLOUDINARY_API_KEY").orElse("").get()
-val cloudinaryBaseFolder = providers.gradleProperty("CLOUDINARY_BASE_FOLDER").orElse("focuslife/nutrition").get()
+
+fun localOrGradleProperty(name: String, defaultValue: String = ""): String {
+    return localProperties.getProperty(name)
+        ?: providers.gradleProperty(name).orElse(defaultValue).get()
+}
+
+fun String.toBuildConfigString(): String {
+    return "\"" + this
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"") + "\""
+}
+
+val geminiApiKey = localOrGradleProperty("GEMINI_API_KEY")
+val mapboxToken = localOrGradleProperty("MAPBOX_ACCESS_TOKEN")
+val cloudinaryCloudName = localOrGradleProperty("CLOUDINARY_CLOUD_NAME")
+val cloudinaryUploadPreset = localOrGradleProperty("CLOUDINARY_UPLOAD_PRESET")
+val cloudinaryApiKey = localOrGradleProperty("CLOUDINARY_API_KEY")
+val cloudinaryBaseFolder = localOrGradleProperty("CLOUDINARY_BASE_FOLDER", "focuslife/nutrition")
 
 android {
     namespace = "com.hcmute.edu.vn.focus_life"
@@ -33,13 +49,15 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
-        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxToken\"")
+        buildConfigField("String", "GEMINI_API_KEY", geminiApiKey.toBuildConfigString())
+
+        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", mapboxToken.toBuildConfigString())
         resValue("string", "mapbox_access_token", mapboxToken)
-        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
-        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$cloudinaryUploadPreset\"")
-        buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
-        buildConfigField("String", "CLOUDINARY_BASE_FOLDER", "\"$cloudinaryBaseFolder\"")
+
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", cloudinaryCloudName.toBuildConfigString())
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", cloudinaryUploadPreset.toBuildConfigString())
+        buildConfigField("String", "CLOUDINARY_API_KEY", cloudinaryApiKey.toBuildConfigString())
+        buildConfigField("String", "CLOUDINARY_BASE_FOLDER", cloudinaryBaseFolder.toBuildConfigString())
     }
 
     buildTypes {
@@ -68,9 +86,6 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     implementation("androidx.lifecycle:lifecycle-livedata:2.8.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.3")
     implementation("androidx.navigation:navigation-fragment:2.8.0")
@@ -85,6 +100,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.google.android.gms:play-services-fitness:21.2.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     implementation("androidx.room:room-runtime:2.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
@@ -92,7 +108,6 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")

@@ -49,3 +49,4 @@ public class FocusLifeApp extends Application {
         return sessionManager;
     }
 }
+

@@ -47,7 +47,7 @@ public class AICoachChatFragment extends Fragment {
     private View btnSend;
     private ProgressBar chatProgressBar;
 
-    private static final String GEMINI_API_KEY = "AIzaSyBi_ChxpeGNM6wCQQPuoACYflQWxvRBtpc";
+    private static final String GEMINI_API_KEY = "AIzaSyDF1T5ALend2yzXde9hpxThdeUC2y7It8w";
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_API_KEY;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
